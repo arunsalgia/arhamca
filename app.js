@@ -192,7 +192,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'APL', 'build')));
+app.use(express.static(path.join(__dirname, 'ACA', 'build')));
 app.use(express.json());
 
 
@@ -205,7 +205,7 @@ app.use((req, res, next) => {
     //req.url = "/";
     //res.redirect('/');
     console.log("Path is ", req.url);
-    res.sendFile(path.resolve(__dirname, 'APL', 'build', 'index.html'));
+    res.sendFile(path.resolve(__dirname, 'ACA', 'build', 'index.html'));
   }
   else {
     next();
