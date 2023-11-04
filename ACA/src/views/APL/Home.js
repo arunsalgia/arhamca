@@ -620,7 +620,6 @@ export default function Home() {
 		<Typography className={gClasses.nonerror}>{downloadMessage}</Typography>
 		<br />
 		<ShowAdminJumpButtons />
-		<ShowJumpButtons />
 		<DisplayUpgrade/>
 		<BlankArea />
 	</div>
