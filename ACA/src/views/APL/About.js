@@ -25,9 +25,7 @@ import {BlankArea} from "CustomComponents/CustomComponents.js"
 import { DisplayPageHeader, DisplayVersion } from 'CustomComponents/CustomComponents.js';
 import {currentAPLVersion, latestAPLVersion} from "views/functions.js";
 import { blue, red } from '@material-ui/core/colors';
-import PsPage from "views/APL/PSPage";
-// import DisplayDemo from "views/APL/DisplayDemo"
-import APLPlayer from './VideoPlayer';
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -80,9 +78,7 @@ const useStyles = makeStyles((theme) => ({
 }));
   
 
-export function PlayVideo() {
 
-}
 export default function About() { 
   const classes = useStyles();
   const videoPlayer = useRef();

@@ -9,7 +9,7 @@ const {
 
 const { 
 	addNewUser, updateUser,
-	getNewSudentCode,
+	getNewSudentCode, getNewBatchCode,
 	timeToBlock, blockToTime, getWeeklyBlock
 } = require('./functions'); 
 
@@ -37,32 +37,87 @@ router.get('/list/enabled', async function (req, res, next) {
 })
 
 
-router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4/:parName/:parMobile', async function (req, res, next) {
+router.get('/add/:batchData', async function (req, res, next) {
   setHeader(res);
-  var {uName, uPassword, uEmail, mobileNumber, addr1, addr2, addr3, addr4, parName, parMobile } = req.params;
+  var { batchData } = req.params;
 
-	// first it as a user
-	var myStatus = await addNewUser(uName, uPassword, ROLE_STUDENT, uEmail, mobileNumber, addr1, addr2, addr3, addr4);
-	//console.log(myStatus);
-	if (myStatus.status != 0)
-		return senderr(res, myStatus.status, "Error");
+	batchData = JSON.parse(batchData);
 	
-	// user added. Now get Facilty id and add new fac
-	var sid = await getNewSudentCode();
+	console.log(batchData);
+	
+	// Now start basic validation
+	if (batchData.students.length == 0) {
+		return senderr(res, 601, "no studnets");
+	}
 
-	var studentRec = new Student({
-		sid: sid,
-		name: myStatus.userRec.displayName,
-		uid: myStatus.userRec.uid,
-		bid: "",				// Batch id is blank for unassigned
-		parentName: getDisplayName(parName),
-		parentMobile: parMobile,
-		enabled: true,   
+	if (batchData.sessions.length == 0) {
+		return senderr(res, 602, "no sessions");
+	}
+	
+	// cgeck all the students have not been assigned Batch
+	var sidList = [];
+	batchData.students.forEach( (studRec) => {
+		sidList.push(studRec.sid);
 	});
-	console.log(studentRec);
-  await studentRec.save();
-
-  sendok(res, studentRec ); 
+	var studentArray = await Student.find({sid: {$in: sidList} });
+	
+	studentArray.forEach( (studRec) => {
+		if (studRec.bid != "")  return senderr(res, 603, "students already assigned batch");
+	});
+	
+	// Now check for faculty if session is available
+	var allBatches = await Batch.find({fid: batchData.faculty.fid, enabled: true});
+	//console.log(allBatches);	
+	var facultyBlockList = getWeeklyBlock(allBatches);
+	
+	//console.log(facultyBlockList);
+	
+	// Now check for each session if the block is available
+	console.log("Checking blocks");
+	var totalBlocks = ( batchData.duration * MINUTES_IN_HOUR ) / BLOCK_IN_MINUTES;
+	console.log("Blocks", totalBlocks);
+	var sessionList = [];
+	console.log(batchData.sessions.length, batchData.sessions);
+	for(var sIdx=0; sIdx < batchData.sessions.length; ++sIdx) {
+		var sessRec = batchData.sessions[sIdx];
+		var hr = Number(sessRec.hour);
+		var mn = Number(sessRec.min) ;
+		sessionList.push({day: sessRec.day, hour: hr, minute: mn });			// will be put in batchrecord if all okay
+		var startBlock = timeToBlock(hr , mn);
+		var dayIdx = SHORTWEEKSTR.indexOf(sessRec.day);
+		console.log(dayIdx, startBlock);
+		for(var i=startBlock; i<(startBlock+totalBlocks); ++i) {
+			console.log(dayIdx, i, facultyBlockList[dayIdx][i]);
+			if (facultyBlockList[dayIdx][i] != "") return senderr(res, 604, "faculty block clash");			// faculty slot busy with another batch
+		}
+	};
+	
+	console.log("Now create new batch record");
+	
+	var newBatch = new Batch();
+	newBatch.sequence = SEQUENCE_CURRENT;
+	newBatch.bid = await getNewBatchCode(batchData.area);
+	newBatch.fid = batchData.faculty.fid;
+	newBatch.sessionCount = 0;
+	newBatch.fees = batchData.fees;
+	newBatch.sessionTime = totalBlocks;				// session of # number blocks
+	newBatch.batchStatus = "";  // future
+	newBatch.enabled = true;
+	newBatch.creationDate = new Date();	
+	newBatch.sid = sidList;
+	newBatch.timings = sessionList
+	
+	await newBatch.save();
+	
+	// Assign batch to studntes
+	for(var i=0; i<studentArray.length; ++i) {
+		studentArray[i].bid = newBatch.bid;
+		await studentArray[i].save();
+	};
+	
+	console.log(newBatch);
+	
+	sendok(res, newBatch ); 
 })
 
 router.get('/update/:usid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4/:parName/:parMobile', async function (req, res, next) {
@@ -82,62 +137,95 @@ router.get('/update/:usid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/
 	studentRec.parentName = getDisplayName(parName);
 	studentRec.parentMobile = parMobile;
   await studentRec.save();
-	
   sendok(res, studentRec ); 
 })
 
-
-router.get('/disabled/:sid', async function (req, res, next) {
+router.get('/delete/:bid', async function (req, res, next) {
   setHeader(res);
-  var {sid } = req.params;
+  var {bid } = req.params;
 
-	studentRec = await Student.findOne({sid: sid});
-	if (!studentRec) return senderr(res, 601, "Invalid SID");
+	batchRec = await Batch.findOne({bid: bid});
+	if (!batchRec) return senderr(res, 601, "Invalid BID");
+
+	await Batch.deleteOne({bid: bid});
+
+	studentArray = await Student.find({bid: batchRec.bid});
+	for(var i=0; i<studentArray.length; ++i) {
+		studentArray[i].bid = "";
+		await studentArray[i].save();
+	}
 	
-	// if student assign a batch then error
-	if (studentRec.bid != "") return senderr(res, 602, "Student batch in progress");
-	
-	studentRec.enabled = false;
-	studentRec.save();
-	
-	userRec = await User.findOne({uid: studentRec.uid});
-	userRec.enabled = false;
-	userRec.save();
-	
-  sendok(res, "Done" ); 
+  sendok(res, "Deleted" ); 
 })
 
-router.get('/enabled/:sid', async function (req, res, next) {
+router.get('/disabled/:bid', async function (req, res, next) {
   setHeader(res);
-  var {sid } = req.params;
+  var {bid } = req.params;
 
-	studentRec = await Student.findOne({sid: sid});
-	if (!studentRec) return senderr(res, 601, "Invalid SID");
+	batchRec = await Batch.findOne({bid: bid});
+	if (!batchRec) return senderr(res, 601, "Invalid BID");
+
+	batchRec.enabled = false;
+	await batchRec.save();
 	
-	studentRec.enabled = true;
-	studentRec.bid = "";
+	studentArray = await Student.find({bid: bid});
+	for(var i=0; i<studentArray.length; ++i) {
+		studentArray[i].bid = "";
+		await studentArray[i].save();
+	}
 	
-	studentRec.save();
+  sendok(res, batchRec ); 
+})
+
+router.get('/enabled/:bid', async function (req, res, next) {
+  setHeader(res);
+  var { bid } = req.params;
+
+	batchRec = await Batch.findOne({bid: bid});
+	console.log(batchRec);
+	if (!batchRec) return senderr(res, 601, "Invalid BID");
 	
-	userRec = await User.findOne({uid: studentRec.uid});
-	userRec.enabled = true;
-	userRec.save();
+	// Now verify studnets still available
+	studentArray = await Student.find({sid: {$in: batchRec.sid } });
+	for(var i=0; i<studentArray.length; ++i) {
+		if (studentArray[i].bid != "") return senderr(res, 602, "Invalid BID");
+	}
 	
-  sendok(res, "Done" ); 
+	// Now okay. Now assign batch to students
+	for(var i=0; i<studentArray.length; ++i) {
+		studentArray[i].bid = batchRec.bid;
+		await studentArray[i].save();
+	}
+
+	batchRec.enabled = true;
+	await batchRec.save();
+	
+  sendok(res, batchRec ); 
 })
 
 
-router.get('/getfaculyblock/:fid', async function (req, res, next) {
+router.get('/getfacultyblock/:fid', async function (req, res, next) {
   setHeader(res);
   
 	var { fid } = req.params;
 	
 	var allBatches = await Batch.find({fid: fid});
-	console.log(allBatches);
+	//console.log(allBatches);
 	
 	var facultyBlockList = getWeeklyBlock(allBatches);
 	
   sendok(res, facultyBlockList ); 
+})
+
+
+
+router.get('/testarea/:aid', async function (req, res, next) {
+  setHeader(res);
+  var {aid } = req.params;
+
+
+	var newBid = await getNewBatchCode(aid);
+  sendok(res, newBid ); 
 })
 
 
@@ -147,7 +235,5 @@ function senderr(res, errcode, errmsg) { res.status(errcode).send({error: errmsg
 function setHeader(res) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  _group = defaultGroup;
-  _tournament = defaultTournament;
 }
 module.exports = router;

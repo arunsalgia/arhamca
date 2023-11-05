@@ -51,12 +51,13 @@ router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:a
 	//console.log(myStatus.userRec);
 	//console.log(myStatus.userRec.displayName);
 	var facRec = new Faculty({
-      fid: fid,
-      name: myStatus.userRec.displayName,
-			uid: myStatus.userRec.uid,
-			batchCount: 0,
-      enabled: true,
-      
+		sequence: SEQUENCE_CURRENT,
+		fid: fid,
+		name: myStatus.userRec.displayName,
+		uid: myStatus.userRec.uid,
+		batchCount: 0,
+		enabled: true,
+		
     });
 	console.log(facRec);
   await facRec.save();
@@ -127,7 +128,5 @@ function senderr(res, errcode, errmsg) { res.status(errcode).send({error: errmsg
 function setHeader(res) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  _group = defaultGroup;
-  _tournament = defaultTournament;
 }
 module.exports = router;

@@ -27,10 +27,16 @@ import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomCompon
 
 import lodashSortBy from "lodash/sortBy";
 
+import {setTab} from "CustomComponents/CricDreamTabs.js"
+
+
+import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
+import SchoolIcon from '@material-ui/icons/School';
+import CancelIcon from '@material-ui/icons/Cancel';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
@@ -45,39 +51,24 @@ import VsRadio from "CustomComponents/VsRadio";
 import BatchAddEdit from "./BatchAddEdit";
 
 import {
-	ROLE_FACULTY , ROLE_STUDENT,
-	ALLSELCTIONS, BLANKCHAR,
-	
+	ROLE_FACULTY, ROLE_STUDENT,
+	ALLSELECTIONS, BLANKCHAR, STATUS_INFO,
 } from 'views/globals';
 
 export default function Batch() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
 	//const alert = useAlert();
+		
 	
-	const [currentSelection, setCurrentSelection] = useState(ALLSELCTIONS[0]);
+	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	const [mode, setMode] = useState("");
 	const [batchArray, setBatchArray] = useState([]);
 	const [masterBatchArray, setMasterBatchArray] = useState([]);
-	
-	const [userName, setUserName] = useState("");
-	const [email, setEmail] = useState("");
-	const [mobile, setMobile] = useState("");
 	const [batchRec, setBatchtRec] = useState(null);
-	const [userRec, setUserRec] = useState(null);
+
 	
-	
-	const [password, setPassword] = useState("");
-	const [role, setRole] = useState("Student");
-	const [area1, setArea1] = useState("");
-	const [area2, setArea2] = useState("");
-	const [area3, setArea3] = useState("");
-	const [area4, setArea4] = useState("");
-	const [parentName, setParentName] = useState("");
-	const [parentMobile, setParentMobile] = useState("");
-	
-	const [areaCode, setAreaCode] = useState("");
-	const [areaDesc, setAreaDesc] = useState("");
+
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
@@ -115,6 +106,16 @@ export default function Batch() {
 				console.log(e);
 			}
 		}
+		
+		var myData = sessionStorage.getItem("batchInfo");
+		if (myData) {
+			var tmp = JSON.parse(myData);
+			switch (tmp.status) {
+				case STATUS_INFO.OKAY:   alert(tmp.msg); break;
+				case STATUS_INFO.ERROR:  alert(tmp.msg); break;
+			}
+		}
+		sessionStorage.removeItem("batchInfo");
 		getAllBatch();
 		handleResize();
 		window.addEventListener('resize', handleResize);
@@ -165,91 +166,38 @@ export default function Batch() {
         );
       }
 
-  async function handleAddEditSubmit() {
-		//console.log("Add / Edit User");
-		var response;
-		var a1 = (area1 !== "") ? area1 : BLANKCHAR;
-		var a2 = (area2 !== "") ? area2 : BLANKCHAR;
-		var a3 = (area3 !== "") ? area3 : BLANKCHAR;
-		var a4 = (area4 !== "") ? area4 : BLANKCHAR;
-		var pName = (parentName !== "") ? parentName : BLANKCHAR;
-		var pMob = (parentMobile !== "") ? parentMobile : BLANKCHAR;
-		
-		try {
-			if (batchRec == null) {
-			// for add new user
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/add/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;
-				//console.log(myUrl);
-				var response = await axios.get(myUrl);
-				//console.log("axios done", response.data);
-				var tmp = masterBatchArray.concat([response.data]);
-				tmp = lodashSortBy(tmp, 'name');
-				setMasterBatchArray(tmp);
-				filterStudent(tmp, currentSelection);
-				setDrawer("");
-				alert("Successfully added details of " + userName);
-			}
-			else {
-				// for edit user
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/update/${batchRec.sid}/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;	
-				//console.log(myUrl);
-				var response = await axios.get(myUrl);
-				var tmp = masterBatchArray.filter(x => x.uid !== batchRec.uid);
-				tmp = tmp.concat([response.data])
-				tmp = lodashSortBy(tmp, 'name');
-				setMasterBatchArray(tmp);
-				filterStudent(tmp, currentSelection);
-				setDrawer("");
-				alert("Successfully edit details of " + userName);
-			}
-		}
-		catch (e) {
-			//alert.error("Error adding / updateing Area");
-			console.log("Error");
-			
-		}
+	function handleAddBatch() {
+		var batchInfo = {inUse: true, status: STATUS_INFO.ADD_BATCH, msg: "", record:  null };
+		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
 	}
 	
-	function handleAdd() {
-    console.log("In add");
-    setBatchtRec(null);
-		setMode("ADD");
-	}
-	
-	async function handleEdit(r) {
-		//console.log(r);
-    setBatchtRec(r);
-		// Now get the user record
-		var myUser;
-		try {
-			var resp = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/acagetbyid/${r.uid}`);
-			myUser = resp.data;
-			//console.log(myUser);
-			setUserRec(myUser);
-		}
-		catch (e) {
-			alert('Error while fetching user record');
-			setBatchtRec(null);
-			return;
-		}
-		setUserName(myUser.displayName);
-		setMobile(myUser.mobile);
-		setEmail(decrypt(myUser.email))
-		//setRole(r.role);
-		setPassword(decrypt(myUser.password));
-		setArea1(myUser.addr1);
-		setArea2(myUser.addr2);
-		setArea3(myUser.addr3);
-		setArea4(myUser.addr4);
-		setParentName(r.parentName);
-		setParentMobile(r.parentMobile);
-		setDrawer("Edit");
+	function handleAddSession(rec) {
+		var batchInfo = {inUse: true, status: STATUS_INFO.ADD_SESSION, msg: "", record:  rec, record2: null };
+		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		setTab(process.env.REACT_APP_BATCH_ADDEDITSESSION);
 	}
 	
 	function handleInfo(r) {
 		setBatchtRec(r);
 		setDrawerDetail("detail");
 	}
+
+	async function handleDeleteBatch(rec) {
+		try {
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/delete/${rec.bid}`;
+			const response = await axios.get(myUrl);
+			var allRec  = batchArray.filter(x => x.bid !== rec.bid);
+			setMasterBatchArray(allRec);
+			filterBatch(allRec, currentSelection);
+			alert(`Successfull deleted batch ${rec.bid}`);
+		} catch (e) {
+			console.log(e);
+			alert("Error deleting batch");
+		}
+	}
+
+
 
 	function DisplayAllToolTips() {
 	return(
@@ -264,39 +212,35 @@ export default function Batch() {
 		return null; //<Tooltip className={gClasses.tooltip} backgroundColor='#42EEF9' borderColor='black' arrowColor='blue' textColor='black' key={props.id} type="info" effect="float" id={props.id} multiline={true}/>
 	}
 	
-	async function handleDisableStudent(x) {
-		let myRec = masterBatchArray.find(rrr => rrr.sid === x.sid);
-		if (myRec.bid != "") {
-			alert(`Student ${myRec.name} has batche ${myRec.bid} in progress.`);
-			return;
-		}
+	async function handleDisableBatch(rec) {
+		let myRec = masterBatchArray.find(x => x.bid === rec.bid);
 		try {
-			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/disabled/${myRec.sid}`);
+			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/disabled/${myRec.bid}`);
 			myRec.enabled = false;
 			var allRec  = [].concat(masterBatchArray)
 			setMasterBatchArray(allRec);
-			filterStudent(allRec, currentSelection);
+			filterBatch(allRec, currentSelection);
 		}
 		catch (e) {
 			// error 
 			console.log(e);
-			alert("Error disabling student "+x.name);
+			alert("Error disabling batch "+ rec.bid);
 		}
 	}
 
-	async function handleEnableStudent(x) {
-		let myRec = masterBatchArray.find(rrr => rrr.sid === x.sid);
+	async function handleEnableBatch(rec) {
+		let myRec = masterBatchArray.find(x => x.bid === rec.bid);
 		try {
-			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/enabled/${myRec.sid}`);
+			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabled/${myRec.bid}`);
 			myRec.enabled = true;
 			var allRec  = [].concat(masterBatchArray)
 			setMasterBatchArray(allRec);
-			filterStudent(allRec, currentSelection);
+			filterBatch(allRec, currentSelection);
 		}
 		catch (e) {
 			// error 
 			console.log(e);
-			alert("Error disabling student "+x.name);
+			alert("Error enabling batch "+rec.bid);
 		}
 	}
 
@@ -340,14 +284,16 @@ export default function Batch() {
 						<TableCell className={myClasses} p={0} >{tList.join()}</TableCell>
 						<TableCell className={myClasses} p={0} >{x.sessionCount}</TableCell>
 						<TableCell className={myClasses} p={0} >
-							<EditIcon color="primary" size="small" onClick={() => {handleEdit(x)}}  />
-							<InfoIcon color="primary" size="small" onClick={() => {handleInfo(x)}}  />
+							<IconButton color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
+							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 							{(x.enabled) &&
-								<IndeterminateCheckBoxIcon color="primary" size="small" onClick={() => {handleDisableStudent(x)}}  />							
+								<IconButton color="primary" size="small" onClick={() => {handleDisableBatch(x)}} ><IndeterminateCheckBoxIcon /></IconButton>
 							}
 							{(!x.enabled) &&
-								<CheckBoxIcon color="primary" size="small" onClick={() => {handleEnableStudent(x)}}  />							
+								<IconButton color="primary" size="small" onClick={() => {handleEnableBatch(x)}} ><CheckBoxIcon /></IconButton>						
 							}
+							<IconButton color="primary" disabled={!x.enabled}size="small" onClick={() => {handleAddSession(x)}} ><SchoolIcon /></IconButton>
+							<IconButton disabled={x.sessionCount > 0} color="secondary" size="small" onClick={() => {handleDeleteBatch(x)}} ><CancelIcon /></IconButton>
 						</TableCell>
 					</TableRow>
 				)})}
@@ -358,7 +304,7 @@ export default function Batch() {
 
 	}
 	
-	function filterStudent(masterArray, x) {
+	function filterBatch(masterArray, x) {
 		switch (x) {
 			case "Disabled":  setBatchArray(masterArray.filter(x => !x.enabled ));  break;
 			case "Enabled":   setBatchArray(masterArray.filter(x => x.enabled ));  break;
@@ -368,7 +314,7 @@ export default function Batch() {
 	
 	function selectAll(x) {
 		setCurrentSelection(x);
-		filterStudent(masterBatchArray, x);
+		filterBatch(masterBatchArray, x);
 	}
 	
 	// style={{marginTop: "5px" }}  
@@ -376,13 +322,13 @@ export default function Batch() {
 	return (
 	<Grid key="Options" className={gClasses.noPadding} container alignItems="center" >
 		<Grid  item xs={3} sm={2} md={2} lg={1} >
-			<VsSelect size="small" align="center" label="Selection" options={ALLSELCTIONS} value={currentSelection} onChange={(event) => { selectAll(event.target.value)}} />
+			<VsSelect size="small" align="center" label="Selection" options={ALLSELECTIONS} value={currentSelection} onChange={(event) => { selectAll(event.target.value)}} />
 		</Grid>
 		<Grid align="left"  item xs={6} sm={7} md={8} lg={10} >
 			<span></span>
 		</Grid>
 		<Grid  item xs={3} sm={3} md={2} lg={1} >
-			<VsButton name="New Batch" align="right" onClick={handleAdd} />
+			<VsButton name="New Batch" align="right" onClick={handleAddBatch} />
 		</Grid>
 	</Grid>
 	)}
@@ -395,72 +341,6 @@ export default function Batch() {
 			<DisplayOptions />
 			<DisplayAllBatch/>
 			{/*<DisplayAllToolTips />*/}
-			<Drawer anchor="right" variant="temporary" open={drawer !== ""}>
-			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
-				<VsCancel align="right" onClick={() => { setDrawer("")}} />
-				<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditSubmit}>
-					<Typography className={gClasses.title}>{drawer+" Student "}</Typography>	
-					<br />
-					<TextValidator enable={(drawer == "New") ? "true" : "false"}  variant="outlined" required fullWidth id="userName" label="User Name" name="username"
-						validators={['required', 'minLength', 'noSpecialCharacters']}
-						errorMessages={['User Name to be provided', 'Mimumum 6 characters required', ]}
-						value={userName} onChange={() => { setUserName(event.target.value) }}
-					/>
-					<BlankArea/>
-					{/*<VsSelect fullWidth align="center" label="Role" options={ALLROLES} value={role} onChange={(event) => { setRole(event.target.value)}} />*/}
-					<BlankArea/>
-					<TextValidator variant="outlined" required fullWidth id="emaild" label="Email" name="Email"
-						validators={['isEmailOK', 'required']}
-						errorMessages={['Invalid Email', 'Email to be provided']}
-						value={email} onChange={(event) => setEmail(event.target.value)}
-					/>
-					<BlankArea/>
-					<TextValidator variant="outlined" required fullWidth label="Mobile" name="mobile"
-						validators={['required', 'mobile']}
-						errorMessages={[, 'Mobile to be provided', '10 digit mobile number required']}
-						value={mobile} onChange={(event) => setMobile(event.target.value)}
-					/>
-					<br />
-					<TextValidator variant="outlined" required fullWidth label="Password" name="password"
-						validators={['required', 'minLength', 'noSpecialCharacters']}
-						errorMessages={['Password to be provided', 'Mimumum 6 characters required', ]}
-						value={password} onChange={(event) => setPassword(event.target.value)}
-					/>
-					<br />
-					<TextValidator variant="outlined" required fullWidth label="Address 1" name="Addr1"
-						validators={['required']}
-						errorMessages={['Addres line 1 to be provided']}
-						value={area1} onChange={(event) => setArea1(event.target.value)}
-					/>
-					<br />
-					<TextValidator variant="outlined"  fullWidth label="Address 2" name="Addr2"
-						value={area2} onChange={(event) => setArea2(event.target.value)}
-					/>
-					<br />
-					<TextValidator variant="outlined"  fullWidth label="Address 3" name="Addr3"
-						value={area3} onChange={(event) => setArea3(event.target.value)}
-					/>
-					<br />
-					<TextValidator variant="outlined"  fullWidth label="Address 4" name="Addr4"
-						value={area4} onChange={(event) => setArea4(event.target.value)}
-					/>
-					<br />
-					<TextValidator variant="outlined"  fullWidth label="Parent Name" name="pName"
-						value={parentName} onChange={(event) => setParentName(event.target.value)}
-					/>
-					<br />
-					<TextValidator variant="outlined" required fullWidth label="Parent Mobile" name="mobile"
-						validators={['required', 'mobile']}
-						errorMessages={[, 'Mobile to be provided', '10 digit mobile number required']}
-						value={parentMobile} onChange={(event) => setParentMobile(event.target.value)}
-					/>
-					<ShowResisterStatus />
-					<br />
-					<VsButton name={(drawer == "New") ? "Add" : "Update"} />
-				</ValidatorForm>
-				<ValidComp p1={password}/>   
-			</Box>
-			</Drawer>
 		</div>
 		}
 		{(mode !== "") &&

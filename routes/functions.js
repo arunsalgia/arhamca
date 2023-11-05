@@ -18,11 +18,10 @@ function blockToTime(blk) {
 
 function getWeeklyBlock(allBatches) {
 
-	console.log(allBatches);
-	
-	
 	var facultyBlockList = [].concat(BLOCKWEEKSTRLIST);
-
+	
+	console.log(facultyBlockList.length);
+	console.log("totla batches: ", allBatches.length);
 	allBatches.forEach( (dayBatch) => {
 		//console.log(dayBatch.sessionTime);
 		dayBatch.timings.forEach( (sess) => {
@@ -31,7 +30,7 @@ function getWeeklyBlock(allBatches) {
 			var startBlock = timeToBlock(sess.hour, sess.minute);
 			//console.log(dayIndex, startBlock);
 			for(var i=0; i < dayBatch.sessionTime; ++i) {
-				//console.log(dayIndex,startBlock + i)
+				console.log(dayIndex, startBlock + i, dayBatch.bid);
 				facultyBlockList[dayIndex][startBlock + i] = dayBatch.bid;
 			}
 		});
@@ -151,8 +150,8 @@ async function updateUser(uUid, uName, uPassword, uRole, uEmail, mobileNumber, a
 
 async function getNewFacultyCode() {
 	lastRec = await Faculty.find({}).limit(1).sort({ "fid": -1 });
-	console.log(lastRec[0]);
-	console.log("Number is ", lastRec[0].fid.slice(-5));
+	console.log(lastRec.length);
+	//console.log("Number is ", lastRec[0].fid.slice(-5));
 	var facultyNumber = ((	lastRec.length > 0 ) ? Number(lastRec[0].fid.slice(-5)) + 1 : 1).toString();
 	console.log(facultyNumber.length);
 	console.log(facultyNumber)
@@ -171,9 +170,9 @@ async function getNewSudentCode() {
 }
 
 async function getNewBatchCode(area) {
-	lastRec = await Batch.find({bid: /^`${area}`/}).limit(1).sort({ "bid": -1 });
-	console.log(lastRec[0]);
-	//console.log("Number is ", lastRec[0].sid.slice(-5));
+	lastRec = await Batch.find({bid: new RegExp('^' + area ) }).limit(1).sort({ "bid": -1 });
+	console.log(lastRec);
+	//console.log("Number is ", lastRec[0].bid.slice(-5));
 	var batchNumber = ((	lastRec.length > 0 ) ? Number(lastRec[0].bid.slice(-5)) + 1 : 1).toString();
 	console.log(batchNumber.length);
 	console.log(batchNumber)

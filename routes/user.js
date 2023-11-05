@@ -1,13 +1,8 @@
 router = express.Router();
 router = express.Router();
 const { encrypt, decrypt, dbencrypt, dbdecrypt, dbToSvrText, 
-  akshuGetGroup, akshuUpdGroup, akshuGetGroupMembers,
-  akshuGetAuction, akshuGetTournament,
-  getTournamentType,
   svrToDbText, getLoginName, getDisplayName, 
 	sendCricMail, sendCricHtmlMail,
-  akshuGetUser, akshuUpdUser,
-	getUserBalance,
   getMaster, setMaster,
 } = require('./cricspecial'); 
 
@@ -15,13 +10,6 @@ const {
 	addNewUser, updateUser,
 } = require('./functions'); 
 
-const is_Captain = true;
-const is_ViceCaptain = false;
-const WITH_CVC  = 1;
-const WITHOUT_CVC = 2;
-
-var _group;
- 
 
 /* GET all users listing. */
 router.get('/', function (req, res, next) {
@@ -57,16 +45,6 @@ router.get('/suencrypt/:text', async function (req, res, next) {
 });
 
 
-
-// get users belonging to group "mygroup"
-router.get('/group/:mygroup', async function (req, res, next) {
-  // CricRes = res;
-  setHeader(res);
-
-  var { mygroup } = req.params;
-  if (isNaN(mygroup)) { senderr(res, 601, `Invalid group number ${mygroup}`); return; }
-  showGroupMembers(res, parseInt(mygroup));
-});
 
 router.get('/encrypt/:text', function (req, res, next) {
   // CricRes = res;
@@ -1423,8 +1401,6 @@ function senderr(res, errcode, errmsg) { res.status(errcode).send({error: errmsg
 function setHeader(res) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  _group = defaultGroup;
-  _tournament = defaultTournament;
 }
 module.exports = router;
 

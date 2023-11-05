@@ -6,7 +6,7 @@ import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
-//import { useAlert } from 'react-alert';
+import { useAlert } from 'react-alert';
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
 
@@ -27,6 +27,7 @@ import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomCompon
 
 import lodashSortBy from "lodash/sortBy";
 
+import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
@@ -44,7 +45,7 @@ import VsRadio from "CustomComponents/VsRadio";
 
 //const ALLROLES = ["Student", "Faculty", "Admin"];
 
-const ALLSELCTIONS = ["All", "Enabled", "Disabled" ];
+const ALLSELECTIONS = ["All", "Enabled", "Disabled" ];
 const BLANKCHAR = "-";
 
 export default function Faculty() {
@@ -52,7 +53,7 @@ export default function Faculty() {
 	const gClasses = globalStyles();
 	//const alert = useAlert();
 	
-	const [currentSelection, setCurrentSelection] = useState(ALLSELCTIONS[0]);
+	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	
 	const [facultyArray, setFacultyArray] = useState([]);
 	const [masterFacultyArray, setMasterFacultyArray] = useState([]);
@@ -326,13 +327,13 @@ export default function Faculty() {
 						<TableCell className={myClasses} p={0} >{x.name}</TableCell>
 						<TableCell className={myClasses} p={0} >{x.batchCount}</TableCell>
 						<TableCell className={myClasses} p={0} >
-							<EditIcon disabled={x.batchCount > 0} color="primary" size="small" onClick={() => {handleEdit(x)}}  />
-							<InfoIcon color="primary" size="small" onClick={() => {handleInfo(x)}}  />
+							<IconButton disabled={!x.enabled} color="primary" size="small" onClick={() => {handleEdit(x)}}  ><EditIcon /></IconButton>
+							<IconButton disabled={!x.enabled} color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 							{(x.enabled) &&
-								<IndeterminateCheckBoxIcon color="primary" size="small" onClick={() => {handleDisableFaculty(x)}}  />							
+								<IconButton  disabled={x.batchCount > 0} color="primary" size="small" onClick={() => {handleDisableFaculty(x)}} ><IndeterminateCheckBoxIcon  /></IconButton>
 							}
 							{(!x.enabled) &&
-								<CheckBoxIcon color="primary" size="small" onClick={() => {handleEnableFaculty(x)}}  />							
+								<IconButton color="primary" size="small" onClick={() => {handleEnableFaculty(x)}} ><CheckBoxIcon /></IconButton>
 							}
 						</TableCell>
 					</TableRow>
@@ -362,7 +363,7 @@ export default function Faculty() {
 	return (
 	<Grid key="Options" className={gClasses.noPadding} container alignItems="center" >
 		<Grid  item xs={3} sm={2} md={2} lg={1} >
-			<VsSelect size="small" align="center" label="Selection" options={ALLSELCTIONS} value={currentSelection} onChange={(event) => { selectAll(event.target.value)}} />
+			<VsSelect size="small" align="center" label="Selection" options={ALLSELECTIONS} value={currentSelection} onChange={(event) => { selectAll(event.target.value)}} />
 		</Grid>
 		<Grid align="left"  item xs={6} sm={7} md={8} lg={10} >
 			<span></span>
@@ -431,7 +432,7 @@ export default function Faculty() {
 					<br />
 					<ShowResisterStatus />
 					<br />
-					<VsButton name={(drawer == "New") ? "Add" : "Update"} />
+					<VsButton name={(drawer == "New") ? "Add Batch" : "Update Batch"} />
 				</ValidatorForm>
 				<ValidComp p1={password}/>   
 			</Box>

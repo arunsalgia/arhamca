@@ -19,55 +19,32 @@ import HomeIcon from '@material-ui/icons/Home';
 import MenuIcon from '@material-ui/icons/Menu';
 import Button from '@material-ui/core/Button';
 
-/*
-import Switch from '@material-ui/core/Switch';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from '@material-ui/core/FormGroup';
-*/
-
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu'; 
 import {red, blue, green, deepOrange} from '@material-ui/core/colors';
 import Divider from '@material-ui/core/Divider';
 /// cd items import
-import Dash from "views/Dashboard/Dashboard"
-//import Stats from "views/Statistics/Statistics"
-import MyTeam from "views/MyTeam/MyTeam"
-import Auction from "views/Auction/Auction"
 
 import Area from "views/Area/Area"
 import User from "views/User/User"
 import Faculty	 from "views/Faculty/Faculty"
 import Student	 from "views/Student/Student"
 import Batch	 from "views/Batch/Batch"
+import BatchAddEdit	 from "views/Batch/BatchAddEdit"
+import SessionAddEdit	 from "views/Session/SessionAddEdit"
 
 
-import Match from "views/UpcomingMatch/UpcomingMatch"
-import Group from "views/Group/Group"
 import AdminWallet from "views/Wallet/AdminWallet"
 import Wallet from "views/Wallet/Wallet.js"
 import Update from "views/UpgradeToPro/Update.js"
 import AddWallet from "views/Wallet/AddWallet";
 import WithdrawWallet from "views/Wallet/WithdrawWallet";
-// import KycBank from "views/Wallet/KycBank";
-// import KycDocs from "views/Wallet/KycDocs";
 
-//import PlayerInfo from "views/APL/PlayerInfo";
-import PlayerStat from "views/PlayerStat/PlayerStat";
-// import Profile from "views/Profile/Profile.js"
 import Profile from "views/Profile/UserProfile"
 import ChangePassword from "views/Login/ChangePassword.js"
 import About from "views/APL/About.js";
-import HowToPlay from "views/APL/HowToPlay.js";
 import Home from "views/APL/Home.js";
 import ContactUs from "views/APL/ContactUs.js";
-import PointSystem from "views/APL/PointSystem.js";
-import SU_Tournament from "views/SuperUser/Tournament.js" 
-import SU_Player from "views/SuperUser/Player.js" 
-import SU_Image from "views/SuperUser/Image.js" 
-import NewGroup from "views/Group/NewGroup.js"
-import JoinGroup from "views/Group/JoinGroup.js"
-import GroupDetails from "views/Group/GroupDetails.js"
 import Modal from 'react-modal';
 // import download from 'js-file-downloader';
 import { BlankArea } from './CustomComponents';
@@ -318,7 +295,8 @@ export function AcaTabs() {
 	const handleStudent = () => { handleClose(); setMenuValue(9003);}
 	const handleFaculty = () => { handleClose(); setMenuValue(9004);}
 	const handleBatch = () => { handleClose(); setMenuValue(9005);}
-	
+	const handleBatchAddEdit = () => { handleClose(); setMenuValue(90051);}
+	const handleSessionAddEdit = () => { handleClose(); setMenuValue(90052);}
 	
   const handleMatch = () => { handleClose(); setMenuValue(101);}
   const handleAuction = () => { handleClose(); setMenuValue(102);}
@@ -353,12 +331,12 @@ export function AcaTabs() {
   };
 
   function Show_Supervisor_Options() {
-    if (sessionStorage.getItem("userPlan") == process.env.REACT_APP_SUPERUSER) {  
+    if (true) {  //sessionStorage.getItem("userPlan") == process.env.REACT_APP_SUPERUSER) {  
       return (
         <div>
-        <MenuItem onClick={handleSuTournament}>SU Tournament</MenuItem>
-        <MenuItem onClick={handleSuPlayer}>SU Player</MenuItem>
-        <MenuItem onClick={handleAdminWallet}>SU Wallet</MenuItem>
+        <MenuItem onClick={handleBatch}>Batch</MenuItem>
+        <MenuItem onClick={handleFaculty}>Faculty</MenuItem>
+        <MenuItem onClick={handleStudent}>Student</MenuItem>
         {/* <MenuItem onClick={handleSuImage}>SU Load Image</MenuItem> */}
         <Divider />
         </div>)
@@ -368,41 +346,26 @@ export function AcaTabs() {
   }
 
   function DisplayCdItems() {
-		console.log(value);
+		//console.log(value);
     switch(value) {
-      case 1: return <Dash/>; 
-      //case 2: return <Stats/>;			This has been replaced by Player Stat
-      case 3: return <MyTeam />;
       case 4: return <Home />;
-      case 101: return <Match />;
-      case 102: return <Auction />;
-      case 103: return <Captain />;
-      case 104: return <Group />;
       case 105: return <Wallet />;
       case 106: return <Profile />;
       case 107: return <ChangePassword />;
       case 108: return <AddWallet />
       case 109: return <WithdrawWallet />
-      // case 110: return <KycBank />;
-      // case 111: return <KycDocs />
-      case 201: return <HowToPlay />;
       case 202: return <ContactUs />;
-      case 203: return <PointSystem />;
 			case 204: return <About />;
-      case 301: return <SU_Tournament />;
-      case 302: return <SU_Player />;
-      case 303: return <SU_Image />;
       case 304: return <Update />;
-      case 1001: return <NewGroup />;
-      case 1002: return <JoinGroup />;
-      case 1003: return <GroupDetails />;
-      case 1004: return <PlayerStat />;
       case 1005: return <AdminWallet />;
 			case 9001: return <Area />;
 			case 9002: return <User />;
 			case 9003: return <Student />;
 			case 9004: return <Faculty />;
 			case 9005: return <Batch />;
+			case 90051: return <BatchAddEdit />;
+			case 90052: return <SessionAddEdit />;
+			
       default: return  null;
     }
   }
@@ -478,7 +441,7 @@ export function AcaTabs() {
   let mylogo = `${process.env.PUBLIC_URL}/APLLOGO1.ICO`;
   let groupCharacter="G";
   let currencyChar = 'Pts';  //'₹';
-	console.log(value);
+	//console.log(value);
   let myName = sessionStorage.getItem("userName");
   return (
     <div className={classes.root}>
@@ -512,14 +475,14 @@ export function AcaTabs() {
             </div>
           )}
 					<HomeIcon className={classes.icon} onClick={handleHome} />
-          <Button color="inherit" className={classes.dashButton} onClick={handleDash}>DashBoard</Button>
-          <Button color="inherit" className={classes.statButton} onClick={handlePlayerStat}>Stats</Button>
-          <Button color="inherit" className={classes.teamButton} onClick={handleTeam}>Team</Button>
+          <Button color="inherit" className={classes.dashButton} onClick={handleBatch}>Batch</Button>
+          <Button color="inherit" className={classes.statButton} onClick={handleFaculty}>Faculty</Button>
+          <Button color="inherit" className={classes.teamButton} onClick={handleStudent}>Student</Button>
 					<Avatar 
             aria-label="account of current user"
             aria-controls="user-appbar"
             aria-haspopup="true"
-            onClick={handlePointSystem}
+            onClick={handleUser}
             color="inherit"
             variant="circular" className={classes.avatar1}>{currencyChar}
           </Avatar>

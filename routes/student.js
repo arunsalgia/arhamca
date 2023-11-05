@@ -53,6 +53,18 @@ router.get('/list/freeorbatch/:bid', async function (req, res, next) {
   sendok(res, allRecs ); 
 })
 
+router.get('/list/selected/:studentList', async function (req, res, next) {
+  setHeader(res);
+	
+	var {studentList} = req.params;
+	console.log(studentList);
+	var studentArray = studentList.split(",");
+	console.log(studentArray);
+	var allRecs = await Student.find({sid: {$in: studentArray}, enabled: true }).sort({name: 1});
+	console.log(allRecs);
+  sendok(res, allRecs ); 
+})
+
 
 router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4/:parName/:parMobile', async function (req, res, next) {
   setHeader(res);
@@ -68,6 +80,7 @@ router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:a
 	var sid = await getNewSudentCode();
 
 	var studentRec = new Student({
+		sequence: SEQUENCE_CURRENT,
 		sid: sid,
 		name: myStatus.userRec.displayName,
 		uid: myStatus.userRec.uid,
@@ -149,7 +162,6 @@ function senderr(res, errcode, errmsg) { res.status(errcode).send({error: errmsg
 function setHeader(res) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  _group = defaultGroup;
-  _tournament = defaultTournament;
+
 }
 module.exports = router;

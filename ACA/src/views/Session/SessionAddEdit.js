@@ -57,13 +57,16 @@ import {
 	
 } from 'views/globals';
 
-var origBatchRec = null;
 var mode = "ADD";
 
-export default function BatchAddEdit() {
+export default function SessionAddEdit() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
 	//const alert = useAlert();
+	
+	const [origSessionRec, setOrigSessionRec] = useState(null);
+	const [origBatchRec, setOrigBatchRec] = useState(null);
+	const [origBid, setOrigBid] = useState("");
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	
@@ -72,6 +75,9 @@ export default function BatchAddEdit() {
 	const [batchArray, setBatchArray] = useState([]);
 	const [facultyArray, setFacultyArray] = useState([]);
 	const [masterBatchArray, setMasterBatchArray] = useState([]);
+	
+	const [sessionNumber, setSessionNumber] = useState("NEW");
+	
 	
 	const [userName, setUserName] = useState("");
 	const [email, setEmail] = useState("");
@@ -133,14 +139,13 @@ export default function BatchAddEdit() {
 			}
 		}
 		
-		async function getAllStudents() {
+		async function getAllStudents(sidList) {
 		try {
-			var subfun = (mode == "EDIT") ? "list/freeorbatch/" + origBatchRec.bid :  "list/free";
-			console.log(subfun);
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/${subfun}`;
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/list/selected/${sidList}`;
 			const response = await axios.get(myUrl);
-			//console.log(response.data);
+			console.log(response.data);
 			setStudentArray(response.data);
+			
 		} catch (e) {
 			console.log(e);
 			alert("Error Fetching Studnets");
@@ -160,29 +165,37 @@ export default function BatchAddEdit() {
 		}
 	}
 
+		console.log("IN session");
 		// get the data
+		var sList = [];
 		var myData = sessionStorage.getItem("batchInfo");
 		if (!myData) {
 			alert("Direct call not permitted");
 			setTab(process.env.REACT_APP_BATCH);
 		}
 		var tmp = JSON.parse(myData);
-		if (tmp.status === STATUS_INFO.ADD_BATCH) {
+		if (tmp.status === STATUS_INFO.ADD_SESSION) {
 			mode = "ADD";
-			origBatchRec = null;
+			setOrigBatchRec(tmp.record);
+			setOrigSessionRec(tmp.record2);
+			setOrigBid(tmp.record.bid);
+			sList = tmp.record.sid;
 		}
-		else if (tmp.status === STATUS_INFO.EDIT_BATCH) {
+		else if (tmp.status === STATUS_INFO.EDIT_SESSION) {
 			mode = "EDIT";
-			origBatchRec = tmp.record;
+			setOrigBatchRec(tmp.record);
+			setOrigBid(tmp.record.bid);
+			setOrigSessionRec(tmp.record2);
+			sList = sList;
 		} 
 		else {
-			alert("Invalid sttaus battch");
+			alert("Invalid staus session");
 			setTab(process.env.REACT_APP_BATCH);
 		}
 		sessionStorage.removeItem("batchInfo");
-		getAllAreas();
-		getAllFaculty();
-		getAllStudents()
+		//getAllAreas();
+		//getAllFaculty();
+		getAllStudents(sList)
 		
 		handleResize();
 		window.addEventListener('resize', handleResize);
@@ -535,112 +548,45 @@ return (
 )}
 	
 	//console.log(dispType);
+	//if (origBatchRec == null) return (<BlankArea>);
+	
 	return (
 	<div align="center">
-		<DisplayPageHeader headerName="Add new Batch" groupName="" tournament="" />
+		<DisplayPageHeader headerName={(mode == "ADD") ? `Add session of ${origBid}` : `Edit Session`} groupName="" tournament="" />
 		<br />
 		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
 			<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditSubmit}  >
 			<Grid key="ADDEDITBATCH" className={gClasses.noPadding} container alignItems="flex-start" >
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography className={gClasses.info18Blue} >Area</Typography>
+					<Typography className={gClasses.info18Blue} >Session Date</Typography>
 				</Grid>
 				<Grid item xs={6} sm={6} md={3} lg={3} >
 					<VsSelect size="small" align="center" options={areaArray} field="longName" value={newArea} onChange={(event) => { setNewArea(event.target.value)}} />			
 				</Grid>
-				{((dispType == "xs") || (dispType == "sm")) &&
-					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				}
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography className={gClasses.info18Blue} >Faculty</Typography>
-				</Grid>
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<VsSelect size="small" align="center" options={facultyArray} field="name" value={newFaculty} onChange={(event) => { setNewFaculty(event.target.value)}} />			
-				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography className={gClasses.info18Blue} >Fees</Typography>
-				</Grid>
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<TextValidator variant="outlined" required name="auctioncoins" type="number"
-						value={newFess} onChange={(event) => setNewFees(event.target.value)}
-						validators={['required', 'minNumber:0', 'maxNumber:10000', 'isNumeric']}
-						errorMessages={['Session fees to be provided', 'Fees cannot be less than 0', 'Fees cannot be more than 10000',NOFRACTION ]}
-					/>
-				</Grid>
-				{((dispType == "xs") || (dispType == "sm")) &&
-					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				}
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography className={gClasses.info18Blue} >Duration</Typography>
-				</Grid>
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<VsSelect size="small" align="center" options={SESSIONHOURSTR} value={sessHour} onChange={(event) => { setSessHour(event.target.value)}} />			
-				</Grid>
-				{((dispType == "xs") || (dispType == "sm")) &&
-					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				}
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={8} sm={8} md={10} lg={10} >
-					<Typography className={gClasses.info18Blue}>Students in the Batch</Typography>
-				</Grid>
-				<Grid  item xs={4} sm={4} md={2} lg={2} >
-					<VsButton type="button" name="Add student" onClick={handleAddStudent} />
+				<Grid item xs={12} sm={12} md={12} lg={12} >
+					<Typography className={gClasses.info18Blue}>Studnets Attendance</Typography>
 				</Grid>
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} >
 					<Table  align="center">
 					<TableHead p={0}>
 					<TableRow key="header" align="center">
-						<TableCell className={gClasses.th} p={0} align="center">Name</TableCell>
+						<TableCell className={gClasses.th} p={0} align="center">Student</TableCell>
 						<TableCell className={gClasses.th} p={0} align="center">Code</TableCell>
-						<TableCell className={gClasses.th} p={0} align="center"></TableCell>
+						<TableCell className={gClasses.th} p={0} align="center">Present</TableCell>
 					</TableRow>
 					</TableHead>
 					<TableBody p={0}>
-						{batchStudents.map(x => {
+						{studentArray.map(x => {
 								var myClasses = gClasses.td;
 							return (
 							<TableRow key={x.sid} align="center">
 								<TableCell align="center" className={myClasses} p={0} >{x.name}</TableCell>
 								<TableCell align="center" className={myClasses} p={0} >{x.sid}</TableCell>
 								<TableCell align="center" className={myClasses} p={0} >
-									<IconButton color="primary"  size="small" onClick={() => {handleEditStudent(x)}} ><EditIcon /> </IconButton>
-									<IconButton color="secondary"  size="small" onClick={() => {handleDelStudent(x)}} ><CancelIcon /> </IconButton>
-								</TableCell>
-							</TableRow>
-						)})}
-					</TableBody>
-					</Table>
-				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={8} sm={8} md={10} lg={10} >
-					<Typography className={gClasses.info18Blue}>Session details (per week)</Typography>
-				</Grid>
-				<Grid  item xs={4} sm={4} md={2} lg={2} >
-					<VsButton type="button" name="Add Session" onClick={handleAddSession} />
-				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} >
-					<Table  align="center">
-					<TableHead p={0}>
-					<TableRow key="header" align="center">
-						<TableCell className={gClasses.th} p={0} align="center">Day</TableCell>
-						<TableCell className={gClasses.th} p={0} align="center">Time</TableCell>
-						<TableCell className={gClasses.th} p={0} align="center"></TableCell>
-					</TableRow>
-					</TableHead>
-					<TableBody p={0}>
-						{batchSessions.map( x => {
-								var myClasses = gClasses.td;
-								var timStr = `${x.hour}:${x.min}`;
-							return (
-							<TableRow key={x.sessid} align="center">
-								<TableCell align="center"  className={myClasses} p={0} >{x.day}</TableCell>
-								<TableCell align="center"  className={myClasses} p={0} >{timStr}</TableCell>
-								<TableCell align="center"  className={myClasses} p={0} >
-									<IconButton color="primary"  size="small" onClick={() => {handleEditSession(x)}} ><EditIcon /> </IconButton>
-									<IconButton color="secondary"  size="small" onClick={() => {handleDelSession(x)}} ><CancelIcon /> </IconButton>
+									<span>Present</span>
 								</TableCell>
 							</TableRow>
 						)})}
@@ -661,59 +607,7 @@ return (
 			</Grid>
 			</ValidatorForm>
 			<ValidComp />   
-		</Box>
-		<Drawer anchor="right" variant="temporary" open={drawer != ""}>
-			<Box style={{margin: "20px"}} margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
-				<VsCancel align="right" onClick={() => { setDrawer("")}} />
-				<br />
-				<br />
-				{((drawer === "ADDSTUDENT") || (drawer === "EDITSTUDENT")) &&
-					<div align="center">
-					<Typography className={gClasses.info18Blue} >{((drawer === "ADDSESSION") ? "Add" : "Edit") +  " Student"}</Typography>
-					<br />
-					<br />
-					<VsSelect size="small" align="center" options={studentArray} field="name" value={newStudent} onChange={(event) => { setNewStudent(event.target.value)}} />			
-					<br />
-					<ShowResisterStatus />
-					<br />
-					<VsButton type="button" name="Submit Student" onClick={handleAddEditSubmitStudent} />
-					</div>
-				}
-				{((drawer === "ADDSESSION") || (drawer === "EDITSESSION")) &&
-					<div align="center">
-					<Typography className={gClasses.info18Blue} >{((drawer === "ADDSESSION") ? "Add" : "Edit") + " Session"}</Typography>
-					<br />
-					<Grid style={{margin: "10px"}} key="ADDSESSION" className={gClasses.noPadding} container alignItems="flex-start" >
-						<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-						<Grid item xs={6} sm={6} md={6} lg={6} align="left" >
-							<Typography className={gClasses.info18Blue} >Day of the week</Typography>
-						</Grid>
-						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<VsSelect label="Day" size="small" align="center" options={SHORTWEEKSTR} value={newDay} onChange={(event) => { setNewDay(event.target.value)}} />			
-						</Grid>
-						<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-						<Grid item xs={6} sm={6} md={6} lg={6} align="left" >
-							<Typography className={gClasses.info18Blue} >Hour</Typography>
-						</Grid>
-						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<VsSelect label="Hour" size="small" align="center" options={HOURBLOCKSTR} value={newHour} onChange={(event) => { setNewHour(event.target.value)}} />			
-						</Grid>
-						<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-						<Grid item xs={6} sm={6} md={6} lg={6} align="left"  >
-							<Typography className={gClasses.info18Blue} >Minute</Typography>
-						</Grid>
-						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<VsSelect label="Min" size="small" align="center" options={MINUTEBLOCKSTR} value={newMin} onChange={(event) => { setNewMin(event.target.value)}} />			
-						</Grid>
-					</Grid>
-					<br />
-					<ShowResisterStatus />
-					<br />
-					<VsButton type="button" name="Submit Session" onClick={handleAddEditSubmitSession} />
-					</div>				
-				}
-			</Box>
-		</Drawer>
+		</Box>		
 	</div>
 	)
 }

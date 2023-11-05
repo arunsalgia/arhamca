@@ -2,7 +2,7 @@ import React from 'react';
 
 export const NOFRACTION = 'Fraction not allowed';
 
-export const ALLSELCTIONS = ["All", "Enabled", "Disabled" ];
+export const ALLSELECTIONS = ["All", "Enabled", "Disabled" ];
 export const BLANKCHAR = "-";
 
 /// Constants
@@ -33,8 +33,8 @@ export const MINUTESTR = [
 "50", "51", "52", "53", "54", "55", "56", "57", "58", "59"
 ];
 
-export const MINUTEBLOCK=[0, 15, 30, 45];
-export const MINUTEBLOCKSTR=["00", "15", "30", "45"];
+export const MINUTEBLOCK=[0, 30];
+export const MINUTEBLOCKSTR=["00", "30"];
 export const HOURBLOCKSTR = [
 "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
 ];
@@ -51,3 +51,17 @@ export const DATESTR = [
 
 //in date function 0 represents JAN I.e. month number 1
 export const MONTHNUMBERSTR = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+
+
+
+export const STATUS_INFO = 
+{
+ERROR: -2,
+CANCEL: -1,
+OKAY: 1,
+ADD_BATCH: 2,
+EDIT_BATCH: 3,
+ADD_SESSION: 4,
+EDIT_SESSION: 5,
+
+};
