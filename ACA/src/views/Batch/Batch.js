@@ -3,6 +3,8 @@ import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
 // import { Switch, Route, Link } from 'react-router-dom';
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
+import TextField from '@material-ui/core/TextField';
+
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
@@ -37,6 +39,7 @@ import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 import SchoolIcon from '@material-ui/icons/School';
 import CancelIcon from '@material-ui/icons/Cancel';
+import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
@@ -55,6 +58,13 @@ import {
 	ALLSELECTIONS, BLANKCHAR, STATUS_INFO,
 } from 'views/globals';
 
+
+import {
+	mergedName, getCodeFromMergedName, getNameFromMergedName,
+} from 'views/functions';
+
+
+
 export default function Batch() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
@@ -67,7 +77,7 @@ export default function Batch() {
 	const [masterBatchArray, setMasterBatchArray] = useState([]);
 	const [batchRec, setBatchtRec] = useState(null);
 
-	
+	const [selBatch, setSelBatch] = useState("");
 
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
@@ -122,6 +132,7 @@ export default function Batch() {
 	}, [])
 
 	// function handleTimer() {}
+
 
 	function ShowResisterStatus() {
         // console.log(`Status is ${registerStatus}`);
@@ -197,7 +208,11 @@ export default function Batch() {
 		}
 	}
 
-
+	async function handleFacultySchedule(rec) {
+		var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.FACULTYSCHEDULE, msg: "", record:  rec };
+		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		setTab(process.env.REACT_APP_FACULTYSCHEDULE);
+	}
 
 	function DisplayAllToolTips() {
 	return(
@@ -253,9 +268,13 @@ export default function Batch() {
 			<TableRow key="header" align="center">
 				<TableCell className={gClasses.th} p={0} align="center">Batch</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center">Faculty</TableCell>
-				<TableCell className={gClasses.th} p={0} align="center">Students</TableCell>
+				{((dispType == "md") || (dispType == "lg")) &&
+					<TableCell className={gClasses.th} p={0} align="center">Students</TableCell>
+				}
 				<TableCell className={gClasses.th} p={0} align="center">Days</TableCell>
+				{((dispType == "md") || (dispType == "lg")) &&
 				<TableCell className={gClasses.th} p={0} align="center">Sessions</TableCell>
+				}
 				<TableCell className={gClasses.th} p={0} align="center"></TableCell>
 			</TableRow>
 			</TableHead>
@@ -276,13 +295,23 @@ export default function Batch() {
 							tList.push(item.day);
 						})
 						var myClasses = (x.enabled) ? gClasses.td : gClasses.disabledtd;
+						//console.log(x)
+						var myStudents = [];
+						//console.log(x);
+						for(var i=0; i<x.studentNameList.length; ++i) {
+							myStudents.push(mergedName(x.studentNameList[i], x.sid[i]));
+						}
 					return (
 					<TableRow key={x.bid}>
 						<TableCell className={myClasses} p={0} >{x.bid}</TableCell>
-						<TableCell className={myClasses} p={0} >{x.fid}</TableCell>
-						<TableCell className={myClasses} p={0} >{sList.join()}</TableCell>
+						<TableCell className={myClasses} p={0} >{mergedName(x.facultyName, x.fid)}</TableCell>
+						{((dispType == "md") || (dispType == "lg")) &&
+							<TableCell className={myClasses} p={0} >{myStudents.join()}</TableCell>
+						}
 						<TableCell className={myClasses} p={0} >{tList.join()}</TableCell>
+						{((dispType == "md") || (dispType == "lg")) &&
 						<TableCell className={myClasses} p={0} >{x.sessionCount}</TableCell>
+						}
 						<TableCell className={myClasses} p={0} >
 							<IconButton color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
 							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
@@ -292,7 +321,8 @@ export default function Batch() {
 							{(!x.enabled) &&
 								<IconButton color="primary" size="small" onClick={() => {handleEnableBatch(x)}} ><CheckBoxIcon /></IconButton>						
 							}
-							<IconButton color="primary" disabled={!x.enabled}size="small" onClick={() => {handleAddSession(x)}} ><SchoolIcon /></IconButton>
+							<IconButton color="primary" disabled={!x.enabled} size="small" onClick={() => {handleAddSession(x)}} ><SchoolIcon /></IconButton>
+							<IconButton color="primary" disabled={!x.enabled} size="small" onClick={() => {handleFacultySchedule(x)}} ><TableChartSharpIcon /></IconButton>
 							<IconButton disabled={x.sessionCount > 0} color="secondary" size="small" onClick={() => {handleDeleteBatch(x)}} ><CancelIcon /></IconButton>
 						</TableCell>
 					</TableRow>

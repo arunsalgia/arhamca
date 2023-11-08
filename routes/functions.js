@@ -7,7 +7,10 @@ const {
 
 
 function timeToBlock(hr, min) {
-	return hr*BLOCK_PER_HOUR + (min / BLOCK_IN_MINUTES);
+	console.log(hr, MINUTES_IN_HOUR, min, BLOCK_IN_MINUTES);
+	var blk = (hr*MINUTES_IN_HOUR + min) / BLOCK_IN_MINUTES;
+	console.log(hr, min, blk);
+	return blk;
 }
 
 function blockToTime(blk) {
@@ -31,7 +34,7 @@ function getWeeklyBlock(allBatches) {
 			//console.log(dayIndex, startBlock);
 			for(var i=0; i < dayBatch.sessionTime; ++i) {
 				console.log(dayIndex, startBlock + i, dayBatch.bid);
-				facultyBlockList[dayIndex][startBlock + i] = dayBatch.bid;
+				facultyBlockList[startBlock + i][dayIndex] = dayBatch.bid;
 			}
 		});
 	});

@@ -13,6 +13,27 @@ const globalStyles = makeStyles((theme) => ({
     width: '100%',
     // backgroundColor: '#FAF5E9',
   },
+	textAreaFixed: {
+		display: "flex-root",
+    width: "100%",
+    fontSize: theme.typography.pxToRem(16),
+		fontWeight: theme.typography.fontWeightBold,
+    resize: 'none',
+	},
+	dateTimeNormal: {
+		color: 'blue',
+		fontSize: theme.typography.pxToRem(14),
+		fontWeight: theme.typography.fontWeightBold,
+		//backgroundColor: pink[100],
+		align: 'center',
+		//width: (isMobile()) ? '60%' : '20%',
+	}, 
+	dateTimeBlock: {
+		color: 'blue',
+		//fontSize: theme.typography.pxToRem(28),
+		fontWeight: theme.typography.fontWeightBold,
+		//backgroundColor: pink[100],
+	}, 
 	error:  {
       // right: 0,
       fontSize: '12px',

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
+import { TextareaAutosize } from '@material-ui/core';
 // import { Switch, Route, Link } from 'react-router-dom';
 import { ValidatorForm, TextValidator, TextValidatorcvariant} from 'react-material-ui-form-validator';
 import Drawer from '@material-ui/core/Drawer';
@@ -27,6 +28,9 @@ import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomCompon
 
 import lodashSortBy from "lodash/sortBy";
 
+import Datetime from "react-datetime";
+import "react-datetime/css/react-datetime.css";
+
 import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
@@ -45,8 +49,9 @@ import VsButton from "CustomComponents/VsButton";
 import VsCancel from "CustomComponents/VsCancel";
 import VsSelect from "CustomComponents/VsSelect";
 import VsRadio from "CustomComponents/VsRadio";
+import VsCheckBox from "CustomComponents/VsCheckBox";
 
-//const ALLROLES = ["Student", "Faculty", "Admin"];
+
 
 import {
 	ROLE_FACULTY , ROLE_STUDENT,
@@ -54,8 +59,14 @@ import {
 	NOFRACTION,
 	SHORTWEEKSTR, HOURBLOCKSTR, MINUTEBLOCKSTR, SESSIONHOURSTR,
 	STATUS_INFO,
-	
+	MAXDISPLAYTEXTROWS,
 } from 'views/globals';
+
+import {
+	mergedName, getCodeFromMergedName, getNameFromMergedName,
+	disablePastDt, disableFutureDt,
+} from 'views/functions';
+
 
 var mode = "ADD";
 
@@ -67,6 +78,9 @@ export default function SessionAddEdit() {
 	const [origSessionRec, setOrigSessionRec] = useState(null);
 	const [origBatchRec, setOrigBatchRec] = useState(null);
 	const [origBid, setOrigBid] = useState("");
+
+	const [cbArray, setCbArray] = useState(Array(25).fill(true));
+	const [sessionDate, setSessionDate] = useState(new Date());
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	
@@ -77,7 +91,7 @@ export default function SessionAddEdit() {
 	const [masterBatchArray, setMasterBatchArray] = useState([]);
 	
 	const [sessionNumber, setSessionNumber] = useState("NEW");
-	
+	const [myNotes, setMyNotes] = useState("");
 	
 	const [userName, setUserName] = useState("");
 	const [email, setEmail] = useState("");
@@ -126,25 +140,14 @@ export default function SessionAddEdit() {
 			//setROWSPERPAGE(myRows);
 		}
 
-		async function getAllAreas() {
-			try {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/list`;
-				const response = await axios.get(myUrl);
-				//console.log(response.data);
-				setAreaArray(response.data);
-				setNewArea(response.data[0].longName);
-			} catch (e) {
-				console.log(e);
-				alert("Error Fetching area");
-			}
-		}
-		
 		async function getAllStudents(sidList) {
 		try {
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/list/selected/${sidList}`;
 			const response = await axios.get(myUrl);
 			console.log(response.data);
 			setStudentArray(response.data);
+			var filledArray = Array(response.data.length).fill(true);
+			setCbArray(filledArray);
 			
 		} catch (e) {
 			console.log(e);
@@ -152,20 +155,6 @@ export default function SessionAddEdit() {
 		}
 	}
 
-		async function getAllFaculty() {	
-		try {
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/enabled`;
-			const response = await axios.get(myUrl);
-			//console.log(response.data);
-			setFacultyArray(response.data);
-			setNewFaculty(response.data[0].name);
-		} catch (e) {
-			console.log(e);
-			alert("Error Fetching Faculty");
-		}
-	}
-
-		console.log("IN session");
 		// get the data
 		var sList = [];
 		var myData = sessionStorage.getItem("batchInfo");
@@ -193,8 +182,6 @@ export default function SessionAddEdit() {
 			setTab(process.env.REACT_APP_BATCH);
 		}
 		sessionStorage.removeItem("batchInfo");
-		//getAllAreas();
-		//getAllFaculty();
 		getAllStudents(sList)
 		
 		handleResize();
@@ -264,38 +251,32 @@ function ShowResisterStatus() {
 
 async function handleAddEditSubmit() {
 
-	if (batchStudents.length === 0) {
-		setRegisterStatus(521);
-		return;
-	}
-	if (batchSessions.length === 0) {
-		setRegisterStatus(522);
-		return;
-	}
+	// luckily not validation required
 	
-	console.log("All okay");
 	var myData = {};
-	var tmp = areaArray.find( x => x.longName === newArea);
-	myData["area"] = tmp.shortName;
-	tmp = facultyArray.find( x => x.name === newFaculty);
-	myData["faculty"] = tmp;
-	myData["fees"] = Number(newFess);
-	myData["duration"] = Number(sessHour);
-	myData["students"] = batchStudents;
-	myData["sessions"] = batchSessions;
+	console.log(origBatchRec)
+	myData["batchData"] = origBatchRec;
+	myData["remarks"] = myNotes;
+	myData["sessionDate"] = sessionDate;
+	var attendanceSid = [];
+	for(var i=0; i<origBatchRec.sid.length; ++i) {
+		if (cbArray[i]) attendanceSid.push(origBatchRec.sid[i]);
+	}
+	console.log(attendanceSid);
+	myData["attendanceList"] = attendanceSid;
 	console.log(myData);
 	
 	var myJsonData = JSON.stringify(myData);
 	var finalData = encodeURI(myJsonData);
 
-	var batchRec;
+	//var batchRec;
 	try {
 		if (mode == "ADD") {
 		// for add new batch
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/add/${finalData}`;
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/session/add/${finalData}`;
 			var response = await axios.get(myUrl);
 			//alert("Successfully added details of new batch");
-			var batchInfo = {inUse: true, status: STATUS_INFO.OKAY, msg: `Successfully added batch ${response.data.bid}.`, record: response.data };
+			var batchInfo = {inUse: true, status: STATUS_INFO.OKAY, msg: `Successfully added session of batch ${response.data.bid}.`, record: response.data };
 			sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
 		}
 		else {
@@ -318,296 +299,109 @@ async function handleAddEditSubmit() {
 	}
 	catch (e) {
 		console.log("Error");
-		var batchInfo = {inUse: true, status: STATUS_INFO.ERROR, msg: "Error adding/updating batch.", record: null };
+		var batchInfo = {inUse: true, status: STATUS_INFO.ERROR, msg: "Error adding/updating session.", record: null };
 		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
 	}
 	setTab(process.env.REACT_APP_BATCH)
 }
 
-function handleAdd() {
-	console.log("In add");
 
-	setDrawer("New");
-}
-
-async function handleEdit(r) {
-	//console.log(r);
-	setBatchtRec(r);
-	// Now get the user record
-	var myUser;
-	try {
-		var resp = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/acagetbyid/${r.uid}`);
-		myUser = resp.data;
-		//console.log(myUser);
-		setUserRec(myUser);
-	}
-	catch (e) {
-		alert('Error while fetching user record');
-		setBatchtRec(null);
-		return;
-	}
-	setUserName(myUser.displayName);
-
-	setDrawer("Edit");
-}
-
-function handleInfo(r) {
-	setBatchtRec(r);
-	setDrawerDetail("detail");
-}
-
-function DisplayAllToolTips() {
-return(
-	<div>
-	{batchArray.map( t =>
-		<DisplaySingleTip id={"USER"+t.uid} />
-	)}
-	</div>
-)}
-
-function DisplaySingleTip(props) {
-	return null; //<Tooltip className={gClasses.tooltip} backgroundColor='#42EEF9' borderColor='black' arrowColor='blue' textColor='black' key={props.id} type="info" effect="float" id={props.id} multiline={true}/>
-}
-
-async function handleDisableBatch(rec) {
-	console.log("In disabled");
-	let myRec = masterBatchArray.find(x => x.bid === rec.bid);
-	console.log(myRec);
-	/*if (myRec.sess != "") {
-		alert(`Student ${myRec.name} has batche ${myRec.bid} in progress.`);
-		return;
-	}*/
-	try {
-		await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/disabled/${myRec.bid}`);
-		myRec.enabled = false;
-		var allRec  = [].concat(masterBatchArray)
-		setMasterBatchArray(allRec);
-		filterBatch(allRec, currentSelection);
-		setRegisterStatus(0);
-	}
-	catch (e) {
-		// error 
-		console.log(e);
-		alert("Error disabling student "+x.name);
-	}
-}
-
-async function handleEnableBatch(rec) {
-	let myRec = masterBatchArray.find(x => x.bid === rec.bid);
-	try {
-		await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabled/${myRec.bid}`);
-		myRec.enabled = true;
-		var allRec  = [].concat(masterBatchArray)
-		setMasterBatchArray(allRec);
-		filterBatch(allRec, currentSelection);
-	}
-	catch (e) {
-		// error 
-		console.log(e);
-		alert("Error disabling student "+x.name);
-	}
-}
-
-function filterBatch(masterArray, x) {
-	switch (x) {
-		case "Disabled":  setBatchArray(masterArray.filter(x => !x.enabled ));  break;
-		case "Enabled":   setBatchArray(masterArray.filter(x => x.enabled ));  break;
-		default:          setBatchArray(masterArray);  break;
-	}
-}
-
-function selectAll(x) {
-	setCurrentSelection(x);
-	filterBatch(masterBatchArray, x);
-}
-
-function handleAddStudent() {
-	setSessId("");
-	setNewStudent("");
-	setDrawer("ADDSTUDENT");
-}
-
-function handleEditStudent(x) {
-	setSessId(x.name);
-  setNewStudent(x.name);
-	setDrawer("EDITSTUDENT");
+function handleSessionDate(d) {
+	setSessionDate(d.toDate());
 }
 
 
-function handleDelStudent(rec) {
-	console.log(batchStudents);
-	setBatchStudents(batchStudents.filter(x => x.name !== rec.name));
-	setRegisterStatus(0);
+function handlePresentAbsent(idx, state) {
+	//console.log(cbArray);
+	var tmp =[].concat(cbArray);
+	tmp[idx] = state;
+	setCbArray(tmp);
+	//console.log(tmp);
 }
 
 
-function handleAddSession() {
-	setSessId(-1);
-	setNewDay(SHORTWEEKSTR[0]);
-	setNewHour(HOURBLOCKSTR[0]);
-	setNewMin(MINUTEBLOCKSTR[0]);
-	setDrawer("ADDSESSION");
-}
-
-function handleEditSession(x) {
-  setSessId(x.sessid);
-	setNewDay(x.day);
-	setNewHour(x.hour);
-	setNewMin(x.min);
-	setDrawer("EDITSESSION");
-}
-
-
-function handleDelSession(rec) {
-	setBatchSessions(batchSessions.filter(x => x.sessid !== rec.sessid));
-	setRegisterStatus(0);
-}
-
-
-
-function handleAddEditSubmitStudent() {
-	//console.log("Studnet " + newStudent + " selected");
-
-	// if student not chnaged during edit. noting to do
-	if ((drawer == "EDITSTUDENT") && (sessId == newStudent)) {
-		setDrawer("");
-		return;
-	}
-
-	if (newStudent == "") {
-		setRegisterStatus(501);
-		return;
-	}
-	
-	var tmp = (drawer == "ADDSTUDENT") 
-		? batchStudents.find(x => x.name == newStudent) 
-		: batchStudents.find(x => (x.name != sessId) && (x.name != newStudent) );
-	if (tmp) {
-		setRegisterStatus(502);
-		return;
-	}
-	
-	// New student validation done
-	if (drawer == "ADDSTUDENT") {
-		var newStudentRec = studentArray.find(x => x.name === newStudent);
-		tmp = batchStudents.concat([newStudentRec]);
-		setBatchStudents(tmp)		
-	}
-	else {
-		var newStudentRec = studentArray.find(x => x.name === newStudent);
-		var tmp = batchStudents.filter(x => x.name != sessId);		// delete old student
-		setBatchStudents( tmp.concat([newStudentRec]));						// add new studennt
-	}
-	setDrawer("");
-}
-
-
-
-function handleAddEditSubmitSession() {
-
-	var tmp = (sessId > 0) 
-		? batchSessions.find(x => ((x.sessid != sessId) && (x.day == newDay) &&  (x.hour ==  newHour) && (x.min == newMin)))
-		: batchSessions.find(x => ((x.day == newDay) &&  (x.hour ==  newHour) && (x.min == newMin)));
-	if (tmp) {
-		setRegisterStatus(511);
-		return;
-	}
-	
-	var clonedArray = [].concat(batchSessions);
-	if (sessId > 0) {
-		var clonedArray = [].concat(batchSessions);
-		tmp = clonedArray.find(x => x.sessid === sessId);
-		tmp.day = newDay;
-		tmp.hour = newHour;
-		tmp.min = newMin;
-		setBatchSessions(clonedArray);	
-	}
-	else {
-		setBatchSessions(clonedArray.concat([{sessid: clonedArray.length+1, day: newDay, hour: newHour, min: newMin}]));
-	}
-	setRegisterStatus(0);
-	setDrawer("");
-}
-
-
-
-// style={{marginTop: "5px" }}  
-function DisplayOptions() {
-return (
-<Grid key="Options" className={gClasses.noPadding} container alignItems="center" >
-	<Grid  item xs={3} sm={2} md={2} lg={1} >
-		<VsSelect size="small" align="center" label="Selection" options={ALLSELECTIONS} value={currentSelection} onChange={(event) => { selectAll(event.target.value)}} />
-	</Grid>
-	<Grid align="left"  item xs={6} sm={7} md={8} lg={10} >
-		<span></span>
-	</Grid>
-	<Grid  item xs={3} sm={3} md={2} lg={1} >
-		<VsButton name="New Batch" align="right" onClick={handleAdd} />
-	</Grid>
-</Grid>
-)}
-	
-	//console.log(dispType);
-	//if (origBatchRec == null) return (<BlankArea>);
-	
 	return (
 	<div align="center">
-		<DisplayPageHeader headerName={(mode == "ADD") ? `Add session of ${origBid}` : `Edit Session`} groupName="" tournament="" />
+		<DisplayPageHeader headerName={(mode == "ADD") ? `Add session of batch ${origBid}` : `Edit Session`} groupName="" tournament="" />
 		<br />
-		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
-			<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditSubmit}  >
-			<Grid key="ADDEDITBATCH" className={gClasses.noPadding} container alignItems="flex-start" >
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography className={gClasses.info18Blue} >Session Date</Typography>
-				</Grid>
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<VsSelect size="small" align="center" options={areaArray} field="longName" value={newArea} onChange={(event) => { setNewArea(event.target.value)}} />			
-				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={12} sm={12} md={12} lg={12} >
-					<Typography className={gClasses.info18Blue}>Studnets Attendance</Typography>
-				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} >
-					<Table  align="center">
-					<TableHead p={0}>
-					<TableRow key="header" align="center">
-						<TableCell className={gClasses.th} p={0} align="center">Student</TableCell>
-						<TableCell className={gClasses.th} p={0} align="center">Code</TableCell>
-						<TableCell className={gClasses.th} p={0} align="center">Present</TableCell>
-					</TableRow>
-					</TableHead>
-					<TableBody p={0}>
-						{studentArray.map(x => {
-								var myClasses = gClasses.td;
-							return (
-							<TableRow key={x.sid} align="center">
-								<TableCell align="center" className={myClasses} p={0} >{x.name}</TableCell>
-								<TableCell align="center" className={myClasses} p={0} >{x.sid}</TableCell>
-								<TableCell align="center" className={myClasses} p={0} >
-									<span>Present</span>
-								</TableCell>
-							</TableRow>
-						)})}
-					</TableBody>
-					</Table>
-				</Grid>
-				<br />
-				<ShowResisterStatus />
-				<br />
-				<Grid item xs={3} sm={3} md={4} lg={5} />
-				<Grid item xs={3} sm={3} md={2} lg={1} >
-					<VsButton type="submit" name={(mode == "EDIT") ? "Update Batch" : "Add Batch"} />
-				</Grid>
-				<Grid  item xs={3} sm={3} md={2} lg={1} >
-					<VsButton type="button" name="Cancel" onClick={mainCancel}/>
-				</Grid>
-				<Grid item xs={3} sm={3} md={4} lg={5} />
+		<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditSubmit}  >
+		<Grid key="ADDEDITBATCH" className={gClasses.noPadding} container alignItems="flex-start" >
+			{((dispType == "md") || (dispType == "lg")) &&
+				<Grid item xs={6} sm={6} md={3} lg={5} />
+			}
+			<Grid item xs={6} sm={6} md={3} lg={1} >
+				<Typography className={gClasses.info18Blue} >Session Date</Typography>
 			</Grid>
-			</ValidatorForm>
-			<ValidComp />   
-		</Box>		
+			<Grid item xs={6} sm={6} md={3} lg={1} >
+				<Datetime 
+					className={gClasses.dateTimeBlock}
+					inputProps={{className: gClasses.dateTimeNormal}}
+					timeFormat={false} 
+					initialValue={sessionDate}
+					dateFormat="DD/MM/yyyy"
+					isValidDate={disableFutureDt}
+					onClose={handleSessionDate}
+				/>
+			</Grid>
+			{((dispType == "md") || (dispType == "lg")) &&
+				<Grid item xs={6} sm={6} md={3} lg={5} />
+			}
+			<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+			{((dispType == "md") || (dispType == "lg")) &&
+				<Grid item xs={6} sm={6} md={4} lg={4} />
+			}				
+			<Grid style={{margin: "10px"}} item xs={12} sm={12} md={4} lg={4} >
+				<Typography className={gClasses.info18Blue}>Students Attendance</Typography>
+				<Table  align="center">
+				<TableHead p={0}>
+				<TableRow key="header" align="center">
+					<TableCell className={gClasses.th} p={0} align="center">Student</TableCell>
+					<TableCell className={gClasses.th} p={0} align="center">Attended</TableCell>
+				</TableRow>
+				</TableHead>
+				<TableBody p={0}>
+					{studentArray.map( (x, idx)  => {
+							var myClasses = gClasses.td;
+						return (
+						<TableRow key={x.sid} align="center">
+							<TableCell align="center" className={myClasses} p={0} >{mergedName(x.name, x.sid)}</TableCell>
+							<TableCell align="center" className={myClasses} p={0} >
+								<VsCheckBox align="center" checked={cbArray[idx]} onClick={() => handlePresentAbsent(idx, event.target.checked)} /> 
+							</TableCell>
+						</TableRow>
+					)})}
+				</TableBody>
+				</Table>
+			</Grid>
+			{((dispType == "md") || (dispType == "lg")) &&
+				<Grid item xs={6} sm={6} md={4} lg={4} />
+			}	
+			<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+			{((dispType == "md") || (dispType == "lg")) &&
+				<Grid item xs={6} sm={6} md={4} lg={4} />
+			}	
+			<Grid item xs={12} sm={12} md={4} lg={4} >
+				<Typography className={gClasses.info18Blue}>Remarks</Typography>
+				<TextareaAutosize maxRows={MAXDISPLAYTEXTROWS} className={gClasses.textAreaFixed}  value={myNotes} onChange={() => {setMyNotes(event.target.value)}} />
+			</Grid>
+			{((dispType == "md") || (dispType == "lg")) &&
+				<Grid item xs={6} sm={6} md={4} lg={4} />
+			}	
+			<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+			<br />
+			<ShowResisterStatus />
+			<br />
+			<Grid item xs={3} sm={3} md={4} lg={5} />
+			<Grid item xs={3} sm={3} md={2} lg={1} >
+				<VsButton type="submit" name={(mode == "EDIT") ? "Update Session" : "Add Session"} />
+			</Grid>
+			<Grid  item xs={3} sm={3} md={2} lg={1} >
+				<VsButton type="button" name="Cancel" onClick={mainCancel}/>
+			</Grid>
+			<Grid item xs={3} sm={3} md={4} lg={5} />
+		</Grid>
+		</ValidatorForm>
+		<ValidComp />   
 	</div>
 	)
 }

@@ -56,14 +56,24 @@ router.get('/add/:batchData', async function (req, res, next) {
 	
 	// cgeck all the students have not been assigned Batch
 	var sidList = [];
-	batchData.students.forEach( (studRec) => {
+	var studentNameList = [];
+	for(var i=0; i<batchData.students.length; ++i) {
+		var studRec = batchData.students[i];
 		sidList.push(studRec.sid);
-	});
-	var studentArray = await Student.find({sid: {$in: sidList} });
+		studentNameList.push(studRec.name);
+	}
 	
-	studentArray.forEach( (studRec) => {
+	/*batchData.students.forEach( (studRec) => {
+		sidList.push(studRec.sid);
+		studentNameList.push(studRec.name);
+	});*/
+	
+	// check if student have not been alloted batch and are thus free
+	var studentArray = await Student.find({sid: {$in: sidList} });	
+	for(var i=0; i<studentArray.length; ++i) {
+		var studRec = studentArray[i];
 		if (studRec.bid != "")  return senderr(res, 603, "students already assigned batch");
-	});
+	};
 	
 	// Now check for faculty if session is available
 	var allBatches = await Batch.find({fid: batchData.faculty.fid, enabled: true});
@@ -74,7 +84,7 @@ router.get('/add/:batchData', async function (req, res, next) {
 	
 	// Now check for each session if the block is available
 	console.log("Checking blocks");
-	var totalBlocks = ( batchData.duration * MINUTES_IN_HOUR ) / BLOCK_IN_MINUTES;
+	var totalBlocks = batchData.duration;		// In block provided by frount end ( batchData.duration * MINUTES_IN_HOUR ) / BLOCK_IN_MINUTES;
 	console.log("Blocks", totalBlocks);
 	var sessionList = [];
 	console.log(batchData.sessions.length, batchData.sessions);
@@ -93,11 +103,15 @@ router.get('/add/:batchData', async function (req, res, next) {
 	};
 	
 	console.log("Now create new batch record");
+
+	console.log(studentNameList);
+	console.log(batchData.faculty.name);
 	
 	var newBatch = new Batch();
 	newBatch.sequence = SEQUENCE_CURRENT;
 	newBatch.bid = await getNewBatchCode(batchData.area);
 	newBatch.fid = batchData.faculty.fid;
+	newBatch.facultyName = batchData.faculty.name;
 	newBatch.sessionCount = 0;
 	newBatch.fees = batchData.fees;
 	newBatch.sessionTime = totalBlocks;				// session of # number blocks
@@ -105,6 +119,7 @@ router.get('/add/:batchData', async function (req, res, next) {
 	newBatch.enabled = true;
 	newBatch.creationDate = new Date();	
 	newBatch.sid = sidList;
+	newBatch.studentNameList = studentNameList;
 	newBatch.timings = sessionList
 	
 	await newBatch.save();

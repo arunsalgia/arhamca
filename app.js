@@ -83,6 +83,7 @@ areaRouter = require('./routes/area');
 facultyRouter = require('./routes/faculty');
 studentRouter = require('./routes/student');
 batchRouter = require('./routes/batch');
+sessionRouter = require('./routes/session');
 
 walletRouter = require('./routes/wallet');
 masterRouter = require('./routes/master');
@@ -120,6 +121,7 @@ app.use('/area', areaRouter);
 app.use('/faculty', facultyRouter);
 app.use('/student', studentRouter);
 app.use('/batch', batchRouter);
+app.use('/session', sessionRouter);
 
 app.use('/wallet', walletRouter);
 app.use('/master', masterRouter);
@@ -187,7 +189,9 @@ batchSchema = mongoose.Schema({
 	sequence: Number,
   bid: String,		// Batch code
 	fid: String,		// Faculty of this batch
+	facultyName: String, // Faculty name
 	sid: [String],		// list of Id of students in batch
+	studentNameList: [String],		// list of names of students in batch
 	timings: [{day: String, hour: Number, minute: Number}],		// batch timings
 	sessionCount: Number,	// # of sessions of this batch
 	fees: Number, 	// Batch fees / batch / student
@@ -197,7 +201,23 @@ batchSchema = mongoose.Schema({
   enabled: Boolean	// Batch open (true) / closed false
 });
 
+sessionSchema = mongoose.Schema({
+	sequence: Number,
+	sessionNumber: Number,
+  bid: String,		// Batch code
+	fees: Number,		// Batch fees per session per student
+	sessionDate: Date,
+	fid: String,		// Faculty of this batch
+	facultyName: String, // Faculty name
+	sidList: [String],		// list of Id of students in batch
+	studentNameList: [String],		// list of names of students in batch
+	attendedSidList: [String],		// list of Id of students who attended the session
+	attendedStudentNameList: [String],		// list of name of students who attended the session
+	creationDate: Date,
+  enabled: Boolean	// Batch open (true) / closed false
+});
 
+/*
 UserKycSchema = mongoose.Schema({
   uid: Number,
   // ID details;
@@ -321,6 +341,8 @@ TournamentSchema = mongoose.Schema({
   enabled: Boolean
 })
 
+*/
+
 WalletSchema = mongoose.Schema({
   isWallet: Boolean,
   transNumber: Number,
@@ -335,6 +357,7 @@ WalletSchema = mongoose.Schema({
   transStatus: Boolean,
 })
 
+/*
 AplSchema = mongoose.Schema({
   aplCode: Number,
   date: String,
@@ -365,18 +388,7 @@ PrizeSchema = mongoose.Schema({
   prize9: Number,
   prize10: Number,
 });
-// USE CRICMATCHSCHEMA since match details will be imported from CRICAPI 
-// Avoid createing match database
-// MatchSchema = mongoose.Schema({
-//   mid: Number,
-//   description: String,
-//   team1: String,
-//   team2: String,
-//   team1Desciption: String,
-//   team2Desciption: String,
-//   matchTime: Date,
-//   weekDay: String
-// });
+
 StatSchema = mongoose.Schema({
   mid: Number,
   pid: Number,
@@ -479,6 +491,8 @@ BriefStatSchema = mongoose.Schema({
   manOfTheMatch: Number,
 });  
 
+*/
+
 PaymentSchema = mongoose.Schema({
   cid: Number,
   email: String,
@@ -531,6 +545,7 @@ Area = mongoose.model("areas", AreaSchema);
 Faculty = mongoose.model("facultys", FacultySchema);
 Student = mongoose.model("students", studentSchema);
 Batch   = mongoose.model("batchs", batchSchema);
+Session   = mongoose.model("sessions", sessionSchema);
 
 
 //Guide = mongoose.model("guide", GuideSchema);
@@ -860,6 +875,57 @@ BLOCKWEEKLIST = [
 ];
 
 BLOCKWEEKSTRLIST = [
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+["", "", "", "", "", "", ""],
+];
+
+JUNKED_BLOCKWEEKSTRLIST = [
 	[
 	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
 	],

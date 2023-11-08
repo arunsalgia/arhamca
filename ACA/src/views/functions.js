@@ -3,6 +3,7 @@ import download from 'js-file-download';
 import LinearProgressWithLabel from '@material-ui/core/LinearProgress';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CircularProgressWithLabel from '@material-ui/core/LinearProgress';
+import moment from 'moment';
 import { func } from "prop-types";
 
 var crypto = require("crypto");
@@ -628,3 +629,29 @@ export async function getGroupCost() {
 	return groupCost;
 }
 
+// disable future dates
+const today = moment();
+const yesterday = moment().subtract(1, 'day');
+
+export function disablePastDt(current) {
+  return current.isAfter(yesterday);
+};
+
+export function disableFutureDt(current) {
+  return current.isBefore(today);
+};
+
+export function mergedName(name, code) {
+	return (`${name} (${code})`)
+}
+
+export function getCodeFromMergedName(mergedName) {
+	var tmp = mergedName.split("(");
+	var tmp1 = tmp[1].split(")");
+	return tmp1[0].trim();
+}
+
+export function getNameFromMergedName(mergedName) {
+	var tmp = mergedName.split("(");
+	return tmp[0].trim();
+}

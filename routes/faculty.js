@@ -10,7 +10,9 @@ const {
 const { 
 	addNewUser, updateUser,
 	getNewFacultyCode,
+	timeToBlock, blockToTime, getWeeklyBlock,
 } = require('./functions'); 
+
 
 
 router.get('/list/all', async function (req, res, next) {
@@ -120,6 +122,21 @@ router.get('/enabled/:fid', async function (req, res, next) {
 	userRec.save();
 	
   sendok(res, "Done" ); 
+})
+
+
+router.get('/getfacultyblock/:fid', async function (req, res, next) {
+  setHeader(res);
+  
+	var { fid } = req.params;
+	
+	var allBatches = await Batch.find({fid: fid, enabled: true});
+	//console.log(allBatches);
+	
+	var facultyBlockList = await getWeeklyBlock(allBatches);
+	//console.log(facultyBlockList);
+	
+  sendok(res, facultyBlockList ); 
 })
 
 

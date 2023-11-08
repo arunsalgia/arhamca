@@ -54,8 +54,13 @@ import {
 	NOFRACTION,
 	SHORTWEEKSTR, HOURBLOCKSTR, MINUTEBLOCKSTR, SESSIONHOURSTR,
 	STATUS_INFO,
-	
+	DURATIONSTR,
+	BATCHTIMESTR	,
 } from 'views/globals';
+
+import {
+	mergedName, getCodeFromMergedName, getNameFromMergedName,
+} from 'views/functions';
 
 var origBatchRec = null;
 var mode = "ADD";
@@ -82,17 +87,18 @@ export default function BatchAddEdit() {
 	const [newArea, setNewArea] = useState("");
 	const [newFaculty, setNewFaculty] = useState("");
 
-	const [sessHour, setSessHour] = useState(SESSIONHOURSTR[0]);
+	const [sessDuration, setSessDuration] = useState(DURATIONSTR[1].name);
 
 	const [newStudent, setNewStudent] = useState("");
 	const [batchStudents, setBatchStudents] = useState([]);
 	const [batchSessions, setBatchSessions] = useState([]);
 	
 	const [newDay, setNewDay] = useState("");
-	const [newHour, setNewHour] = useState("");
+	const [newHourMinute, setNewHourMinute] = useState("03:00 PM");
 	const [newMin, setNewMin] = useState("");
 	const [newFess, setNewFees] = useState(200);
-	const [sessId, setSessId] = useState(0);
+	const [origHourMinute, setOrigHourMinute] = useState("");
+	const [origDay, setOrigDay] = useState("");
 	
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
@@ -125,8 +131,12 @@ export default function BatchAddEdit() {
 				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/list`;
 				const response = await axios.get(myUrl);
 				//console.log(response.data);
-				setAreaArray(response.data);
-				setNewArea(response.data[0].longName);
+				var tmp = response.data;
+				for(var i=0; i<tmp.length; ++i) {
+					tmp[i]["mergedName"] = mergedName(tmp[i].longName, tmp[i].shortName);
+				}
+				setNewArea(tmp[0].mergedName);
+				setAreaArray(tmp);
 			} catch (e) {
 				console.log(e);
 				alert("Error Fetching area");
@@ -139,8 +149,12 @@ export default function BatchAddEdit() {
 			console.log(subfun);
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/${subfun}`;
 			const response = await axios.get(myUrl);
+			var tmp = response.data;
+				for(var i=0; i<tmp.length; ++i) {
+					tmp[i]["mergedName"] = mergedName(tmp[i].name, tmp[i].sid);
+			}
 			//console.log(response.data);
-			setStudentArray(response.data);
+			setStudentArray(tmp);
 		} catch (e) {
 			console.log(e);
 			alert("Error Fetching Studnets");
@@ -152,8 +166,12 @@ export default function BatchAddEdit() {
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/enabled`;
 			const response = await axios.get(myUrl);
 			//console.log(response.data);
-			setFacultyArray(response.data);
-			setNewFaculty(response.data[0].name);
+			var tmp = response.data;
+				for(var i=0; i<tmp.length; ++i) {
+					tmp[i]["mergedName"] = mergedName(tmp[i].name, tmp[i].fid);
+			}
+			setFacultyArray(tmp);
+			setNewFaculty(tmp[0].mergedName);
 		} catch (e) {
 			console.log(e);
 			alert("Error Fetching Faculty");
@@ -262,12 +280,13 @@ async function handleAddEditSubmit() {
 	
 	console.log("All okay");
 	var myData = {};
-	var tmp = areaArray.find( x => x.longName === newArea);
+	var tmp = areaArray.find( x => x.mergedName === newArea);
 	myData["area"] = tmp.shortName;
-	tmp = facultyArray.find( x => x.name === newFaculty);
+	tmp = facultyArray.find( x => x.mergedName === newFaculty);
 	myData["faculty"] = tmp;
 	myData["fees"] = Number(newFess);
-	myData["duration"] = Number(sessHour);
+	tmp = DURATIONSTR.find(x => x.name === sessDuration);
+	myData["duration"] = Number(tmp.block);
 	myData["students"] = batchStudents;
 	myData["sessions"] = batchSessions;
 	console.log(myData);
@@ -409,13 +428,13 @@ function selectAll(x) {
 }
 
 function handleAddStudent() {
-	setSessId("");
+	setOrigHourMinute("");
 	setNewStudent("");
 	setDrawer("ADDSTUDENT");
 }
 
 function handleEditStudent(x) {
-	setSessId(x.name);
+	setOrigHourMinute(x.name);
   setNewStudent(x.name);
 	setDrawer("EDITSTUDENT");
 }
@@ -429,24 +448,25 @@ function handleDelStudent(rec) {
 
 
 function handleAddSession() {
-	setSessId(-1);
+	setOrigDay("");
+	setOrigHourMinute("");
 	setNewDay(SHORTWEEKSTR[0]);
-	setNewHour(HOURBLOCKSTR[0]);
-	setNewMin(MINUTEBLOCKSTR[0]);
+	setNewHourMinute("03:00 PM");
 	setDrawer("ADDSESSION");
 }
 
 function handleEditSession(x) {
-  setSessId(x.sessid);
+	setOrigDay(x.day);
 	setNewDay(x.day);
-	setNewHour(x.hour);
-	setNewMin(x.min);
+  setOrigHourMinute(x.name);
+	setNewHourMinute(x.name);
+	//setNewMin(x.min);
 	setDrawer("EDITSESSION");
 }
 
 
 function handleDelSession(rec) {
-	setBatchSessions(batchSessions.filter(x => x.sessid !== rec.sessid));
+	setBatchSessions(batchSessions.filter(x => x.name !== rec.name));
 	setRegisterStatus(0);
 }
 
@@ -456,19 +476,19 @@ function handleAddEditSubmitStudent() {
 	//console.log("Studnet " + newStudent + " selected");
 
 	// if student not chnaged during edit. noting to do
-	if ((drawer == "EDITSTUDENT") && (sessId == newStudent)) {
+	if ((drawer == "EDITSTUDENT") && (origHourMinute == newStudent)) {
 		setDrawer("");
 		return;
 	}
-
-	if (newStudent == "") {
+	else if (newStudent == "") {
 		setRegisterStatus(501);
 		return;
 	}
 	
-	var tmp = (drawer == "ADDSTUDENT") 
-		? batchStudents.find(x => x.name == newStudent) 
-		: batchStudents.find(x => (x.name != sessId) && (x.name != newStudent) );
+	var studentName = getNameFromMergedName(newStudent);
+	var studentId = getCodeFromMergedName(newStudent);
+	console.log(studentName, studentId, batchStudents);
+	var tmp = batchStudents.find(x => x.name == studentName && x.sid === studentId);
 	if (tmp) {
 		setRegisterStatus(502);
 		return;
@@ -476,13 +496,13 @@ function handleAddEditSubmitStudent() {
 	
 	// New student validation done
 	if (drawer == "ADDSTUDENT") {
-		var newStudentRec = studentArray.find(x => x.name === newStudent);
+		var newStudentRec = studentArray.find(x => x.name === studentName);
 		tmp = batchStudents.concat([newStudentRec]);
 		setBatchStudents(tmp)		
 	}
 	else {
-		var newStudentRec = studentArray.find(x => x.name === newStudent);
-		var tmp = batchStudents.filter(x => x.name != sessId);		// delete old student
+		var newStudentRec = studentArray.find(x => x.name === studentName);
+		var tmp = batchStudents.filter(x => x.name != origHourMinute);		// delete old student
 		setBatchStudents( tmp.concat([newStudentRec]));						// add new studennt
 	}
 	setDrawer("");
@@ -492,31 +512,43 @@ function handleAddEditSubmitStudent() {
 
 function handleAddEditSubmitSession() {
 
-	var tmp = (sessId > 0) 
-		? batchSessions.find(x => ((x.sessid != sessId) && (x.day == newDay) &&  (x.hour ==  newHour) && (x.min == newMin)))
-		: batchSessions.find(x => ((x.day == newDay) &&  (x.hour ==  newHour) && (x.min == newMin)));
-	if (tmp) {
-		setRegisterStatus(511);
-		return;
+	// check for duplicate sessio time
+	console.log(origDay, origHourMinute, newHourMinute, newDay);
+
+	if ((origHourMinute !== newHourMinute) && (origDay !== newDay)) {
+		var tmp = batchSessions.find(x => x.name === newHourMinute && x.day === newDay);
+		console.log(tmp);
+		if (tmp) {
+			setRegisterStatus(511);
+			return;
+		}
 	}
 	
+	// get record of session start Time
+	//console.log(newHourMinute, newDay);
+	var startTimeRec = BATCHTIMESTR.find(x => x.name === newHourMinute);
+	//console.log(startTimeRec);
 	var clonedArray = [].concat(batchSessions);
-	if (sessId > 0) {
-		var clonedArray = [].concat(batchSessions);
-		tmp = clonedArray.find(x => x.sessid === sessId);
-		tmp.day = newDay;
-		tmp.hour = newHour;
-		tmp.min = newMin;
-		setBatchSessions(clonedArray);	
+	if (drawer === "ADDSESSION") {
+		clonedArray.push({name: startTimeRec.name, hour: startTimeRec.hour, min: startTimeRec.min, block: startTimeRec.block, day: newDay })
 	}
 	else {
-		setBatchSessions(clonedArray.concat([{sessid: clonedArray.length+1, day: newDay, hour: newHour, min: newMin}]));
+		var tmp = clonedArray.find(x => x.name === origHourMinute && x.day === origDay);
+		tmp.name = newHourMinute;
+		tmp.hour = startTimeRec.hour;
+		tmp.min = startTimeRec.min;
+		tmp.block = startTimeRec.block;
+		tmp.day = newDay;
 	}
+	setBatchSessions(clonedArray);
 	setRegisterStatus(0);
 	setDrawer("");
 }
 
-
+function testfun(xxx) {
+	console.log(xxx);
+	setNewHourMinute(xxx);
+}
 
 // style={{marginTop: "5px" }}  
 function DisplayOptions() {
@@ -547,7 +579,7 @@ return (
 					<Typography className={gClasses.info18Blue} >Area</Typography>
 				</Grid>
 				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<VsSelect size="small" align="center" options={areaArray} field="longName" value={newArea} onChange={(event) => { setNewArea(event.target.value)}} />			
+					<VsSelect size="small" align="center" options={areaArray} field="mergedName" value={newArea} onChange={(event) => { setNewArea(event.target.value)}} />			
 				</Grid>
 				{((dispType == "xs") || (dispType == "sm")) &&
 					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
@@ -556,7 +588,7 @@ return (
 					<Typography className={gClasses.info18Blue} >Faculty</Typography>
 				</Grid>
 				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<VsSelect size="small" align="center" options={facultyArray} field="name" value={newFaculty} onChange={(event) => { setNewFaculty(event.target.value)}} />			
+					<VsSelect size="small" align="center" options={facultyArray} field="mergedName" value={newFaculty} onChange={(event) => { setNewFaculty(event.target.value)}} />			
 				</Grid>
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid item xs={6} sm={6} md={3} lg={3} >
@@ -576,7 +608,7 @@ return (
 					<Typography className={gClasses.info18Blue} >Duration</Typography>
 				</Grid>
 				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<VsSelect size="small" align="center" options={SESSIONHOURSTR} value={sessHour} onChange={(event) => { setSessHour(event.target.value)}} />			
+					<VsSelect size="small" align="center" options={DURATIONSTR} field="name" value={sessDuration} onChange={(event) => { setSessDuration(event.target.value)}} />			
 				</Grid>
 				{((dispType == "xs") || (dispType == "sm")) &&
 					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
@@ -594,7 +626,6 @@ return (
 					<TableHead p={0}>
 					<TableRow key="header" align="center">
 						<TableCell className={gClasses.th} p={0} align="center">Name</TableCell>
-						<TableCell className={gClasses.th} p={0} align="center">Code</TableCell>
 						<TableCell className={gClasses.th} p={0} align="center"></TableCell>
 					</TableRow>
 					</TableHead>
@@ -603,8 +634,7 @@ return (
 								var myClasses = gClasses.td;
 							return (
 							<TableRow key={x.sid} align="center">
-								<TableCell align="center" className={myClasses} p={0} >{x.name}</TableCell>
-								<TableCell align="center" className={myClasses} p={0} >{x.sid}</TableCell>
+								<TableCell align="center" className={myClasses} p={0} >{x.mergedName}</TableCell>
 								<TableCell align="center" className={myClasses} p={0} >
 									<IconButton color="primary"  size="small" onClick={() => {handleEditStudent(x)}} ><EditIcon /> </IconButton>
 									<IconButton color="secondary"  size="small" onClick={() => {handleDelStudent(x)}} ><CancelIcon /> </IconButton>
@@ -633,11 +663,11 @@ return (
 					<TableBody p={0}>
 						{batchSessions.map( x => {
 								var myClasses = gClasses.td;
-								var timStr = `${x.hour}:${x.min}`;
+								//var timStr = `x.name`;
 							return (
-							<TableRow key={x.sessid} align="center">
+							<TableRow key={x.name+x.day} align="center">
 								<TableCell align="center"  className={myClasses} p={0} >{x.day}</TableCell>
-								<TableCell align="center"  className={myClasses} p={0} >{timStr}</TableCell>
+								<TableCell align="center"  className={myClasses} p={0} >{x.name}</TableCell>
 								<TableCell align="center"  className={myClasses} p={0} >
 									<IconButton color="primary"  size="small" onClick={() => {handleEditSession(x)}} ><EditIcon /> </IconButton>
 									<IconButton color="secondary"  size="small" onClick={() => {handleDelSession(x)}} ><CancelIcon /> </IconButton>
@@ -669,10 +699,10 @@ return (
 				<br />
 				{((drawer === "ADDSTUDENT") || (drawer === "EDITSTUDENT")) &&
 					<div align="center">
-					<Typography className={gClasses.info18Blue} >{((drawer === "ADDSESSION") ? "Add" : "Edit") +  " Student"}</Typography>
+					<Typography className={gClasses.info18Blue} >{((drawer === "ADDSTUDENT") ? "Add" : "Edit") +  " Student"}</Typography>
 					<br />
 					<br />
-					<VsSelect size="small" align="center" options={studentArray} field="name" value={newStudent} onChange={(event) => { setNewStudent(event.target.value)}} />			
+					<VsSelect size="small" align="center" options={studentArray} field="mergedName" value={newStudent} onChange={(event) => { setNewStudent(event.target.value)}} />			
 					<br />
 					<ShowResisterStatus />
 					<br />
@@ -689,15 +719,16 @@ return (
 							<Typography className={gClasses.info18Blue} >Day of the week</Typography>
 						</Grid>
 						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<VsSelect label="Day" size="small" align="center" options={SHORTWEEKSTR} value={newDay} onChange={(event) => { setNewDay(event.target.value)}} />			
+							<VsSelect size="small" align="center" options={SHORTWEEKSTR} value={newDay} onChange={(event) => { setNewDay(event.target.value)}} />			
 						</Grid>
 						<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 						<Grid item xs={6} sm={6} md={6} lg={6} align="left" >
-							<Typography className={gClasses.info18Blue} >Hour</Typography>
+							<Typography className={gClasses.info18Blue} >Start Time</Typography>
 						</Grid>
 						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<VsSelect label="Hour" size="small" align="center" options={HOURBLOCKSTR} value={newHour} onChange={(event) => { setNewHour(event.target.value)}} />			
+							<VsSelect size="small" align="center" options={BATCHTIMESTR} field="name" value={newHourMinute} onChange={(event) => { setNewHourMinute(event.target.value)}} />			
 						</Grid>
+						{/*
 						<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 						<Grid item xs={6} sm={6} md={6} lg={6} align="left"  >
 							<Typography className={gClasses.info18Blue} >Minute</Typography>
@@ -705,6 +736,7 @@ return (
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<VsSelect label="Min" size="small" align="center" options={MINUTEBLOCKSTR} value={newMin} onChange={(event) => { setNewMin(event.target.value)}} />			
 						</Grid>
+						*/}
 					</Grid>
 					<br />
 					<ShowResisterStatus />

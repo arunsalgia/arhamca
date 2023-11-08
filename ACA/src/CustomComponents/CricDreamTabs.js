@@ -28,6 +28,7 @@ import Divider from '@material-ui/core/Divider';
 import Area from "views/Area/Area"
 import User from "views/User/User"
 import Faculty	 from "views/Faculty/Faculty"
+import FacultySchedule	 from "views/Faculty/FacultySchedule"
 import Student	 from "views/Student/Student"
 import Batch	 from "views/Batch/Batch"
 import BatchAddEdit	 from "views/Batch/BatchAddEdit"
@@ -294,6 +295,7 @@ export function AcaTabs() {
 	const handleUser = () => { handleClose(); setMenuValue(9002);}
 	const handleStudent = () => { handleClose(); setMenuValue(9003);}
 	const handleFaculty = () => { handleClose(); setMenuValue(9004);}
+	const handleFacultySchedule = () => { handleClose(); setMenuValue(90041);}
 	const handleBatch = () => { handleClose(); setMenuValue(9005);}
 	const handleBatchAddEdit = () => { handleClose(); setMenuValue(90051);}
 	const handleSessionAddEdit = () => { handleClose(); setMenuValue(90052);}
@@ -362,6 +364,7 @@ export function AcaTabs() {
 			case 9002: return <User />;
 			case 9003: return <Student />;
 			case 9004: return <Faculty />;
+			case 90041: return <FacultySchedule />
 			case 9005: return <Batch />;
 			case 90051: return <BatchAddEdit />;
 			case 90052: return <SessionAddEdit />;
