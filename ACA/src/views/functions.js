@@ -46,16 +46,16 @@ export function validateSpecialCharacters(sss) {
     var sts = false;
     const TerroristCharacters = [];
 
-    if (!sss.includes("\""))
-    if (!sss.includes("\'"))
-    if (!sss.includes("\`"))
-    if (!sss.includes("\\"))
-    if (!sss.includes("/"))
-    if (!sss.includes("~"))
-    if (!sss.includes("\%"))
-    if (!sss.includes("^"))
-    if (!sss.includes("\&"))
-    if (!sss.includes("\+"))
+    if (!sss.contains("\""))
+    if (!sss.contains("\'"))
+    if (!sss.contains("\`"))
+    if (!sss.contains("\\"))
+    if (!sss.contains("/"))
+    if (!sss.contains("~"))
+    if (!sss.contains("\%"))
+    if (!sss.contains("^"))
+    if (!sss.contains("\&"))
+    if (!sss.contains("\+"))
       sts = true;
     return sts;
 }
@@ -65,13 +65,13 @@ export function validateMobile(sss) {
   const TerroristCharacters = [];
 
   if (sss.length === 10)
-  if (!sss.includes("\."))
-  if (!sss.includes("\-"))
-  if (!sss.includes("\+"))
-  if (!sss.includes("\*"))
-  if (!sss.includes("\/"))
-  if (!sss.includes("e"))
-  if (!sss.includes("E"))
+  if (!sss.contains("\."))
+  if (!sss.contains("\-"))
+  if (!sss.contains("\+"))
+  if (!sss.contains("\*"))
+  if (!sss.contains("\/"))
+  if (!sss.contains("e"))
+  if (!sss.contains("E"))
   if (!isNaN(sss))
     sts = true;
   return sts;
@@ -82,7 +82,7 @@ export function validateEmail(sss) {
     if (validateSpecialCharacters(sss)) {
       let xxx = sss.split("@");
       if (xxx.length === 2) {
-        if (xxx[1].includes(".")) 
+        if (xxx[1].contains(".")) 
           sts = true;
       }
     }
@@ -169,7 +169,7 @@ export function cricTeamName(t) {
   var tmp = t.split(' ');
   for(i=0; i < tmp.length; ++i)  {
     var x = tmp[i].trim().toUpperCase();
-    if (notToConvert.includes(x))
+    if (notToConvert.contains(x))
       tmp[i] = x;
     else
       tmp[i] = x.substr(0, 1) + x.substr(1, x.length - 1).toLowerCase();
@@ -659,3 +659,35 @@ export function getNameFromMergedName(mergedName) {
 export function getAreafromBid(myBid) {
 	return (myBid.substr(0, myBid.length-5));
 }
+
+
+export function isAdmin() {
+ return ["Admin"].includes(sessionStorage.getItem("role")); 
+}
+
+export function isManager() {
+ return ["Manager"].includes(sessionStorage.getItem("role")); 
+}
+
+export function isFaculty() {
+ return ["Faculty"].includes(sessionStorage.getItem("role")); 
+}
+
+export function isStudent() {
+ return ["Student"].includes(sessionStorage.getItem("role")); 
+}
+
+export function isAdmMan() {
+ return ["Admin", "Manager"].includes(sessionStorage.getItem("role")); 
+}
+
+
+export function isAdmManFac() {
+ return ["Admin", "Manager", "Faculty"].contains(localSession.getItem("role")); 
+}
+
+
+export function isAdmManStu() {
+ return ["Admin", "Manager", "Student"].contains(localSession.getItem("role")); 
+}
+

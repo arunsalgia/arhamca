@@ -34,7 +34,11 @@ import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
+import { 
+	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
+	isAdmMan, isAdmManFac, isFaculty,
+
+} from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
 
@@ -100,17 +104,34 @@ export default function Faculty() {
 		//console.log(firsTime);
 		async function getAllFaculty() {
 			try {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/all`;
-				const response = await axios.get(myUrl);
-				//console.log(response.data);
-				setFacultyArray(response.data);
-				setMasterFacultyArray(response.data);
+				if (isAdmMan()) {
+					console.log("Admin or Main");
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/all`;				
+					const response = await axios.get(myUrl);
+					//console.log(response.data);
+					setFacultyArray(response.data);
+					setMasterFacultyArray(response.data);
+				} 
+				else if (isFaculty()) {
+					console.log("Facultyn");
+					// First get the Faculty id
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/enabledfacultybyuid/${sessionStorage.getItem("uid")}/`;				
+					const response = await axios.get(myUrl);
+					//console.log(response.data);
+					setFacultyArray([response.data]);
+					setMasterFacultyArray([response.data]);
+				}
+				else {
+					console.log("None");
+				}
 			} catch (e) {
 				console.log(e);
 			}
 		}
-		getAllFaculty();
+		
 		handleResize();
+		getAllFaculty();
+		
 		window.addEventListener('resize', handleResize);
 	}, [])
 
@@ -369,7 +390,7 @@ export default function Faculty() {
 			<span></span>
 		</Grid>
 		<Grid  item xs={3} sm={3} md={2} lg={1} >
-			<VsButton name="New Faculty" align="right" onClick={handleAdd} />
+			<VsButton disabled={!isAdmMan()} name="New Faculty" align="right" onClick={handleAdd} />
 		</Grid>
 	</Grid>
 	)}

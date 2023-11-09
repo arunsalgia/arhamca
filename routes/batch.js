@@ -37,6 +37,15 @@ router.get('/list/enabled', async function (req, res, next) {
 })
 
 
+router.get('/enabledbatch/:fid', async function (req, res, next) {
+  setHeader(res);
+  var { fid } = req.params;
+	
+	var allRecs = await Batch.find({fid: fid}).sort({creationDate: -1});
+  sendok(res, allRecs ); 
+})
+
+
 router.get('/add/:batchData', async function (req, res, next) {
   setHeader(res);
   var { batchData } = req.params;

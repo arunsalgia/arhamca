@@ -34,7 +34,10 @@ import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
+import { 
+	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
+	isAdmMan, isAdmManFac, isStudent,
+} from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
 
@@ -102,11 +105,13 @@ export default function Student() {
 		//console.log(firsTime);
 		async function getAllStudent() {
 			try {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/list/all`;
-				const response = await axios.get(myUrl);
-				//console.log(response.data);
-				setStudentArray(response.data);
-				setMasterStudentArray(response.data);
+				if (isAdmMan() || isStudent()) { 
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/list/all`;
+					const response = await axios.get(myUrl);
+					//console.log(response.data);
+					setStudentArray(response.data);
+					setMasterStudentArray(response.data);
+				}
 			} catch (e) {
 				console.log(e);
 			}
@@ -378,7 +383,7 @@ export default function Student() {
 			<span></span>
 		</Grid>
 		<Grid  item xs={3} sm={3} md={2} lg={1} >
-			<VsButton name="New Student" align="right" onClick={handleAdd} />
+			<VsButton disabled={!isAdmMan()} name="New Student" align="right" onClick={handleAdd} />
 		</Grid>
 	</Grid>
 	)}

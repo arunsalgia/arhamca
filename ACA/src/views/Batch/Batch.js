@@ -63,6 +63,7 @@ import {
 
 import {
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
+	isAdmMan, isAdmManFac, isFaculty,
 } from 'views/functions';
 
 
@@ -113,11 +114,31 @@ export default function Batch() {
 		//console.log(firsTime);
 		async function getAllBatch() {
 			try {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/list/all`;
-				const response = await axios.get(myUrl);
-				//console.log(response.data);
-				setBatchArray(response.data);
-				setMasterBatchArray(response.data);
+				if (isAdmMan()) {
+					console.log("Admin or Main");
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/list/all`;
+					const response = await axios.get(myUrl);
+					//console.log(response.data);
+					setBatchArray(response.data);
+					setMasterBatchArray(response.data);
+				}
+				else if (isFaculty()) {
+					console.log("Facultyn");
+					// first get the faculty id
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/enabledfacultybyuid/${sessionStorage.getItem("uid")}/`;				
+					var response = await axios.get(myUrl);
+					// not using facilty id. Get facult's batch
+					if (response.data) {
+						myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabledbatch/${response.data.fid}`;
+						response = await axios.get(myUrl);
+						setBatchArray(response.data);
+						setMasterBatchArray(response.data);
+					}
+					
+				}
+				else {
+					console.log("Not correctr role");
+				}
 			} catch (e) {
 				console.log(e);
 			}
@@ -227,7 +248,7 @@ export default function Batch() {
 		setTab(process.env.REACT_APP_FACULTYSCHEDULE);
 		*/
 		setBatchRec(rec);
-		setShowAll(true);
+		setShowAll(isAdmMan());
 		setDrawer("FACULTYSCHEDULE");
 		
 	}
@@ -331,17 +352,17 @@ export default function Batch() {
 						<TableCell className={myClasses} p={0} >{x.sessionCount}</TableCell>
 						}
 						<TableCell className={myClasses} p={0} >
-							<IconButton color="primary" size="small" onClick={() => {handleEditBatch(x)}} ><EditIcon /></IconButton>
+							<IconButton color="primary" disabled={!isAdmMan()} size="small" onClick={() => {handleEditBatch(x)}} ><EditIcon /></IconButton>
 							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 							{(x.enabled) &&
-								<IconButton color="primary" size="small" onClick={() => {handleDisableBatch(x)}} ><IndeterminateCheckBoxIcon /></IconButton>
+								<IconButton color="primary" disabled={!isAdmMan()} size="small" onClick={() => {handleDisableBatch(x)}} ><IndeterminateCheckBoxIcon /></IconButton>
 							}
 							{(!x.enabled) &&
-								<IconButton color="primary" size="small" onClick={() => {handleEnableBatch(x)}} ><CheckBoxIcon /></IconButton>						
+								<IconButton color="primary" disabled={!isAdmMan()} size="small" onClick={() => {handleEnableBatch(x)}} ><CheckBoxIcon /></IconButton>						
 							}
 							<IconButton color="primary" disabled={!x.enabled} size="small" onClick={() => {handleAddSession(x)}} ><SchoolIcon /></IconButton>
 							<IconButton color="primary" disabled={!x.enabled} size="small" onClick={() => {handleFacultySchedule(x)}} ><TableChartSharpIcon /></IconButton>
-							<IconButton disabled={x.sessionCount > 0} color="secondary" size="small" onClick={() => {handleDeleteBatch(x)}} ><CancelIcon /></IconButton>
+							<IconButton disabled={(x.sessionCount > 0) || !isAdmMan() } color="secondary" size="small" onClick={() => {handleDeleteBatch(x)}} ><CancelIcon /></IconButton>
 						</TableCell>
 					</TableRow>
 				)})}
@@ -376,7 +397,7 @@ export default function Batch() {
 			<span></span>
 		</Grid>
 		<Grid  item xs={3} sm={3} md={2} lg={1} >
-			<VsButton name="New Batch" align="right" onClick={handleAddBatch} />
+			<VsButton disabled={!isAdmMan()} name="New Batch" align="right" onClick={handleAddBatch} />
 		</Grid>
 	</Grid>
 	)}
