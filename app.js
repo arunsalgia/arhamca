@@ -953,7 +953,7 @@ MINUTES_IN_HOUR = 60;
 BLOCK_PER_HOUR = 2;
 BLOCK_IN_MINUTES = 30;				// Block of 30 minutes
 BLOCK_START	= 18;					// Starting of 9AM
-BLOCK_END = 32;						// Ending at 9PM.
+BLOCK_END = 42;						// Ending at 9PM.
 Z5 = "00000";
 
 SEQUENCE_CURRENT = 9999999;

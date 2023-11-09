@@ -60,9 +60,10 @@ import {
 
 import {
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
+	getAreafromBid,
 } from 'views/functions';
 
-var origBatchRec = null;
+var origBatchRec = {bid: ""};
 var mode = "ADD";
 
 export default function BatchAddEdit() {
@@ -135,8 +136,15 @@ export default function BatchAddEdit() {
 				for(var i=0; i<tmp.length; ++i) {
 					tmp[i]["mergedName"] = mergedName(tmp[i].longName, tmp[i].shortName);
 				}
-				setNewArea(tmp[0].mergedName);
-				setAreaArray(tmp);
+				if (mode === "ADD") {
+					setNewArea(tmp[0].mergedName);
+					setAreaArray(tmp);
+				}
+				else {
+					var myAreaRec = tmp.find(x => x.shortName === getAreafromBid(origBatchRec.bid));
+					setNewArea(myAreaRec.mergedName);
+					setAreaArray([myAreaRec]);
+				}
 			} catch (e) {
 				console.log(e);
 				alert("Error Fetching area");
@@ -144,41 +152,53 @@ export default function BatchAddEdit() {
 		}
 		
 		async function getAllStudents() {
-		try {
-			var subfun = (mode == "EDIT") ? "list/freeorbatch/" + origBatchRec.bid :  "list/free";
-			console.log(subfun);
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/${subfun}`;
-			const response = await axios.get(myUrl);
-			var tmp = response.data;
+			try {
+				var subfun = (mode == "EDIT") ? "list/freeorbatch/" + origBatchRec.bid :  "list/free";
+				//console.log(subfun);
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/${subfun}`;
+				const response = await axios.get(myUrl);
+				var tmp = response.data;
 				for(var i=0; i<tmp.length; ++i) {
 					tmp[i]["mergedName"] = mergedName(tmp[i].name, tmp[i].sid);
+				}
+				//console.log(response.data);
+				setStudentArray(tmp);
+				if (mode === "ADD") {
+					setBatchStudents([]);
+				} 
+				else {
+					setBatchStudents(tmp.filter(x => origBatchRec.sid.includes(x.sid)));
+				}
+			} 
+			catch (e) {
+				console.log(e);
+				alert("Error Fetching Studnets");
 			}
-			//console.log(response.data);
-			setStudentArray(tmp);
-		} catch (e) {
-			console.log(e);
-			alert("Error Fetching Studnets");
 		}
-	}
 
 		async function getAllFaculty() {	
-		try {
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/enabled`;
-			const response = await axios.get(myUrl);
-			//console.log(response.data);
-			var tmp = response.data;
-				for(var i=0; i<tmp.length; ++i) {
-					tmp[i]["mergedName"] = mergedName(tmp[i].name, tmp[i].fid);
+			try {
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/enabled`;
+				const response = await axios.get(myUrl);
+				//console.log(response.data);
+				var tmp = response.data;
+					for(var i=0; i<tmp.length; ++i) {
+						tmp[i]["mergedName"] = mergedName(tmp[i].name, tmp[i].fid);
+				}
+				setFacultyArray(tmp);
+				if (mode === "ADD") 
+					setNewFaculty(tmp[0].mergedName);
+				else {
+					var myFacRec = tmp.find(x => x.fid === origBatchRec.fid);
+					setNewFaculty(mergedName(myFacRec.name, myFacRec.fid));
+				}
+			} catch (e) {
+				console.log(e);
+				alert("Error Fetching Faculty");
 			}
-			setFacultyArray(tmp);
-			setNewFaculty(tmp[0].mergedName);
-		} catch (e) {
-			console.log(e);
-			alert("Error Fetching Faculty");
 		}
-	}
 
-		// get the data
+			// get the data
 		var myData = sessionStorage.getItem("batchInfo");
 		if (!myData) {
 			alert("Direct call not permitted");
@@ -200,7 +220,27 @@ export default function BatchAddEdit() {
 		sessionStorage.removeItem("batchInfo");
 		getAllAreas();
 		getAllFaculty();
-		getAllStudents()
+		getAllStudents();
+		
+		// other batch infor set if mode 
+		if (mode === "ADD") {
+			
+		}
+		else {
+			setNewFees(origBatchRec.fees);
+			var myRec = DURATIONSTR.find(x => x.block === origBatchRec.sessionTime);
+			setSessDuration(myRec.name);
+			
+			// Get the session details
+			var bSessions = [];
+			for(var i=0; i<origBatchRec.timings.length; ++i) {
+				//console.log(origBatchRec.timings[i].hour, origBatchRec.timings[i].minute);
+				var dRec = BATCHTIMESTR.find(x => (x.hour == origBatchRec.timings[i].hour) && (x.min === origBatchRec.timings[i].minute) );
+				//console.log(dRec);
+				bSessions.push({name: dRec.name, hour: dRec.hour, min: dRec.min, block: dRec.block, day: origBatchRec.timings[i].day });
+			}
+			setBatchSessions(bSessions);
+		}
 		
 		handleResize();
 		window.addEventListener('resize', handleResize);
@@ -434,8 +474,9 @@ function handleAddStudent() {
 }
 
 function handleEditStudent(x) {
-	setOrigHourMinute(x.name);
-  setNewStudent(x.name);
+	//console.log(x);
+	setOrigHourMinute(x.mergedName);
+  setNewStudent(x.mergedName);
 	setDrawer("EDITSTUDENT");
 }
 
@@ -569,7 +610,7 @@ return (
 	//console.log(dispType);
 	return (
 	<div align="center">
-		<DisplayPageHeader headerName="Add new Batch" groupName="" tournament="" />
+<DisplayPageHeader headerName={ (mode ==="ADD") ? "Add new Batch" : `Edit batch ${origBatchRec.bid}` } groupName="" tournament="" />
 		<br />
 		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
 			<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditSubmit}  >
@@ -616,11 +657,13 @@ return (
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid item xs={8} sm={8} md={10} lg={10} >
-					<Typography className={gClasses.info18Blue}>Students in the Batch</Typography>
+					<Typography className={gClasses.info18Blue}>Batch students</Typography>
 				</Grid>
-				<Grid  item xs={4} sm={4} md={2} lg={2} >
-					<VsButton type="button" name="Add student" onClick={handleAddStudent} />
-				</Grid>
+				{ (mode === "ADD") &&
+					<Grid  item xs={4} sm={4} md={2} lg={2} >
+						<VsButton type="button" name="Add Student" onClick={handleAddStudent} />
+					</Grid>
+				}
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} >
 					<Table  align="center">
 					<TableHead p={0}>
@@ -636,8 +679,8 @@ return (
 							<TableRow key={x.sid} align="center">
 								<TableCell align="center" className={myClasses} p={0} >{x.mergedName}</TableCell>
 								<TableCell align="center" className={myClasses} p={0} >
-									<IconButton color="primary"  size="small" onClick={() => {handleEditStudent(x)}} ><EditIcon /> </IconButton>
-									<IconButton color="secondary"  size="small" onClick={() => {handleDelStudent(x)}} ><CancelIcon /> </IconButton>
+									<IconButton  color="primary"  size="small" onClick={() => {handleEditStudent(x)}} ><EditIcon /> </IconButton>
+									<IconButton disabled={mode !== "ADD"} color="secondary"  size="small" onClick={() => {handleDelStudent(x)}} ><CancelIcon /> </IconButton>
 								</TableCell>
 							</TableRow>
 						)})}
@@ -646,7 +689,7 @@ return (
 				</Grid>
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid item xs={8} sm={8} md={10} lg={10} >
-					<Typography className={gClasses.info18Blue}>Session details (per week)</Typography>
+					<Typography className={gClasses.info18Blue}>Session schedule (per week)</Typography>
 				</Grid>
 				<Grid  item xs={4} sm={4} md={2} lg={2} >
 					<VsButton type="button" name="Add Session" onClick={handleAddSession} />

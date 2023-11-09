@@ -27,6 +27,7 @@ import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomCompon
 
 import lodashSortBy from "lodash/sortBy";
 
+import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
@@ -328,19 +329,20 @@ export default function Student() {
 						myInfo +=  x.addr4 + "<br />";
 						//console.log(x);
 						var myClasses = (x.enabled) ? gClasses.td : gClasses.disabledtd;
+						console.log(x.bid);
 					return (
 					<TableRow key={x.sid}>
 						<TableCell className={myClasses} p={0} >{x.sid}</TableCell>
 						<TableCell className={myClasses} p={0} >{x.name}</TableCell>
 						<TableCell className={myClasses} p={0} >{x.bid}</TableCell>
 						<TableCell className={myClasses} p={0} >
-							<EditIcon color="primary" size="small" onClick={() => {handleEdit(x)}}  />
-							<InfoIcon color="primary" size="small" onClick={() => {handleInfo(x)}}  />
+							<IconButton disabled={x.bid != ""} color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
+							<IconButton disabled={x.bid != ""} color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 							{(x.enabled) &&
-								<IndeterminateCheckBoxIcon color="primary" size="small" onClick={() => {handleDisableStudent(x)}}  />							
+								<IconButton disabled={x.bid != ""} color="primary" size="small" onClick={() => {handleDisableStudent(x)}} ><IndeterminateCheckBoxIcon /></IconButton>							
 							}
 							{(!x.enabled) &&
-								<CheckBoxIcon color="primary" size="small" onClick={() => {handleEnableStudent(x)}}  />							
+								<IconButton color="primary" size="small" onClick={() => {handleEnableStudent(x)}} ><CheckBoxIcon /></IconButton>						
 							}
 						</TableCell>
 					</TableRow>

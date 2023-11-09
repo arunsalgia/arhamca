@@ -31,6 +31,8 @@ import lodashSortBy from "lodash/sortBy";
 
 import {setTab} from "CustomComponents/CricDreamTabs.js"
 
+import FacultySchedule	 from "views/Faculty/FacultySchedule"
+
 
 import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
@@ -75,10 +77,14 @@ export default function Batch() {
 	const [mode, setMode] = useState("");
 	const [batchArray, setBatchArray] = useState([]);
 	const [masterBatchArray, setMasterBatchArray] = useState([]);
-	const [batchRec, setBatchtRec] = useState(null);
+
 
 	const [selBatch, setSelBatch] = useState("");
 
+	// for faculty schule call
+	const [batchRec, setBatchRec] = useState({});
+	const [showAll, setShowAll] = useState(false);
+	
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
@@ -183,8 +189,14 @@ export default function Batch() {
 		setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
 	}
 	
+	function handleEditBatch(rec) {
+		var batchInfo = {inUse: true, status: STATUS_INFO.EDIT_BATCH, msg: "", record:  rec };
+		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
+	}
+	
 	function handleAddSession(rec) {
-		var batchInfo = {inUse: true, status: STATUS_INFO.ADD_SESSION, msg: "", record:  rec, record2: null };
+		var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.ADD_SESSION, msg: "", record:  rec, record2: null };
 		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
 		setTab(process.env.REACT_APP_BATCH_ADDEDITSESSION);
 	}
@@ -209,9 +221,15 @@ export default function Batch() {
 	}
 
 	async function handleFacultySchedule(rec) {
+		/*
 		var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.FACULTYSCHEDULE, msg: "", record:  rec };
 		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
 		setTab(process.env.REACT_APP_FACULTYSCHEDULE);
+		*/
+		setBatchRec(rec);
+		setShowAll(true);
+		setDrawer("FACULTYSCHEDULE");
+		
 	}
 
 	function DisplayAllToolTips() {
@@ -313,7 +331,7 @@ export default function Batch() {
 						<TableCell className={myClasses} p={0} >{x.sessionCount}</TableCell>
 						}
 						<TableCell className={myClasses} p={0} >
-							<IconButton color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
+							<IconButton color="primary" size="small" onClick={() => {handleEditBatch(x)}} ><EditIcon /></IconButton>
 							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 							{(x.enabled) &&
 								<IconButton color="primary" size="small" onClick={() => {handleDisableBatch(x)}} ><IndeterminateCheckBoxIcon /></IconButton>
@@ -363,21 +381,16 @@ export default function Batch() {
 	</Grid>
 	)}
 		
-		return (
-		<div>
-		{(mode == "") &&
-		<div>
-			<DisplayPageHeader headerName="Batch" groupName="" tournament="" />
-			<DisplayOptions />
-			<DisplayAllBatch/>
-			{/*<DisplayAllToolTips />*/}
-		</div>
-		}
-		{(mode !== "") &&
-			<div>
-			<BatchAddEdit batchRec={batchRec} />
-			</div>
-		}
-		</div>
-		)
+	return (
+	<div>
+	<DisplayPageHeader headerName="Batch" groupName="" tournament="" />
+	<DisplayOptions />
+	<DisplayAllBatch/>
+	{/*<DisplayAllToolTips />*/}
+	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>
+		<VsCancel align="right" onClick={() => { setDrawer("")}} />
+		<FacultySchedule batchRec={batchRec} all={showAll} />
+	</Drawer>
+	</div>
+	);
 }

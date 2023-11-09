@@ -78,44 +78,45 @@ export default function SessionAddEdit() {
 	const [origSessionRec, setOrigSessionRec] = useState(null);
 	const [origBatchRec, setOrigBatchRec] = useState(null);
 	const [origBid, setOrigBid] = useState("");
+	const [returnPath, setReturnPath] = useState(process.env.REACT_APP_BATCH);
 
 	const [cbArray, setCbArray] = useState(Array(25).fill(true));
 	const [sessionDate, setSessionDate] = useState(new Date());
 	
-	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
+	//const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	
-	const [areaArray, setAreaArray] = useState([]);
+	//const [areaArray, setAreaArray] = useState([]);
 	const [studentArray, setStudentArray] = useState([]);
-	const [batchArray, setBatchArray] = useState([]);
-	const [facultyArray, setFacultyArray] = useState([]);
-	const [masterBatchArray, setMasterBatchArray] = useState([]);
+	//const [batchArray, setBatchArray] = useState([]);
+	//const [facultyArray, setFacultyArray] = useState([]);
+	//const [masterBatchArray, setMasterBatchArray] = useState([]);
 	
 	const [sessionNumber, setSessionNumber] = useState("NEW");
 	const [myNotes, setMyNotes] = useState("");
 	
-	const [userName, setUserName] = useState("");
-	const [email, setEmail] = useState("");
-	const [mobile, setMobile] = useState("");
+	//const [userName, setUserName] = useState("");
+	//const [email, setEmail] = useState("");
+	//const [mobile, setMobile] = useState("");
 	//const [batchRec, setBatchtRec] = useState(null);
-	const [userRec, setUserRec] = useState(null);
+	//const [userRec, setUserRec] = useState(null);
 	
-	const [newArea, setNewArea] = useState("");
+	//const [newArea, setNewArea] = useState("");
 	const [newFaculty, setNewFaculty] = useState("");
 
-	const [sessHour, setSessHour] = useState(SESSIONHOURSTR[0]);
+	//const [sessHour, setSessHour] = useState(SESSIONHOURSTR[0]);
 
-	const [newStudent, setNewStudent] = useState("");
-	const [batchStudents, setBatchStudents] = useState([]);
-	const [batchSessions, setBatchSessions] = useState([]);
+	//const [newStudent, setNewStudent] = useState("");
+	//const [batchStudents, setBatchStudents] = useState([]);
+	//const [batchSessions, setBatchSessions] = useState([]);
 	
-	const [newDay, setNewDay] = useState("");
-	const [newHour, setNewHour] = useState("");
-	const [newMin, setNewMin] = useState("");
-	const [newFess, setNewFees] = useState(200);
-	const [sessId, setSessId] = useState(0);
+	//const [newDay, setNewDay] = useState("");
+	//const [newHour, setNewHour] = useState("");
+	//const [newMin, setNewMin] = useState("");
+	//const [newFess, setNewFees] = useState(200);
+	//const [sessId, setSessId] = useState(0);
 	
 	const [drawer, setDrawer] = useState("");
-	const [drawerDetail, setDrawerDetail] = useState("");
+	//const [drawerDetail, setDrawerDetail] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
@@ -175,11 +176,11 @@ export default function SessionAddEdit() {
 			setOrigBatchRec(tmp.record);
 			setOrigBid(tmp.record.bid);
 			setOrigSessionRec(tmp.record2);
-			sList = sList;
+			sList = [];
 		} 
 		else {
 			alert("Invalid staus session");
-			setTab(process.env.REACT_APP_BATCH);
+			setTab(tmp.from);
 		}
 		sessionStorage.removeItem("batchInfo");
 		getAllStudents(sList)
@@ -252,7 +253,6 @@ function ShowResisterStatus() {
 async function handleAddEditSubmit() {
 
 	// luckily not validation required
-	
 	var myData = {};
 	console.log(origBatchRec)
 	myData["batchData"] = origBatchRec;
@@ -302,7 +302,7 @@ async function handleAddEditSubmit() {
 		var batchInfo = {inUse: true, status: STATUS_INFO.ERROR, msg: "Error adding/updating session.", record: null };
 		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
 	}
-	setTab(process.env.REACT_APP_BATCH)
+	setTab(returnPath)
 }
 
 

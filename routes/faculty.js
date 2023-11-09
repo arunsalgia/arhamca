@@ -22,6 +22,7 @@ router.get('/list/all', async function (req, res, next) {
   sendok(res, allFaculty ); 
 })
 
+
 router.get('/list/disabled', async function (req, res, next) {
   setHeader(res);
  
@@ -34,6 +35,17 @@ router.get('/list/enabled', async function (req, res, next) {
  
 	var allFaculty = await Faculty.find({enabled: true}).sort({name: 1});
   sendok(res, allFaculty ); 
+})
+
+router.get('/enabledfaculty/:fid', async function (req, res, next) {
+  setHeader(res);
+	var {fid} = req.params;
+	
+	var myFaculty = await Faculty.findOne({fid: fid, enabled: true});
+	if (myFaculty)
+		sendok(res, myFaculty ); 
+	else
+		senderr(res, 601, "No fac");
 })
 
 
@@ -134,7 +146,7 @@ router.get('/getfacultyblock/:fid', async function (req, res, next) {
 	//console.log(allBatches);
 	
 	var facultyBlockList = await getWeeklyBlock(allBatches);
-	//console.log(facultyBlockList);
+	console.log(facultyBlockList);
 	
   sendok(res, facultyBlockList ); 
 })

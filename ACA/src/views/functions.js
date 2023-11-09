@@ -655,3 +655,7 @@ export function getNameFromMergedName(mergedName) {
 	var tmp = mergedName.split("(");
 	return tmp[0].trim();
 }
+
+export function getAreafromBid(myBid) {
+	return (myBid.substr(0, myBid.length-5));
+}

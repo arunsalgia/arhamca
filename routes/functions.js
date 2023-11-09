@@ -21,7 +21,12 @@ function blockToTime(blk) {
 
 function getWeeklyBlock(allBatches) {
 
-	var facultyBlockList = [].concat(BLOCKWEEKSTRLIST);
+	//var facultyBlockList = [].concat(BLOCKWEEKSTRLIST);
+	
+	var facultyBlockList = [];
+	for (var i=0; i<48; ++i) {
+		facultyBlockList.push(Array(7).fill(""));
+	}
 	
 	console.log(facultyBlockList.length);
 	console.log("totla batches: ", allBatches.length);

@@ -97,8 +97,8 @@ router.get('/add/:batchData', async function (req, res, next) {
 		var dayIdx = SHORTWEEKSTR.indexOf(sessRec.day);
 		console.log(dayIdx, startBlock);
 		for(var i=startBlock; i<(startBlock+totalBlocks); ++i) {
-			console.log(dayIdx, i, facultyBlockList[dayIdx][i]);
-			if (facultyBlockList[dayIdx][i] != "") return senderr(res, 604, "faculty block clash");			// faculty slot busy with another batch
+			console.log(dayIdx, i, facultyBlockList[i][dayIdx]);
+			if (facultyBlockList[i][dayIdx] != "") return senderr(res, 604, "faculty block clash");			// faculty slot busy with another batch
 		}
 	};
 	
@@ -130,6 +130,9 @@ router.get('/add/:batchData', async function (req, res, next) {
 		await studentArray[i].save();
 	};
 	
+	var facRec = await Faculty.findOne({fid: batchData.faculty.fid});
+	facRec.batchCount += 1;
+	await facRec.save()
 	console.log(newBatch);
 	
 	sendok(res, newBatch ); 
@@ -170,6 +173,11 @@ router.get('/delete/:bid', async function (req, res, next) {
 		await studentArray[i].save();
 	}
 	
+	var facRec = await Faculty.findOne({fid: batchRec.fid});
+	facRec.batchCount -= 1;
+	await facRec.save();
+	console.log(facRec);
+	
   sendok(res, "Deleted" ); 
 })
 
@@ -188,6 +196,11 @@ router.get('/disabled/:bid', async function (req, res, next) {
 		studentArray[i].bid = "";
 		await studentArray[i].save();
 	}
+	
+	// decrease  the bach count of faculty
+	facultyRec = await Faculty.findOne({fid: batchRec.fid});
+	facultyRec.batchCount -= 1;
+  await facultyRec.save();
 	
   sendok(res, batchRec ); 
 })
@@ -211,25 +224,16 @@ router.get('/enabled/:bid', async function (req, res, next) {
 		studentArray[i].bid = batchRec.bid;
 		await studentArray[i].save();
 	}
-
+	
+	// increase the bach count of faculty
+	facultyRec = await Faculty.findOne({fid: batchRec.fid});
+	facultyRec.batchCount += 1;
+  await facultyRec.save();
+	
 	batchRec.enabled = true;
 	await batchRec.save();
 	
   sendok(res, batchRec ); 
-})
-
-
-router.get('/getfacultyblock/:fid', async function (req, res, next) {
-  setHeader(res);
-  
-	var { fid } = req.params;
-	
-	var allBatches = await Batch.find({fid: fid});
-	//console.log(allBatches);
-	
-	var facultyBlockList = getWeeklyBlock(allBatches);
-	
-  sendok(res, facultyBlockList ); 
 })
 
 
