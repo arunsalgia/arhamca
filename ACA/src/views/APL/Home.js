@@ -347,21 +347,24 @@ export default function Home() {
         <div>
           <Grid key="jp1" container >
             <Grid item xs={6} sm={6} md={6} lg={6} >
-							<JumpButton page={process.env.REACT_APP_AREA} text="Area List" />
+							<JumpButton page={process.env.REACT_APP_AREA} text="Area" />
             </Grid>
             <Grid item xs={6} sm={6} md={6} lg={6} >
-							<JumpButton page={process.env.REACT_APP_USER} text="User List" />
-            </Grid>
-						<br />
-            <Grid item xs={6} sm={6} md={6} lg={6} >
-							<JumpButton page={process.env.REACT_APP_FACULTY} text="Add Faculty" />
+							<JumpButton page={process.env.REACT_APP_USER} text="User" />
             </Grid>
 						<br />
             <Grid item xs={6} sm={6} md={6} lg={6} >
-							<JumpButton page={process.env.REACT_APP_STUDENT} text="Add Student" />
+							<JumpButton page={process.env.REACT_APP_FACULTY} text="Faculty" />
+            </Grid>
+						<br />
+            <Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_STUDENT} text="Student" />
             </Grid>		
 						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<JumpButton page={process.env.REACT_APP_BATCH} text="Add Batch" />
+							<JumpButton page={process.env.REACT_APP_BATCH} text="Batch" />
+            </Grid>								
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_SESSION} text="Session" />
             </Grid>								
           </Grid>
         </div>

@@ -27,11 +27,14 @@ import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomCompon
 
 import lodashSortBy from "lodash/sortBy";
 
+import FacultySchedule	 from "views/Faculty/FacultySchedule"
+
 import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
+import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { 
@@ -58,6 +61,9 @@ export default function Faculty() {
 	//const alert = useAlert();
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
+	
+	const [facultyInfo, setFacultyInfo] = useState(null);
+	const [showAll, setShowAll] = useState(false);
 	
 	const [facultyArray, setFacultyArray] = useState([]);
 	const [masterFacultyArray, setMasterFacultyArray] = useState([]);
@@ -180,6 +186,17 @@ export default function Faculty() {
         );
       }
 
+	async function handleFacultySchedule(rec) {
+		/*
+		var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.FACULTYSCHEDULE, msg: "", record:  rec };
+		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		setTab(process.env.REACT_APP_FACULTYSCHEDULE);
+		*/
+		setFacultyInfo({name: rec.name, fid: rec.fid});
+		setShowAll(isAdmMan());
+		setDrawerDetail("FACULTYSCHEDULE");
+		
+	}
   async function handleAddEditSubmit() {
 		//console.log("Add / Edit User");
 		var response;
@@ -268,7 +285,7 @@ export default function Faculty() {
 	
 	function handleInfo(r) {
 		setFacultyRec(r);
-		setDrawerDetail("detail");
+		setDrawerDetail("DETAIL");
 	}
 
 	function DisplayAllToolTips() {
@@ -344,9 +361,9 @@ export default function Faculty() {
 						var myClasses = (x.enabled) ? gClasses.td : gClasses.disabledtd;
 					return (
 					<TableRow key={x.fid}>
-						<TableCell className={myClasses} p={0} >{x.fid}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.fid}</TableCell>
 						<TableCell className={myClasses} p={0} >{x.name}</TableCell>
-						<TableCell className={myClasses} p={0} >{x.batchCount}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.batchCount}</TableCell>
 						<TableCell className={myClasses} p={0} >
 							<IconButton disabled={!x.enabled} color="primary" size="small" onClick={() => {handleEdit(x)}}  ><EditIcon /></IconButton>
 							<IconButton disabled={!x.enabled} color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
@@ -356,6 +373,7 @@ export default function Faculty() {
 							{(!x.enabled) &&
 								<IconButton color="primary" size="small" onClick={() => {handleEnableFaculty(x)}} ><CheckBoxIcon /></IconButton>
 							}
+							<IconButton color="primary" disabled={!x.enabled} size="small" onClick={() => {handleFacultySchedule(x)}} ><TableChartSharpIcon /></IconButton>							
 						</TableCell>
 					</TableRow>
 				)})}
@@ -457,6 +475,12 @@ export default function Faculty() {
 				</ValidatorForm>
 				<ValidComp p1={password}/>   
 			</Box>
+			</Drawer>
+			<Drawer anchor="top" variant="temporary" open={drawerDetail !== ""}>
+				<VsCancel align="right" onClick={() => { setDrawerDetail("")}} />
+				{(drawerDetail === "FACULTYSCHEDULE") &&
+					<FacultySchedule faculty={facultyInfo} all={showAll} />
+				}
 			</Drawer>
 		</div>
 		)

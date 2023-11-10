@@ -57,11 +57,11 @@ router.get('/list/selected/:studentList', async function (req, res, next) {
   setHeader(res);
 	
 	var {studentList} = req.params;
-	console.log(studentList);
+	//console.log(studentList);
 	var studentArray = studentList.split(",");
-	console.log(studentArray);
+	//console.log(studentArray);
 	var allRecs = await Student.find({sid: {$in: studentArray}, enabled: true }).sort({name: 1});
-	console.log(allRecs);
+	//console.log(allRecs);
   sendok(res, allRecs ); 
 })
 
@@ -89,7 +89,7 @@ router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:a
 		parentMobile: parMobile,
 		enabled: true,   
 	});
-	console.log(studentRec);
+	//console.log(studentRec);
   await studentRec.save();
 
   sendok(res, studentRec ); 

@@ -36,6 +36,13 @@ router.get('/list/enabled', async function (req, res, next) {
   sendok(res, allRecs ); 
 })
 
+router.get('/get/:bid', async function (req, res, next) {
+  setHeader(res);
+  var { bid } = req.params;
+	
+	var batchRec = await Batch.findOne({bid: bid});
+  sendok(res, batchRec ); 
+})
 
 router.get('/enabledbatch/:fid', async function (req, res, next) {
   setHeader(res);

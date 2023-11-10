@@ -68,9 +68,9 @@ import {
 } from 'views/functions';
 
 
-var mode = "ADD";
+//var props.mode = "ADD";
 
-export default function SessionAddEdit() {
+export default function SessionAddEdit(props) {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
 	//const alert = useAlert();
@@ -93,28 +93,10 @@ export default function SessionAddEdit() {
 	
 	const [sessionNumber, setSessionNumber] = useState("NEW");
 	const [myNotes, setMyNotes] = useState("");
-	
-	//const [userName, setUserName] = useState("");
-	//const [email, setEmail] = useState("");
-	//const [mobile, setMobile] = useState("");
-	//const [batchRec, setBatchtRec] = useState(null);
-	//const [userRec, setUserRec] = useState(null);
-	
-	//const [newArea, setNewArea] = useState("");
+
 	const [newFaculty, setNewFaculty] = useState("");
 
-	//const [sessHour, setSessHour] = useState(SESSIONHOURSTR[0]);
 
-	//const [newStudent, setNewStudent] = useState("");
-	//const [batchStudents, setBatchStudents] = useState([]);
-	//const [batchSessions, setBatchSessions] = useState([]);
-	
-	//const [newDay, setNewDay] = useState("");
-	//const [newHour, setNewHour] = useState("");
-	//const [newMin, setNewMin] = useState("");
-	//const [newFess, setNewFees] = useState(200);
-	//const [sessId, setSessId] = useState(0);
-	
 	const [drawer, setDrawer] = useState("");
 	//const [drawerDetail, setDrawerDetail] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
@@ -142,48 +124,25 @@ export default function SessionAddEdit() {
 		}
 
 		async function getAllStudents(sidList) {
-		try {
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/list/selected/${sidList}`;
-			const response = await axios.get(myUrl);
-			console.log(response.data);
-			setStudentArray(response.data);
-			var filledArray = Array(response.data.length).fill(true);
-			setCbArray(filledArray);
-			
-		} catch (e) {
-			console.log(e);
-			alert("Error Fetching Studnets");
+			try {
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/list/selected/${sidList}`;
+				const response = await axios.get(myUrl);
+				//console.log(response.data);
+				setStudentArray(response.data);
+				var filledArray = Array(response.data.length).fill(true);
+				setCbArray(filledArray);
+				
+			} catch (e) {
+				console.log(e);
+				alert("Error Fetching Studnets");
+			}
 		}
-	}
-
-		// get the data
-		var sList = [];
-		var myData = sessionStorage.getItem("batchInfo");
-		if (!myData) {
-			alert("Direct call not permitted");
-			setTab(process.env.REACT_APP_BATCH);
-		}
-		var tmp = JSON.parse(myData);
-		if (tmp.status === STATUS_INFO.ADD_SESSION) {
-			mode = "ADD";
-			setOrigBatchRec(tmp.record);
-			setOrigSessionRec(tmp.record2);
-			setOrigBid(tmp.record.bid);
-			sList = tmp.record.sid;
-		}
-		else if (tmp.status === STATUS_INFO.EDIT_SESSION) {
-			mode = "EDIT";
-			setOrigBatchRec(tmp.record);
-			setOrigBid(tmp.record.bid);
-			setOrigSessionRec(tmp.record2);
-			sList = [];
-		} 
-		else {
-			alert("Invalid staus session");
-			setTab(tmp.from);
-		}
-		sessionStorage.removeItem("batchInfo");
-		getAllStudents(sList)
+		
+		//console.log(props.batchRec)
+		setOrigBatchRec(props.batchRec);
+		setOrigBid(props.batchRec.bid);
+		setOrigSessionRec(props.sessionRec);		
+		getAllStudents(props.batchRec.sid);
 		
 		handleResize();
 		window.addEventListener('resize', handleResize);
@@ -254,7 +213,7 @@ async function handleAddEditSubmit() {
 
 	// luckily not validation required
 	var myData = {};
-	console.log(origBatchRec)
+	//console.log(origBatchRec)
 	myData["batchData"] = origBatchRec;
 	myData["remarks"] = myNotes;
 	myData["sessionDate"] = sessionDate;
@@ -262,22 +221,24 @@ async function handleAddEditSubmit() {
 	for(var i=0; i<origBatchRec.sid.length; ++i) {
 		if (cbArray[i]) attendanceSid.push(origBatchRec.sid[i]);
 	}
-	console.log(attendanceSid);
+	//console.log(attendanceSid);
 	myData["attendanceList"] = attendanceSid;
-	console.log(myData);
+	//console.log(myData);
 	
 	var myJsonData = JSON.stringify(myData);
 	var finalData = encodeURI(myJsonData);
 
 	//var batchRec;
 	try {
-		if (mode == "ADD") {
+		if (props.mode == "ADD") {
 		// for add new batch
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/session/add/${finalData}`;
 			var response = await axios.get(myUrl);
 			//alert("Successfully added details of new batch");
-			var batchInfo = {inUse: true, status: STATUS_INFO.OKAY, msg: `Successfully added session of batch ${response.data.bid}.`, record: response.data };
-			sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+			//var batchInfo = {inUse: true, status: STATUS_INFO.OKAY, msg: `Successfully added session of batch ${response.data.bid}.`, record: response.data };
+			//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+			props.onReturn.call(this, {status: "ADD", msg: `Successfully added session of batch ${response.data.bid}.`});
+			return;
 		}
 		else {
 			// for edit user
@@ -322,7 +283,7 @@ function handlePresentAbsent(idx, state) {
 
 	return (
 	<div align="center">
-		<DisplayPageHeader headerName={(mode == "ADD") ? `Add session of batch ${origBid}` : `Edit Session`} groupName="" tournament="" />
+		<DisplayPageHeader headerName={(props.mode == "ADD") ? `Add session of batch ${origBid}` : `Edit Session`} groupName="" tournament="" />
 		<br />
 		<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditSubmit}  >
 		<Grid key="ADDEDITBATCH" className={gClasses.noPadding} container alignItems="flex-start" >
@@ -392,13 +353,13 @@ function handlePresentAbsent(idx, state) {
 			<ShowResisterStatus />
 			<br />
 			<Grid item xs={3} sm={3} md={4} lg={5} />
-			<Grid item xs={3} sm={3} md={2} lg={1} >
-				<VsButton type="submit" name={(mode == "EDIT") ? "Update Session" : "Add Session"} />
+			<Grid item xs={12} sm={12} md={12} lg={12} >
+				<VsButton type="submit" name={(props.mode == "EDIT") ? "Update Session" : "Add Session"} />
 			</Grid>
-			<Grid  item xs={3} sm={3} md={2} lg={1} >
-				<VsButton type="button" name="Cancel" onClick={mainCancel}/>
+			{/*<Grid  item xs={3} sm={3} md={2} lg={1} >
+				<VsButton disabled={true} type="button" name="Cancel" onClick={mainCancel}/>
 			</Grid>
-			<Grid item xs={3} sm={3} md={4} lg={5} />
+			<Grid item xs={3} sm={3} md={4} lg={5} />*/}
 		</Grid>
 		</ValidatorForm>
 		<ValidComp />   

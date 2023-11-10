@@ -16,9 +16,27 @@ const {
 
 router.get('/list/all', async function (req, res, next) {
   setHeader(res);
- 
-	var allRecs = await Batch.find({}).sort({creationDate: -1});
-  sendok(res, allRecs ); 
+
+	// First get list of students
+	var allStudents = await Student.find({},{_id: 0, sid: 1, name: 1, enabled: 1, bid: 1}).sort({name: 1});
+	
+	var sessionCount = [];
+	var xxx = [];
+	for(var i=0; i<allStudents.length; ++i) {
+		var myStud = allStudents[i];
+		// for for each student get the total sessions
+		/*
+		db.inventory.updateMany(
+   { tags: { $in: [ "home", "school" ] } },
+   { $set: { exclude: false } }
+	*/
+		var sessCount = await Session.countDocuments(
+			{ sidList: myStud.sid }
+		);
+		sessionCount.push({sid: myStud.sid, name: myStud.name, enabled: myStud.enabled, bid: myStud.bid,  count: sessCount});
+	}
+	
+  sendok(res, sessionCount ); 
 })
 
 

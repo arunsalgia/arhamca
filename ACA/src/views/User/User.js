@@ -23,11 +23,15 @@ import { UserContext } from "../../UserContext";
 import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomComponents/CustomComponents.js';
 
 
+import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
+import { 
+	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
+	isAdmin, isAdmMan,
+} from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
 
@@ -36,7 +40,7 @@ import VsCancel from "CustomComponents/VsCancel";
 import VsSelect from "CustomComponents/VsSelect";
 
 const MAXAREACODELENGTH = 4;
-const ALLROLES = ["Student", "Faculty", "Admin"];
+const ALLROLES = ["Manager", "Student", "Faculty", "Admin"];
 
 export default function User() {
 	//const classes = useStyles();
@@ -85,10 +89,12 @@ export default function User() {
 		//console.log(firsTime);
 		async function getAllUsers() {
 			try {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/user/acalist`;
-				const response = await axios.get(myUrl);
-				//console.log(response.data);
-				setUserArray(response.data);
+				if (isAdmin()) {
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/user/acalist`;
+					const response = await axios.get(myUrl);
+					//console.log(response.data);
+					setUserArray(response.data);
+				}
 			} catch (e) {
 				console.log(e);
 			}
@@ -227,7 +233,7 @@ export default function User() {
 		//console.log(dispType);
 		return (
 			<div>
-			 <VsButton name="New User" align="right" onClick={handleAdd} />
+			 <VsButton disabled={!isAdmin()} name="New User" align="right" onClick={handleAdd} />
 			<Table  align="center">
 			<TableHead p={0}>
 			<TableRow key="header" align="center">
@@ -252,23 +258,23 @@ export default function User() {
 						myInfo +=  x.addr4 + "<br />";
 					return (
 					<TableRow key={x.uid}>
-						<TableCell className={gClasses.td} p={0} >
+						<TableCell align="center" className={gClasses.td} p={0} >
 							<span>{x.uid}</span>
 								{/*<span align="left" data-for={"USER"+x.uid} data-tip={myInfo} data-iscapture="true" >
 								<InfoIcon color="primary" size="small"/>
 							</span>*/}
 						</TableCell>
-						<TableCell className={gClasses.td} p={0} >{x.role}</TableCell>
+						<TableCell align="center" className={gClasses.td} p={0} >{x.role}</TableCell>
 						<TableCell className={gClasses.td} p={0} >{x.displayName}</TableCell>
 						{(dispType !== "xs") &&
 						<TableCell className={gClasses.td} p={0} >{decrypt(x.email)}</TableCell>
 						}
 						{(dispType !== "xs") &&
-						<TableCell className={gClasses.td} p={0} >{x.mobile}</TableCell>
+						<TableCell align="center" className={gClasses.td} p={0} >{x.mobile}</TableCell>
 						}
 						<TableCell className={gClasses.td} p={0} >
-							<EditIcon className={gClasses.blue} size="small" onClick={() => {handleEdit(x)}}  />
-							<InfoIcon className={gClasses.blue} size="small" onClick={() => {handleInfo(x)}}  />
+							<IconButton color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
+							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 						</TableCell>
 					</TableRow>
 				)})}

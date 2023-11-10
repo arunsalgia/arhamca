@@ -32,7 +32,7 @@ import lodashSortBy from "lodash/sortBy";
 import {setTab} from "CustomComponents/CricDreamTabs.js"
 
 import FacultySchedule	 from "views/Faculty/FacultySchedule"
-
+import SessionAddEdit	 from "views/Session/SessionAddEdit"
 
 import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
@@ -217,9 +217,25 @@ export default function Batch() {
 	}
 	
 	function handleAddSession(rec) {
-		var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.ADD_SESSION, msg: "", record:  rec, record2: null };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		setTab(process.env.REACT_APP_BATCH_ADDEDITSESSION);
+		//var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.ADD_SESSION, msg: "", record:  rec, record2: null };
+		//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		//setTab(process.env.REACT_APP_BATCH_ADDEDITSESSION);
+		setBatchRec(rec);
+		setDrawer("ADDSESSION");
+	}
+	
+	function handleBack(sts)
+	{
+		console.log(sts.msg);
+		if (sts.msg !== "")  alert(sts.msg);
+		if (sts.status === "ADD") {
+			var clonedBatchArray = [].concat(batchArray);
+			var myRec = clonedBatchArray.find(x => x.bid === batchRec.bid);
+			myRec.sessionCount += 1;
+			setBatchArray(clonedBatchArray);
+		}
+		
+		setDrawer("");
 	}
 	
 	function handleInfo(r) {
@@ -342,14 +358,14 @@ export default function Batch() {
 						}
 					return (
 					<TableRow key={x.bid}>
-						<TableCell className={myClasses} p={0} >{x.bid}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.bid}</TableCell>
 						<TableCell className={myClasses} p={0} >{mergedName(x.facultyName, x.fid)}</TableCell>
 						{((dispType == "md") || (dispType == "lg")) &&
-							<TableCell className={myClasses} p={0} >{myStudents.join()}</TableCell>
+							<TableCell align="center" className={myClasses} p={0} >{myStudents.join()}</TableCell>
 						}
-						<TableCell className={myClasses} p={0} >{tList.join()}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{tList.join()}</TableCell>
 						{((dispType == "md") || (dispType == "lg")) &&
-						<TableCell className={myClasses} p={0} >{x.sessionCount}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.sessionCount}</TableCell>
 						}
 						<TableCell className={myClasses} p={0} >
 							<IconButton color="primary" disabled={!isAdmMan()} size="small" onClick={() => {handleEditBatch(x)}} ><EditIcon /></IconButton>
@@ -410,7 +426,12 @@ export default function Batch() {
 	{/*<DisplayAllToolTips />*/}
 	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>
 		<VsCancel align="right" onClick={() => { setDrawer("")}} />
-		<FacultySchedule batchRec={batchRec} all={showAll} />
+		{(drawer === "FACULTYSCHEDULE") &&
+			<FacultySchedule faculty={{name: batchRec.facultyName, fid: batchRec.fid} } all={showAll} />
+		}
+		{(drawer === "ADDSESSION") &&
+			<SessionAddEdit mode="ADD" batchRec={batchRec} sessionRec={null} onReturn={handleBack} />
+		}
 	</Drawer>
 	</div>
 	);

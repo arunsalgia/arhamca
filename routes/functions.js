@@ -28,8 +28,8 @@ function getWeeklyBlock(allBatches) {
 		facultyBlockList.push(Array(7).fill(""));
 	}
 	
-	console.log(facultyBlockList.length);
-	console.log("totla batches: ", allBatches.length);
+	//console.log(facultyBlockList.length);
+	//console.log("totla batches: ", allBatches.length);
 	allBatches.forEach( (dayBatch) => {
 		//console.log(dayBatch.sessionTime);
 		dayBatch.timings.forEach( (sess) => {
@@ -44,24 +44,6 @@ function getWeeklyBlock(allBatches) {
 		});
 	});
 
-	/*
-	var retValue = {};
-	SHORTWEEKSTR.forEach( (dayStr, idx) => {
-		retValue[dayStr] = facultyBlockList[idx].join();
-	});
-	
-	console.log("Reverse");
-	SHORTWEEKSTR.forEach( (dayStr, idx) => {
-		var dayList = retValue[dayStr];
-		facultyBlockList[idx].forEach( (val, blk) => {
-			if (val != "") {
-				var tmp = blockToTime(blk);
-				console.log(dayStr, tmp.hour, tmp.minute, val);
-			}
-		});
-	});
-	*/
-	
 	return facultyBlockList;
 }
 

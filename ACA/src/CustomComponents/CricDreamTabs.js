@@ -31,6 +31,7 @@ import Faculty	 from "views/Faculty/Faculty"
 import FacultySchedule	 from "views/Faculty/FacultySchedule"
 import Student	 from "views/Student/Student"
 import Batch	 from "views/Batch/Batch"
+import Session	 from "views/Session/Session"
 import BatchAddEdit	 from "views/Batch/BatchAddEdit"
 import SessionAddEdit	 from "views/Session/SessionAddEdit"
 
@@ -298,7 +299,8 @@ export function AcaTabs() {
 	const handleFacultySchedule = () => { handleClose(); setMenuValue(90041);}
 	const handleBatch = () => { handleClose(); setMenuValue(9005);}
 	const handleBatchAddEdit = () => { handleClose(); setMenuValue(90051);}
-	const handleSessionAddEdit = () => { handleClose(); setMenuValue(90052);}
+	const handleSessionAddEdit = () => { handleClose(); setMenuValue(90061);}
+	const handleSession = () => { handleClose(); setMenuValue(9006);}
 	
   const handleMatch = () => { handleClose(); setMenuValue(101);}
   const handleAuction = () => { handleClose(); setMenuValue(102);}
@@ -367,7 +369,8 @@ export function AcaTabs() {
 			case 90041: return <FacultySchedule />
 			case 9005: return <Batch />;
 			case 90051: return <BatchAddEdit />;
-			case 90052: return <SessionAddEdit />;
+			case 9006: return <Session />;
+			case 90061: return <SessionAddEdit />;
 			
       default: return  null;
     }
@@ -479,8 +482,8 @@ export function AcaTabs() {
           )}
 					<HomeIcon className={classes.icon} onClick={handleHome} />
           <Button color="inherit" className={classes.dashButton} onClick={handleBatch}>Batch</Button>
+          <Button color="inherit" className={classes.teamButton} onClick={handleSession}>Session</Button>
           <Button color="inherit" className={classes.statButton} onClick={handleFaculty}>Faculty</Button>
-          <Button color="inherit" className={classes.teamButton} onClick={handleStudent}>Student</Button>
 					<Avatar 
             aria-label="account of current user"
             aria-controls="user-appbar"

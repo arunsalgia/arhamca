@@ -341,13 +341,13 @@ export default function Student() {
 						<TableCell className={myClasses} p={0} >{x.name}</TableCell>
 						<TableCell className={myClasses} p={0} >{x.bid}</TableCell>
 						<TableCell className={myClasses} p={0} >
-							<IconButton disabled={x.bid != ""} color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
-							<IconButton disabled={x.bid != ""} color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
+							<IconButton disabled={!isAdmMan()} color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
+							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 							{(x.enabled) &&
-								<IconButton disabled={x.bid != ""} color="primary" size="small" onClick={() => {handleDisableStudent(x)}} ><IndeterminateCheckBoxIcon /></IconButton>							
+								<IconButton disabled={(x.bid != "") || !isAdmMan() } color="primary" size="small" onClick={() => {handleDisableStudent(x)}} ><IndeterminateCheckBoxIcon /></IconButton>							
 							}
 							{(!x.enabled) &&
-								<IconButton color="primary" size="small" onClick={() => {handleEnableStudent(x)}} ><CheckBoxIcon /></IconButton>						
+								<IconButton disabled={ !isAdmMan() } color="primary" size="small" onClick={() => {handleEnableStudent(x)}} ><CheckBoxIcon /></IconButton>						
 							}
 						</TableCell>
 					</TableRow>

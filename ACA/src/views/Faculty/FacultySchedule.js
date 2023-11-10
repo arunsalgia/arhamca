@@ -63,7 +63,7 @@ import {
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
 } from 'views/functions';
 
-var origBatchRec = null;
+//var origBatchRec = null;
 var mode = "ADD";
 
 export default function FacultySchedule(props) {
@@ -143,7 +143,7 @@ export default function FacultySchedule(props) {
 				setFacultyArray(tmp);
 			}
 			else {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/enabledfaculty/${origBatchRec.fid}`;
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/enabledfaculty/${props.faculty.fid}`;
 				const response = await axios.get(myUrl);
 				//console.log(response.data);
 				var tmp = response.data;
@@ -157,11 +157,11 @@ export default function FacultySchedule(props) {
 	}
 
 		//console.log(origBatchRec.fid);
-		origBatchRec = props.batchRec;
+		//origBatchRec = props.batchRec;
 		
 		// Set faculty Schedule		
-		getFacultySchedule(origBatchRec.fid);
-		setNewFaculty(mergedName(origBatchRec.facultyName, origBatchRec.fid));
+		getFacultySchedule(props.faculty.fid);
+		setNewFaculty(mergedName(props.faculty.name, props.faculty.fid));
 
 		// NOw get faculty details
 		getFacultyDetails(props.all);
