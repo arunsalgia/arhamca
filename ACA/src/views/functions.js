@@ -46,16 +46,16 @@ export function validateSpecialCharacters(sss) {
     var sts = false;
     const TerroristCharacters = [];
 
-    if (!sss.contains("\""))
-    if (!sss.contains("\'"))
-    if (!sss.contains("\`"))
-    if (!sss.contains("\\"))
-    if (!sss.contains("/"))
-    if (!sss.contains("~"))
-    if (!sss.contains("\%"))
-    if (!sss.contains("^"))
-    if (!sss.contains("\&"))
-    if (!sss.contains("\+"))
+    if (!sss.includes("\""))
+    if (!sss.includes("\'"))
+    if (!sss.includes("\`"))
+    if (!sss.includes("\\"))
+    if (!sss.includes("/"))
+    if (!sss.includes("~"))
+    if (!sss.includes("\%"))
+    if (!sss.includes("^"))
+    if (!sss.includes("\&"))
+    if (!sss.includes("\+"))
       sts = true;
     return sts;
 }
@@ -65,13 +65,13 @@ export function validateMobile(sss) {
   const TerroristCharacters = [];
 
   if (sss.length === 10)
-  if (!sss.contains("\."))
-  if (!sss.contains("\-"))
-  if (!sss.contains("\+"))
-  if (!sss.contains("\*"))
-  if (!sss.contains("\/"))
-  if (!sss.contains("e"))
-  if (!sss.contains("E"))
+  if (!sss.includes("\."))
+  if (!sss.includes("\-"))
+  if (!sss.includes("\+"))
+  if (!sss.includes("\*"))
+  if (!sss.includes("\/"))
+  if (!sss.includes("e"))
+  if (!sss.includes("E"))
   if (!isNaN(sss))
     sts = true;
   return sts;
@@ -82,7 +82,7 @@ export function validateEmail(sss) {
     if (validateSpecialCharacters(sss)) {
       let xxx = sss.split("@");
       if (xxx.length === 2) {
-        if (xxx[1].contains(".")) 
+        if (xxx[1].includes(".")) 
           sts = true;
       }
     }
@@ -169,7 +169,7 @@ export function cricTeamName(t) {
   var tmp = t.split(' ');
   for(i=0; i < tmp.length; ++i)  {
     var x = tmp[i].trim().toUpperCase();
-    if (notToConvert.contains(x))
+    if (notToConvert.includes(x))
       tmp[i] = x;
     else
       tmp[i] = x.substr(0, 1) + x.substr(1, x.length - 1).toLowerCase();
@@ -683,11 +683,11 @@ export function isAdmMan() {
 
 
 export function isAdmManFac() {
- return ["Admin", "Manager", "Faculty"].contains(localSession.getItem("role")); 
+ return ["Admin", "Manager", "Faculty"].includes(localSession.getItem("role")); 
 }
 
 
 export function isAdmManStu() {
- return ["Admin", "Manager", "Student"].contains(localSession.getItem("role")); 
+ return ["Admin", "Manager", "Student"].includes(localSession.getItem("role")); 
 }
 

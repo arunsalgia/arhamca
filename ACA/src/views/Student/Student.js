@@ -6,7 +6,8 @@ import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
-//import { useAlert } from 'react-alert';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
 
@@ -54,7 +55,7 @@ const BLANKCHAR = "-";
 export default function Student() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
-	//const alert = useAlert();
+	
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELCTIONS[0]);
 	
@@ -154,9 +155,8 @@ export default function Student() {
         }
 				//console.log(errmsg, registerStatus);
 				if (errmsg)
-					alert(myMsg);
-				//else
-				//	alert.info(
+					toast.error(myMsg);
+
         let myClass = (errmsg) ? gClasses.error : gClasses.nonerror;
 				return null;
         return(
@@ -188,7 +188,7 @@ export default function Student() {
 				setMasterStudentArray(tmp);
 				filterStudent(tmp, currentSelection);
 				setDrawer("");
-				alert("Successfully added details of " + userName);
+				toast.success("Successfully added details of " + userName);
 			}
 			else {
 				// for edit user
@@ -201,11 +201,11 @@ export default function Student() {
 				setMasterStudentArray(tmp);
 				filterStudent(tmp, currentSelection);
 				setDrawer("");
-				alert("Successfully edit details of " + userName);
+				toast.success("Successfully updated details of " + userName);
 			}
 		}
 		catch (e) {
-			//alert.error("Error adding / updateing Area");
+			toast.error("Error adding / updateing Area");
 			console.log("Error");
 			
 		}
@@ -240,7 +240,7 @@ export default function Student() {
 			setUserRec(myUser);
 		}
 		catch (e) {
-			alert('Error while fetching user record');
+			toast.error('Error while fetching user record');
 			setStudentRec(null);
 			return;
 		}
@@ -279,7 +279,7 @@ export default function Student() {
 	async function handleDisableStudent(x) {
 		let myRec = masterStudentArray.find(rrr => rrr.sid === x.sid);
 		if (myRec.bid != "") {
-			alert(`Student ${myRec.name} has batche ${myRec.bid} in progress.`);
+			toast.error(`Student ${myRec.name} has batch ${myRec.bid} in progress.`);
 			return;
 		}
 		try {
@@ -292,7 +292,7 @@ export default function Student() {
 		catch (e) {
 			// error 
 			console.log(e);
-			alert("Error disabling student "+x.name);
+			toast.error("Error disabling student "+x.name);
 		}
 	}
 
@@ -308,7 +308,7 @@ export default function Student() {
 		catch (e) {
 			// error 
 			console.log(e);
-			alert("Error disabling student "+x.name);
+			toast.error("Error disabling student "+x.name);
 		}
 	}
 
@@ -334,7 +334,7 @@ export default function Student() {
 						myInfo +=  x.addr4 + "<br />";
 						//console.log(x);
 						var myClasses = (x.enabled) ? gClasses.td : gClasses.disabledtd;
-						console.log(x.bid);
+						//console.log(x.bid);
 					return (
 					<TableRow key={x.sid}>
 						<TableCell className={myClasses} p={0} >{x.sid}</TableCell>
@@ -460,6 +460,7 @@ export default function Student() {
 				<ValidComp p1={password}/>   
 			</Box>
 			</Drawer>
+			<ToastContainer />
 		</div>
 		)
 }

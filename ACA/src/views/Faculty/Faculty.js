@@ -6,7 +6,9 @@ import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
-import { useAlert } from 'react-alert';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
 
@@ -58,7 +60,8 @@ const BLANKCHAR = "-";
 export default function Faculty() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
-	//const alert = useAlert();
+
+	const [errorMessage, setErrorMessage] = useState("");
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	
@@ -174,9 +177,8 @@ export default function Faculty() {
         }
 				//console.log(errmsg, registerStatus);
 				if (errmsg)
-					alert(myMsg);
-				//else
-				//	alert.info(
+					toast.error(myMsg);
+				
         let myClass = (errmsg) ? gClasses.error : gClasses.nonerror;
 				return null;
         return(
@@ -217,7 +219,7 @@ export default function Faculty() {
 				setMasterFacultyArray(tmp);
 				filterFaculty(tmp, currentSelection);
 				setDrawer("");
-				alert("Successfully added details of " + userName);
+				toast.success("Successfully added details of " + userName);
 			}
 			else {
 				// for edit user
@@ -230,11 +232,11 @@ export default function Faculty() {
 				setMasterFacultyArray(tmp);
 				filterFaculty(tmp, currentSelection);
 				setDrawer("");
-				alert("Successfully edit details of " + userName);
+				toast.success("Successfully edit details of " + userName);
 			}
 		}
 		catch (e) {
-			//alert.error("Error adding / updateing Area");
+			toast.error("Error adding / updateing Area");
 			console.log("Error");
 			
 		}
@@ -267,7 +269,7 @@ export default function Faculty() {
 			setUserRec(myUser);
 		}
 		catch (e) {
-			alert('Error while fetching user record');
+			toast.error('Error while fetching user record');
 			setFacultyRec(null);
 			return;
 		}
@@ -304,7 +306,7 @@ export default function Faculty() {
 	async function handleDisableFaculty(x) {
 		let myRec = masterFacultyArray.find(rrr => rrr.fid === x.fid);
 		if (myRec.batchCount > 0) {
-			alert(`Faculty ${myRec.name} has ${myRec.batchCount} batches in progress.`);
+			toast.error(`Faculty ${myRec.name} has ${myRec.batchCount} batches in progress.`);
 			return;
 		}
 		try {
@@ -317,7 +319,7 @@ export default function Faculty() {
 		catch (e) {
 			// error 
 			console.log(e);
-			alert("Error disabling faculty "+x.name);
+			toast.error("Error disabling faculty "+x.name);
 		}
 	}
 
@@ -333,7 +335,7 @@ export default function Faculty() {
 		catch (e) {
 			// error 
 			console.log(e);
-			alert("Error disabling faculty "+x.name);
+			toast.error("Error disabling faculty "+x.name);
 		}
 	}
 
@@ -471,7 +473,7 @@ export default function Faculty() {
 					<br />
 					<ShowResisterStatus />
 					<br />
-					<VsButton name={(drawer == "New") ? "Add Batch" : "Update Batch"} />
+					<VsButton name={(drawer == "New") ? "Add Faculty" : "Update Faculty"} />
 				</ValidatorForm>
 				<ValidComp p1={password}/>   
 			</Box>
@@ -482,6 +484,7 @@ export default function Faculty() {
 					<FacultySchedule faculty={facultyInfo} all={showAll} />
 				}
 			</Drawer>
+			<ToastContainer />
 		</div>
 		)
 }

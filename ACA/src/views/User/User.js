@@ -6,7 +6,8 @@ import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
-//import { useAlert } from 'react-alert';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Box from '@material-ui/core/Box';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -45,7 +46,6 @@ const ALLROLES = ["Manager", "Student", "Faculty", "Admin"];
 export default function User() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
-	//const alert = useAlert();
 
 	const [userArray, setUserArray] = useState([]);
 	const [userName, setUserName] = useState("");
@@ -158,7 +158,7 @@ export default function User() {
 				//console.log("All done");
 				// close drawer
 				setDrawer("");
-				alert("Successfully added details of " + userName);
+				toast.success("Successfully added details of " + userName);
 			}
 			else {
 				// for edit user
@@ -171,11 +171,11 @@ export default function User() {
 				//console.log("All done");
 				// close drawer
 				setDrawer("");
-				alert("Successfully edit details of " + userName);
+				toast.success("Successfully updated details of " + userName);
 			}
 		}
 		catch (e) {
-			//alert.error("Error adding / updateing Area");
+			toast.error("Error adding / updating User record");
 			console.log("Error");
 			
 		}
@@ -347,6 +347,7 @@ export default function User() {
 				<ValidComp p1={password}/>   
 			</Box>
 			</Drawer>
+			<ToastContainer />
 		</div>
 		)
 }

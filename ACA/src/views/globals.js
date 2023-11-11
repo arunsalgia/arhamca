@@ -52,6 +52,11 @@ export const DATESTR = [
 //in date function 0 represents JAN I.e. month number 1
 export const MONTHNUMBERSTR = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
+export const PAYMENTMODE = ["Online", "Cash", "NetBanking", "Cheque"];
+
+export const PAYMENTSTATUS = ["Received", "Pending" ];
+
+export const FREESTR = "";
 
 export const DURATIONSTR = [
 {name: "00:30", hour: 0, min: 30, block: 1},
@@ -101,8 +106,10 @@ export const MAXDISPLAYTEXTROWS = 6;
 export const STATUS_INFO = 
 {
 ERROR: -2,
+FAILURE: -2,
 CANCEL: -1,
 OKAY: 1,
+SUCCESS: 1,
 ADD_BATCH: 2,
 EDIT_BATCH: 3,
 ADD_SESSION: 4,

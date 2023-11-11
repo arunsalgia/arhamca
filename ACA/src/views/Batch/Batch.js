@@ -8,7 +8,8 @@ import TextField from '@material-ui/core/TextField';
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
-//import { useAlert } from 'react-alert';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
 
@@ -53,7 +54,7 @@ import VsCancel from "CustomComponents/VsCancel";
 import VsSelect from "CustomComponents/VsSelect";
 import VsRadio from "CustomComponents/VsRadio";
 
-import BatchAddEdit from "./BatchAddEdit";
+import BatchAddEdit from "views/Batch/BatchAddEdit";
 
 import {
 	ROLE_FACULTY, ROLE_STUDENT,
@@ -71,8 +72,6 @@ import {
 export default function Batch() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
-	//const alert = useAlert();
-		
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	const [mode, setMode] = useState("");
@@ -144,15 +143,7 @@ export default function Batch() {
 			}
 		}
 		
-		var myData = sessionStorage.getItem("batchInfo");
-		if (myData) {
-			var tmp = JSON.parse(myData);
-			switch (tmp.status) {
-				case STATUS_INFO.OKAY:   alert(tmp.msg); break;
-				case STATUS_INFO.ERROR:  alert(tmp.msg); break;
-			}
-		}
-		sessionStorage.removeItem("batchInfo");
+
 		getAllBatch();
 		handleResize();
 		window.addEventListener('resize', handleResize);
@@ -192,9 +183,9 @@ export default function Batch() {
         }
 				//console.log(errmsg, registerStatus);
 				if (errmsg)
-					alert(myMsg);
-				//else
-				//	alert.info(
+					toast.error(myMsg);
+				
+
         let myClass = (errmsg) ? gClasses.error : gClasses.nonerror;
 				return null;
         return(
@@ -205,15 +196,19 @@ export default function Batch() {
       }
 
 	function handleAddBatch() {
-		var batchInfo = {inUse: true, status: STATUS_INFO.ADD_BATCH, msg: "", record:  null };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
+		//var batchInfo = {inUse: true, status: STATUS_INFO.ADD_BATCH, msg: "", record:  null };
+		//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		//setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
+		setBatchRec(null);
+		setDrawer("ADDBATCH");
 	}
 	
 	function handleEditBatch(rec) {
-		var batchInfo = {inUse: true, status: STATUS_INFO.EDIT_BATCH, msg: "", record:  rec };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
+		//var batchInfo = {inUse: true, status: STATUS_INFO.EDIT_BATCH, msg: "", record:  rec };
+		//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		//setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
+		setBatchRec(rec);
+		setDrawer("EDITBATCH");
 	}
 	
 	function handleAddSession(rec) {
@@ -226,15 +221,29 @@ export default function Batch() {
 	
 	function handleBack(sts)
 	{
-		console.log(sts.msg);
-		if (sts.msg !== "")  alert(sts.msg);
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
 		if (sts.status === "ADD") {
 			var clonedBatchArray = [].concat(batchArray);
 			var myRec = clonedBatchArray.find(x => x.bid === batchRec.bid);
 			myRec.sessionCount += 1;
 			setBatchArray(clonedBatchArray);
+		}	
+		setDrawer("");
+	}
+	
+	function handleBackBatch(sts)
+	{
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		if (sts.status === "ADD") {
+			var clonedBatchArray = batchArray.concat([sts.batchRec]);
+			setBatchArray(clonedBatchArray);
+		}	
+		else {
+			var clonedBatchArray = batchArray.filter(x => x.bid !== sts.batchRec.bid);
+			setBatchArray(clonedBatchArray.concat([sts.batchRec]));
 		}
-		
 		setDrawer("");
 	}
 	
@@ -250,10 +259,10 @@ export default function Batch() {
 			var allRec  = batchArray.filter(x => x.bid !== rec.bid);
 			setMasterBatchArray(allRec);
 			filterBatch(allRec, currentSelection);
-			alert(`Successfull deleted batch ${rec.bid}`);
+			toast.success(`Successfull deleted batch ${rec.bid}`);
 		} catch (e) {
 			console.log(e);
-			alert("Error deleting batch");
+			toast.error("Error deleting batch");
 		}
 	}
 
@@ -294,7 +303,7 @@ export default function Batch() {
 		catch (e) {
 			// error 
 			console.log(e);
-			alert("Error disabling batch "+ rec.bid);
+			toast.error("Error disabling batch "+ rec.bid);
 		}
 	}
 
@@ -310,7 +319,7 @@ export default function Batch() {
 		catch (e) {
 			// error 
 			console.log(e);
-			alert("Error enabling batch "+rec.bid);
+			toast.error("Error enabling batch "+rec.bid);
 		}
 	}
 
@@ -432,7 +441,11 @@ export default function Batch() {
 		{(drawer === "ADDSESSION") &&
 			<SessionAddEdit mode="ADD" batchRec={batchRec} sessionRec={null} onReturn={handleBack} />
 		}
+		{( (drawer === "ADDBATCH") || (drawer === "EDITBATCH") ) &&
+			<BatchAddEdit mode={(drawer === "ADDBATCH") ? "ADD" : "EDIT"}  batchRec={batchRec} onReturn={handleBackBatch} />
+		}
 	</Drawer>
+	<ToastContainer />
 	</div>
 	);
 }

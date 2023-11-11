@@ -200,146 +200,6 @@ export default function Home() {
           </div>
         );
     }
-    
-		async function handleCreate() {
-      // console.log(currentTournament);
-      // console.log(tournamentList[currentTournament]);
-      //localStorage.setItem("cGroup", tournamentList[currentTournament].name);
-			
-			let myStatus = "OKAY";
-			let groupServiceFee = 0;
-			// First find out if sufficient amount is there in the wallet.
-			if (CHECKBALANCE_CREATEJOIN) {
-				let myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/user/checkbalanceforgroup/${localStorage.getItem("uid")}`
-				let tmp = await axios.get(myUrl);
-				groupServiceFee = tmp.data.groupCost;
-				myStatus = tmp.data.status;
-			}
-			
-			// If sufficient balance jump to Create Group
-			if (myStatus === "OKAY") {
-				localStorage.setItem("cGroup", currentTournament);
-				setTab(process.env.REACT_APP_GROUPNEW);
-			}
-			else
-			{
-				setLowBalanceText(`Minimum amount of ${groupServiceFee} is required in wallet to create a new group.`);
-				//setLowBalance(true);
-				console.log('setting low balance as true');
-				setIsOpen("WALLET");
-				//setRegisterStatus(1001);
-			}
-    }
-
-    async function handleJoin() {
-      //console.log("Join group");
-			
-			// First find out if sufficient amount is there in the wallet.
-			let myStatus = "OKAY";
-			let groupServiceFee = 0;
-			if (CHECKBALANCE_CREATEJOIN) {
-				let myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/user/checkbalanceforgroup/${localStorage.getItem("uid")}`
-				let tmp = await await axios.get(myUrl);
-				groupServiceFee = tmp.data.groupCost;
-				myStatus = tmp.data.status;
-			}
-			
-			// If sufficient balance jump to Join Group
-			if (myStatus === "OKAY") {
-				setTab(process.env.REACT_APP_GROUPJOIN);
-			}
-			else
-			{
-				setLowBalanceText(`Minimum amount of ${groupServiceFee} is required in wallet to join a group.`);
-				setIsOpen("WALLET");
-			}
-    }
-
-    function handleLeft() {
-      let newLeft = currentTournament - 1;
-      if (newLeft < 0) newLeft = tournamentList.length - 1
-      setCurrentTournament(newLeft);
-    }
-
-    function handleRight() {
-      let newRight = currentTournament + 1;
-      if (newRight >= tournamentList.length)
-        newRight = 0;
-      setCurrentTournament(newRight);
-    }
-
-    function handlePrevGroup() {
-      let newLeft = currentGroup - 1;
-      if (newLeft < 0) newLeft = userGroup.length - 1
-      setCurrentGroup(newLeft);
-    }
-
-    function handleNextGroup() {
-      let newRight = currentGroup + 1;
-      if (newRight >= userGroup.length)
-        newRight = 0;
-      setCurrentGroup(newRight);
-    }
-
-    async function handleGroupSelect() {
-      let gRec = userGroup[currentGroup];
-      try {
-        await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/group/setdefaultgroup/${localStorage.getItem("uid")}/${gRec.gid}`);
-        localStorage.setItem("gid", gRec.gid);
-        localStorage.setItem("groupName", gRec.groupName);
-        localStorage.setItem("tournament", gRec.tournament);
-        localStorage.setItem("admin", gRec.admin);
-        clearBackupData();
-				
-        setTab(process.env.REACT_APP_DASHBOARD);
-        // cdRefresh();
-      } catch (e) {
-        console.log(e);
-        console.log("error setting default group");
-      }
-    }
-
-		async function handleChangeGroup(newGroup) {
-			//console.log(newGroup);
-			let gRec = userGroup.find( x => x.groupName === newGroup);
-      try {
-				//console.log(gRec);
-				let myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/group/setdefaultgroup/${localStorage.getItem("uid")}/${gRec.gid}`;
-				//console.log(myUrl);
-        await axios.get(myUrl);
-        localStorage.setItem("gid", gRec.gid);
-        localStorage.setItem("groupName", gRec.groupName);
-        localStorage.setItem("tournament", gRec.tournament);
-        localStorage.setItem("admin", gRec.admin);
-				setCurrentGroup(newGroup);
-        clearBackupData();
-				//setCurrentDrawer("");
-        //setTab(process.env.REACT_APP_DASHBOARD);
-        // cdRefresh();
-      } catch (e) {
-        console.log(e);
-        console.log("error setting default group");
-      }
-		}
-		
-    function ShowCurrentGroup() {
-      if (defaultGroup === "") {
-        return (
-          <div align='center'>
-          <Typography className={classes.withTopSpacing} component="h1" variant="h5">Create new Group from Upcoming tournament</Typography>
-          </div>
-        )
-      } else {
-        return (
-          <div align="center">
-          <Typography className={classes.withTopSpacing} component="h1" variant="h5">Current Group</Typography>
-          <Typography className={classes.groupName}>{defaultGroup}</Typography>
-          </div>
-        )
-      }
-    }
-/*
-*/
 
     function ShowAdminJumpButtons() {
 			let myDisable = (defaultGroup === "");
@@ -366,7 +226,9 @@ export default function Home() {
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_SESSION} text="Session" />
             </Grid>								
-          </Grid>
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_PAYMENT} text="Payment" />
+            </Grid>			          </Grid>
         </div>
       )
     }

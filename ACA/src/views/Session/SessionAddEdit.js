@@ -7,7 +7,8 @@ import { ValidatorForm, TextValidator, TextValidatorcvariant} from 'react-materi
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
-//import { useAlert } from 'react-alert';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
 
@@ -73,7 +74,7 @@ import {
 export default function SessionAddEdit(props) {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
-	//const alert = useAlert();
+
 	
 	const [origSessionRec, setOrigSessionRec] = useState(null);
 	const [origBatchRec, setOrigBatchRec] = useState(null);
@@ -134,7 +135,7 @@ export default function SessionAddEdit(props) {
 				
 			} catch (e) {
 				console.log(e);
-				alert("Error Fetching Studnets");
+				toast.error("Error Fetching Studnets");
 			}
 		}
 		
@@ -237,7 +238,7 @@ async function handleAddEditSubmit() {
 			//alert("Successfully added details of new batch");
 			//var batchInfo = {inUse: true, status: STATUS_INFO.OKAY, msg: `Successfully added session of batch ${response.data.bid}.`, record: response.data };
 			//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-			props.onReturn.call(this, {status: "ADD", msg: `Successfully added session of batch ${response.data.bid}.`});
+			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, msg: `Successfully added session of batch ${response.data.bid}.`});
 			return;
 		}
 		else {
@@ -259,9 +260,9 @@ async function handleAddEditSubmit() {
 		}
 	}
 	catch (e) {
-		console.log("Error");
-		var batchInfo = {inUse: true, status: STATUS_INFO.ERROR, msg: "Error adding/updating session.", record: null };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		console.log(e);
+		sprops.onReturn.call(this, {status: STATUS_INFO.SUCCESS, msg: "Error adding/updating session.", record: null });
+		return;
 	}
 	setTab(returnPath)
 }
@@ -363,6 +364,7 @@ function handlePresentAbsent(idx, state) {
 		</Grid>
 		</ValidatorForm>
 		<ValidComp />   
+		<ToastContainer />
 	</div>
 	)
 }

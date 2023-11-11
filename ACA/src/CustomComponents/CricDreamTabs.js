@@ -34,6 +34,7 @@ import Batch	 from "views/Batch/Batch"
 import Session	 from "views/Session/Session"
 import BatchAddEdit	 from "views/Batch/BatchAddEdit"
 import SessionAddEdit	 from "views/Session/SessionAddEdit"
+import Payment	 from "views/Payment/Payment"
 
 
 import AdminWallet from "views/Wallet/AdminWallet"
@@ -301,6 +302,7 @@ export function AcaTabs() {
 	const handleBatchAddEdit = () => { handleClose(); setMenuValue(90051);}
 	const handleSessionAddEdit = () => { handleClose(); setMenuValue(90061);}
 	const handleSession = () => { handleClose(); setMenuValue(9006);}
+	const handlePayment = () => { handleClose(); setMenuValue(9007);}
 	
   const handleMatch = () => { handleClose(); setMenuValue(101);}
   const handleAuction = () => { handleClose(); setMenuValue(102);}
@@ -371,8 +373,9 @@ export function AcaTabs() {
 			case 90051: return <BatchAddEdit />;
 			case 9006: return <Session />;
 			case 90061: return <SessionAddEdit />;
+			case 9007: return <Payment />;
 			
-      default: return  null;
+      default: return  <Typography>{`Inavlid value ${value}`}</Typography>;
     }
   }
 
@@ -431,22 +434,10 @@ export function AcaTabs() {
       return(null);
   }
 
-  function DisplayGroupMenu() {
-    // console.log("Group length", userGroup.length);
-    return (
-      <div key="usergroups">
-      {userGroup.map( (item, index) => {
-        return (
-        <MenuItem key={index} onClick={() => handleGroupSelect(index)}>{item.groupName}</MenuItem>
-        )
-      })}
-      </div>
-    );
-  }
-    
+ 
   let mylogo = `${process.env.PUBLIC_URL}/APLLOGO1.ICO`;
   let groupCharacter="G";
-  let currencyChar = 'Pts';  //'₹';
+  let currencyChar = 'U';  //'₹';
 	//console.log(value);
   let myName = sessionStorage.getItem("userName");
   return (

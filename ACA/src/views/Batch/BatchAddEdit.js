@@ -6,7 +6,9 @@ import { ValidatorForm, TextValidator, TextValidatorcvariant} from 'react-materi
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
-//import { useAlert } from 'react-alert';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
 
@@ -63,13 +65,11 @@ import {
 	getAreafromBid,
 } from 'views/functions';
 
-var origBatchRec = {bid: ""};
-var mode = "ADD";
 
-export default function BatchAddEdit() {
+export default function BatchAddEdit(props) {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
-	//const alert = useAlert();
+
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	
@@ -136,24 +136,24 @@ export default function BatchAddEdit() {
 				for(var i=0; i<tmp.length; ++i) {
 					tmp[i]["mergedName"] = mergedName(tmp[i].longName, tmp[i].shortName);
 				}
-				if (mode === "ADD") {
+				if (props.mode === "ADD") {
 					setNewArea(tmp[0].mergedName);
 					setAreaArray(tmp);
 				}
 				else {
-					var myAreaRec = tmp.find(x => x.shortName === getAreafromBid(origBatchRec.bid));
+					var myAreaRec = tmp.find(x => x.shortName === getAreafromBid(props.batchRec.bid));
 					setNewArea(myAreaRec.mergedName);
 					setAreaArray([myAreaRec]);
 				}
 			} catch (e) {
 				console.log(e);
-				alert("Error Fetching area");
+				toast.error("Error Fetching area");
 			}
 		}
 		
 		async function getAllStudents() {
 			try {
-				var subfun = (mode == "EDIT") ? "list/freeorbatch/" + origBatchRec.bid :  "list/free";
+				var subfun = (props.mode == "EDIT") ? "list/freeorbatch/" + props.batchRec.bid :  "list/free";
 				//console.log(subfun);
 				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/${subfun}`;
 				const response = await axios.get(myUrl);
@@ -163,16 +163,16 @@ export default function BatchAddEdit() {
 				}
 				//console.log(response.data);
 				setStudentArray(tmp);
-				if (mode === "ADD") {
+				if (props.mode === "ADD") {
 					setBatchStudents([]);
 				} 
 				else {
-					setBatchStudents(tmp.filter(x => origBatchRec.sid.includes(x.sid)));
+					setBatchStudents(tmp.filter(x => props.batchRec.sid.includes(x.sid)));
 				}
 			} 
 			catch (e) {
 				console.log(e);
-				alert("Error Fetching Studnets");
+				toast.error("Error Fetching Students");
 			}
 		}
 
@@ -186,58 +186,36 @@ export default function BatchAddEdit() {
 						tmp[i]["mergedName"] = mergedName(tmp[i].name, tmp[i].fid);
 				}
 				setFacultyArray(tmp);
-				if (mode === "ADD") 
+				if (props.mode === "ADD") 
 					setNewFaculty(tmp[0].mergedName);
 				else {
-					var myFacRec = tmp.find(x => x.fid === origBatchRec.fid);
+					var myFacRec = tmp.find(x => x.fid === props.batchRec.fid);
 					setNewFaculty(mergedName(myFacRec.name, myFacRec.fid));
 				}
 			} catch (e) {
 				console.log(e);
-				alert("Error Fetching Faculty");
+				toast.error("Error Fetching Faculty");
 			}
 		}
 
-			// get the data
-		var myData = sessionStorage.getItem("batchInfo");
-		if (!myData) {
-			alert("Direct call not permitted");
-			setTab(process.env.REACT_APP_BATCH);
-		}
-		var tmp = JSON.parse(myData);
-		if (tmp.status === STATUS_INFO.ADD_BATCH) {
-			mode = "ADD";
-			origBatchRec = null;
-		}
-		else if (tmp.status === STATUS_INFO.EDIT_BATCH) {
-			mode = "EDIT";
-			origBatchRec = tmp.record;
-		} 
-		else {
-			alert("Invalid sttaus battch");
-			setTab(process.env.REACT_APP_BATCH);
-		}
-		sessionStorage.removeItem("batchInfo");
+		// get the data
 		getAllAreas();
 		getAllFaculty();
 		getAllStudents();
 		
-		// other batch infor set if mode 
-		if (mode === "ADD") {
-			
-		}
-		else {
-			setNewFees(origBatchRec.fees);
-			var myRec = DURATIONSTR.find(x => x.block === origBatchRec.sessionTime);
+		// other batch infor set if props.mode 
+		if (props.mode === "EDIT") {
+			setNewFees(props.batchRec.fees);
+			var myRec = DURATIONSTR.find(x => x.block === props.batchRec.sessionTime);
 			setSessDuration(myRec.name);
 			
 			// Get the session details
 			var bSessions = [];
-			for(var i=0; i<origBatchRec.timings.length; ++i) {
-				//console.log(origBatchRec.timings[i].hour, origBatchRec.timings[i].minute);
-				var dRec = BATCHTIMESTR.find(x => (x.hour == origBatchRec.timings[i].hour) && (x.min === origBatchRec.timings[i].minute) );
+			for(var i=0; i<props.batchRec.timings.length; ++i) {
+				//console.log(props.batchRec.timings[i].hour, props.batchRec.timings[i].minute);
+				var dRec = BATCHTIMESTR.find(x => (x.hour == props.batchRec.timings[i].hour) && (x.min === props.batchRec.timings[i].minute) );
 				//console.log(dRec);
-				bSessions.push({name: dRec.name, hour: dRec.hour, min: dRec.min, block: dRec.block, day: origBatchRec.timings[i].day });
+				bSessions.push({name: dRec.name, hour: dRec.hour, min: dRec.min, block: dRec.block, day: props.batchRec.timings[i].day });
 			}
 			setBatchSessions(bSessions);
 		}
@@ -336,38 +314,28 @@ async function handleAddEditSubmit() {
 
 	var batchRec;
 	try {
-		if (mode == "ADD") {
+		if (props.mode == "ADD") {
 		// for add new batch
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/add/${finalData}`;
 			var response = await axios.get(myUrl);
-			//alert("Successfully added details of new batch");
-			var batchInfo = {inUse: true, status: STATUS_INFO.OKAY, msg: `Successfully added batch ${response.data.bid}.`, record: response.data };
-			sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, batchRec: response.data, msg: `Successfully added batch ${response.data.bid}.`} );
+			return;
 		}
 		else {
 			// for edit user
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/update/${origBatchRec.sid}/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;	
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/update/${props.batchRec.sid}/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;	
 			//console.log(myUrl);
 			var response = await axios.get(myUrl);
-			//var tmp = masterBatchArray.filter(x => x.uid !== batchRec.uid);
-			//tmp = tmp.concat([response.data])
-			//tmp = lodashSortBy(tmp, 'name');
-			//setMasterBatchArray(tmp
-			
-			var batchInfo = {inUse: true, status: STATUS_INFO.OKAY, msg: `Successfully updated batch ${response.data.bid}.`, record: response.data };
-			sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-			
-			//filterBatch(tmp, currentSelection);
-			//setDrawer("");
-			//alert("Successfully edit details of " + userName);
+			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, batchRec: response.data, msg: `Successfully updated batch ${response.data.bid}.`} );
+			return;
 		}
 	}
 	catch (e) {
 		console.log("Error");
-		var batchInfo = {inUse: true, status: STATUS_INFO.ERROR, msg: "Error adding/updating batch.", record: null };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
+		props.onReturn.call(this, {status: STATUS_INFO.ERROR, msg: "Error adding/updating batch."});
+		return
 	}
-	setTab(process.env.REACT_APP_BATCH)
+	
 }
 
 function handleAdd() {
@@ -388,7 +356,7 @@ async function handleEdit(r) {
 		setUserRec(myUser);
 	}
 	catch (e) {
-		alert('Error while fetching user record');
+		toast.error('Error while fetching user record');
 		setBatchtRec(null);
 		return;
 	}
@@ -413,58 +381,6 @@ return(
 
 function DisplaySingleTip(props) {
 	return null; //<Tooltip className={gClasses.tooltip} backgroundColor='#42EEF9' borderColor='black' arrowColor='blue' textColor='black' key={props.id} type="info" effect="float" id={props.id} multiline={true}/>
-}
-
-async function handleDisableBatch(rec) {
-	console.log("In disabled");
-	let myRec = masterBatchArray.find(x => x.bid === rec.bid);
-	console.log(myRec);
-	/*if (myRec.sess != "") {
-		alert(`Student ${myRec.name} has batche ${myRec.bid} in progress.`);
-		return;
-	}*/
-	try {
-		await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/disabled/${myRec.bid}`);
-		myRec.enabled = false;
-		var allRec  = [].concat(masterBatchArray)
-		setMasterBatchArray(allRec);
-		filterBatch(allRec, currentSelection);
-		setRegisterStatus(0);
-	}
-	catch (e) {
-		// error 
-		console.log(e);
-		alert("Error disabling student "+x.name);
-	}
-}
-
-async function handleEnableBatch(rec) {
-	let myRec = masterBatchArray.find(x => x.bid === rec.bid);
-	try {
-		await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabled/${myRec.bid}`);
-		myRec.enabled = true;
-		var allRec  = [].concat(masterBatchArray)
-		setMasterBatchArray(allRec);
-		filterBatch(allRec, currentSelection);
-	}
-	catch (e) {
-		// error 
-		console.log(e);
-		alert("Error disabling student "+x.name);
-	}
-}
-
-function filterBatch(masterArray, x) {
-	switch (x) {
-		case "Disabled":  setBatchArray(masterArray.filter(x => !x.enabled ));  break;
-		case "Enabled":   setBatchArray(masterArray.filter(x => x.enabled ));  break;
-		default:          setBatchArray(masterArray);  break;
-	}
-}
-
-function selectAll(x) {
-	setCurrentSelection(x);
-	filterBatch(masterBatchArray, x);
 }
 
 function handleAddStudent() {
@@ -610,7 +526,7 @@ return (
 	//console.log(dispType);
 	return (
 	<div align="center">
-<DisplayPageHeader headerName={ (mode ==="ADD") ? "Add new Batch" : `Edit batch ${origBatchRec.bid}` } groupName="" tournament="" />
+<DisplayPageHeader headerName={ (props.mode ==="ADD") ? "Add new Batch" : `Edit batch ${props.batchRec.bid}` } groupName="" tournament="" />
 		<br />
 		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
 			<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditSubmit}  >
@@ -659,7 +575,7 @@ return (
 				<Grid item xs={8} sm={8} md={10} lg={10} >
 					<Typography className={gClasses.info18Blue}>Batch students</Typography>
 				</Grid>
-				{ (mode === "ADD") &&
+				{ (props.mode === "ADD") &&
 					<Grid  item xs={4} sm={4} md={2} lg={2} >
 						<VsButton type="button" name="Add Student" onClick={handleAddStudent} />
 					</Grid>
@@ -680,7 +596,7 @@ return (
 								<TableCell align="center" className={myClasses} p={0} >{x.mergedName}</TableCell>
 								<TableCell align="center" className={myClasses} p={0} >
 									<IconButton  color="primary"  size="small" onClick={() => {handleEditStudent(x)}} ><EditIcon /> </IconButton>
-									<IconButton disabled={mode !== "ADD"} color="secondary"  size="small" onClick={() => {handleDelStudent(x)}} ><CancelIcon /> </IconButton>
+									<IconButton disabled={props.mode !== "ADD"} color="secondary"  size="small" onClick={() => {handleDelStudent(x)}} ><CancelIcon /> </IconButton>
 								</TableCell>
 							</TableRow>
 						)})}
@@ -725,7 +641,7 @@ return (
 				<br />
 				<Grid item xs={3} sm={3} md={4} lg={5} />
 				<Grid item xs={3} sm={3} md={2} lg={1} >
-					<VsButton type="submit" name={(mode == "EDIT") ? "Update Batch" : "Add Batch"} />
+					<VsButton type="submit" name={(props.mode == "EDIT") ? "Update Batch" : "Add Batch"} />
 				</Grid>
 				<Grid  item xs={3} sm={3} md={2} lg={1} >
 					<VsButton type="button" name="Cancel" onClick={mainCancel}/>
@@ -771,15 +687,6 @@ return (
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<VsSelect size="small" align="center" options={BATCHTIMESTR} field="name" value={newHourMinute} onChange={(event) => { setNewHourMinute(event.target.value)}} />			
 						</Grid>
-						{/*
-						<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-						<Grid item xs={6} sm={6} md={6} lg={6} align="left"  >
-							<Typography className={gClasses.info18Blue} >Minute</Typography>
-						</Grid>
-						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<VsSelect label="Min" size="small" align="center" options={MINUTEBLOCKSTR} value={newMin} onChange={(event) => { setNewMin(event.target.value)}} />			
-						</Grid>
-						*/}
 					</Grid>
 					<br />
 					<ShowResisterStatus />
@@ -789,6 +696,7 @@ return (
 				}
 			</Box>
 		</Drawer>
+		<ToastContainer />
 	</div>
 	)
 }

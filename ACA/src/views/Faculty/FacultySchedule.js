@@ -57,6 +57,7 @@ import {
 	DURATIONSTR,
 	BATCHTIMESTR	,
 	BLOCK_START, BLOCK_END,
+	FREESTR,
 } from 'views/globals';
 
 import {
@@ -291,13 +292,13 @@ function ShowResisterStatus() {
 						return (
 						<TableRow key={index} align="center">
 							<TableCell align="center" className={gClasses.th} p={0} >{BATCHTIMESTR[index].name}</TableCell>
-							<TableCell align="center" className={(x[0] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[0] !== "") ? x[0] : "Free"}</TableCell>
-							<TableCell align="center" className={(x[1] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[1] !== "") ? x[1] : "Free"}</TableCell>
-							<TableCell align="center" className={(x[2] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[2] !== "") ? x[2] : "Free"}</TableCell>
-							<TableCell align="center" className={(x[3] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[3] !== "") ? x[3] : "Free"}</TableCell>
-							<TableCell align="center" className={(x[4] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[4] !== "") ? x[4] : "Free"}</TableCell>
-							<TableCell align="center" className={(x[5] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[5] !== "") ? x[5] : "Free"}</TableCell>
-							<TableCell align="center" className={(x[6] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[6] !== "") ? x[6] : "Free"}</TableCell>
+							<TableCell align="center" className={(x[0] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[0] !== "") ? x[0] : FREESTR}</TableCell>
+							<TableCell align="center" className={(x[1] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[1] !== "") ? x[1] : FREESTR}</TableCell>
+							<TableCell align="center" className={(x[2] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[2] !== "") ? x[2] : FREESTR}</TableCell>
+							<TableCell align="center" className={(x[3] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[3] !== "") ? x[3] : FREESTR}</TableCell>
+							<TableCell align="center" className={(x[4] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[4] !== "") ? x[4] : FREESTR}</TableCell>
+							<TableCell align="center" className={(x[5] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[5] !== "") ? x[5] : FREESTR}</TableCell>
+							<TableCell align="center" className={(x[6] === "") ? gClasses.disabledtdrounded : gClasses.tdrounded} p={0} >{(x[6] !== "") ? x[6] : FREESTR}</TableCell>
 						</TableRow>
 					)})}
 				</TableBody>

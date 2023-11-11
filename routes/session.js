@@ -223,6 +223,45 @@ router.get('/testarea/:aid', async function (req, res, next) {
   sendok(res, newBid ); 
 })
 
+router.get('/fees/all', async function (req, res, next) {
+  setHeader(res);
+
+	//*/ First get list of students
+	//var allStudents = await Student.find({},{_id: 0, sid: 1, name: 1, enabled: 1, bid: 1}).sort({name: 1});
+	
+	var studentsList = await Session.find({}, {_id: 0, sidList: 1, studentNameList: 1 });;	
+	var allStudInfos = [];
+	for(var i=0; i<studentsList.length; ++i) {
+		var myRec = studentsList[i];
+		for(var j=0; j < myRec.sidList.length; ++j) {
+			if (!allStudInfos.find(x => x.sid == myRec.sidList[j])) 
+				allStudInfos.push({sid: myRec.sidList[j], name: myRec.studentNameList[j], fees: 0, payment: 0 });
+		}
+	}
+	
+	
+	var feesInfo = await Session.aggregate(
+		[{
+			"$group" : { 
+				"_id"   : "$sidList", 
+				"fees"  : { 
+						"$sum" : { 
+								"$multiply" : ["$fees", 1]
+						}
+				}
+			}
+		}]
+	);
+	
+	for(var i=0; i<allStudInfos.length; ++i) {
+		var tmp = feesInfo.filter( x => x._id.includes(allStudInfos[i].sid));
+		console.log(tmp);
+		allStudInfos[i].fees = _.sumBy(tmp, 'fees');
+	}
+	
+  sendok(res, allStudInfos ); 
+})
+
 
 
 function sendok(res, usrmgs) { res.send(usrmgs); }

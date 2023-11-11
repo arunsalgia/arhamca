@@ -84,6 +84,7 @@ facultyRouter = require('./routes/faculty');
 studentRouter = require('./routes/student');
 batchRouter = require('./routes/batch');
 sessionRouter = require('./routes/session');
+paymentRouter = require('./routes/payment');
 
 walletRouter = require('./routes/wallet');
 masterRouter = require('./routes/master');
@@ -122,6 +123,7 @@ app.use('/faculty', facultyRouter);
 app.use('/student', studentRouter);
 app.use('/batch', batchRouter);
 app.use('/session', sessionRouter);
+app.use('/payment', paymentRouter);
 
 app.use('/wallet', walletRouter);
 app.use('/master', masterRouter);
@@ -213,6 +215,21 @@ sessionSchema = mongoose.Schema({
 	studentNameList: [String],		// list of names of students in batch
 	attendedSidList: [String],		// list of Id of students who attended the session
 	attendedStudentNameList: [String],		// list of name of students who attended the session
+	creationDate: Date,
+  enabled: Boolean	// Batch open (true) / closed false
+});
+
+PaymentSchema = mongoose.Schema({
+	sequence: Number,
+	sessionNumber: Number,
+  sid: String,		     // Student code
+	studentName: String, // Faculty name
+	amount: Number,		   // payment amount
+	date: Date,
+	mode: String,			  // payment mode Online, Net banking, cash etc.
+	reference: String,  // payment Reference
+	status: String,     // payment status Pending, reveived
+	remarks: String,
 	creationDate: Date,
   enabled: Boolean	// Batch open (true) / closed false
 });
@@ -493,17 +510,6 @@ BriefStatSchema = mongoose.Schema({
 
 */
 
-PaymentSchema = mongoose.Schema({
-  cid: Number,
-  email: String,
-  amount: Number,
-  status: String,
-  requestId: String,
-  requestTime: Date,
-  paymentId: String,
-  paymentTime: Date,
-  fee: Number,
-});
 
 FirebaseSchema = mongoose.Schema({
 	token: String,
@@ -546,6 +552,7 @@ Faculty = mongoose.model("facultys", FacultySchema);
 Student = mongoose.model("students", studentSchema);
 Batch   = mongoose.model("batchs", batchSchema);
 Session   = mongoose.model("sessions", sessionSchema);
+Payment   = mongoose.model("payments", PaymentSchema);
 
 
 //Guide = mongoose.model("guide", GuideSchema);
@@ -564,7 +571,6 @@ MasterData = mongoose.model("MasterSettings", MasterSettingsSchema)
 Wallet = mongoose.model('wallet', WalletSchema);
 //Prize = mongoose.model('prize', PrizeSchema);
 //Apl = mongoose.model('aplinfo', AplSchema);
-//Payment = mongoose.model('payment', PaymentSchema);
 //UserKyc = mongoose.model('userkyc', UserKycSchema);
 //Reference = mongoose.model('reference', ReferenceSchema);
 //Firebase = mongoose.model('firebase', FirebaseSchema);
