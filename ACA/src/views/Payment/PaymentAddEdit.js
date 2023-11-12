@@ -137,7 +137,7 @@ export default function PaymentAddEdit(props) {
 				else {
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/list/all`;
 					const response = await axios.get(myUrl);
-					console.log(response.data);
+					//console.log(response.data);
 					allRecs = response.data;
 				}
 				for (var i=0; i<allRecs.length; ++i) {
@@ -151,10 +151,10 @@ export default function PaymentAddEdit(props) {
 			}
 		}
 		
+		//console.log(props);
 		setOrigStudentRec( props.sid );	
 		getAllStudents(props.sid);
-		console.log(props.mode);
-		console.log(props.paymentRec);
+		//console.log(props.paymentRec);
 		if (props.mode !== "ADD") {
 			setNewStudent(mergedName(props.paymentRec._id.sid, props.paymentRec._id.studentName));
 			setPaymentDate(props.paymentRec.date);
@@ -233,6 +233,7 @@ async function handleAddEditSubmit() {
 	
 	var tmpRec = studentArray.find(x => x.name === getNameFromMergedName(newStudent));
 	myData["studentRec"] = tmpRec;
+	myData["paymentRec"] = props.paymentRec;
 	myData["amount"] = newAmount;
 	myData["paymentDate"] = paymentDate;
 	myData["paymentMode"] = paymentMode;
@@ -249,30 +250,23 @@ async function handleAddEditSubmit() {
 		// for add new batch
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/payment/add/${finalData}`;
 			var response = await axios.get(myUrl);
-			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, paymentRec: response.data, msg: `Successfully added payment of student ${newStudent}.`} );
+			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, paymentRec: response.data, msg: `Successfully added payment of ${newStudent}.`} );
 			return;
 		}
 		else {
 			// for edit user
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/update/${origStudentRec.sid}/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;	
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/payment/update/${finalData}`;	
 			//console.log(myUrl);
 			var response = await axios.get(myUrl);
-			//var tmp = masterBatchArray.filter(x => x.uid !== studentRec.uid);
-			//tmp = tmp.concat([response.data])
-			//tmp = lodashSortBy(tmp, 'name');
-			//setMasterBatchArray(tmp
-			
-			var batchInfo = {inUse: true, status: STATUS_INFO.SUCCESS, msg: `Successfully updated batch ${response.data.bid}.`, record: response.data };
-			sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-			
-			//filterBatch(tmp, currentSelection);
-			//setDrawer("");
-			//alert("Successfully edit details of " + userName);
+			//console.log(response.data);
+			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, paymentRec: response.data, msg: `Successfully updated payment of ${response.data.sid}.`} );
+			return;
 		}
 	}
 	catch (e) {
-		console.log("Error");
+		console.log(e);
 		props.onReturn.call(this, {status: STATUS_INFO.ERROR, msg: `Error adding payment of student ${newStudent}.`});
+		return;
 	}
 	
 }

@@ -30,6 +30,8 @@ import { UserContext } from "../../UserContext";
 import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomComponents/CustomComponents.js';
 
 import lodashSortBy from "lodash/sortBy";
+import lodashOrderBy from "lodash/orderBy";
+import lodashSumBy from "lodash/sumBy";
 
 import {setTab} from "CustomComponents/CricDreamTabs.js"
 
@@ -68,6 +70,7 @@ import {
 import {
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
 	isAdmMan, isAdmManFac, isFaculty,
+	dateString,
 } from 'views/functions';
 
 
@@ -81,15 +84,16 @@ export default function Payment() {
 	const [paymentArray, setPaymentArray] = useState([]);
 	//const [masterBatchArray, setMasterBatchArray] = useState([]);
 
-
+	const [studentPayments ,setStudentPayments] = useState([]);
 	const [selStudent, setSelStudent] = useState("");
+	const [selPaymentRec, setSelPaymentRec] = useState("");
 
 	// for faculty schule call
 	const [batchRec, setBatchRec] = useState({});
 	const [showAll, setShowAll] = useState(false);
 	
 	const [drawer, setDrawer] = useState("");
-	const [drawerDetail, setDrawerDetail] = useState("");
+	const [drawerInfo, setDrawerInfo] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
@@ -117,7 +121,7 @@ export default function Payment() {
 		async function getAllPayments() {
 			try {
 				if (isAdmMan()) {
-					console.log("Admin or Main");
+					//console.log("Admin or Main");
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/payment/total/all`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
@@ -142,29 +146,55 @@ export default function Payment() {
 		//console.log(sts);
 		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
 		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
-		if (sts.status === "ADD") {
-			// Just check if student entry present
-			var clonedArray = [].concat(paymentArray);
-			var tmp = clonedArray.find( x => x._id.sid === sts.paymentRec.sid);
-			if (tmp) {
-				tmp.amount += sts.paymentRec.amount;
-				setPaymentArray(clonedArray);
+		
+		//console.log(sts.status, selPaymentRec);
+		if (sts.status == STATUS_INFO.SUCCESS) {
+			if (selPaymentRec) {
+				//console.log("in edit payment return");
+				//console.log(sts.paymentRec);
+			
+				// two chnages to be done.
+				// first chnage in studentPayments Array
+				//console.log(sts.paymentRec._id);
+				var clonedArray = studentPayments.filter(x => x._id !== sts.paymentRec._id);
+				clonedArray.push(sts.paymentRec);
+				let sorted_array = lodashSortBy(clonedArray, 'date').reverse();
+				setStudentPayments(sorted_array);
+			
+				// Now make correction in grand total
+				var clonedMainArray = [].concat(paymentArray);
+				var tmp = clonedMainArray.find(x => x._id.sid === sts.paymentRec.sid);
+				var sum = 0;
+				clonedArray.map(x => sum += x.amount);
+				//console.log(sum);
+				tmp.amount = sum;
+				//console.log(tmp);
+				setPaymentArray(clonedMainArray);				
 			}
 			else {
-				console.log(sts.paymentRec);
-				clonedArray.push(
-					{ 
-					_id: {sid: sts.paymentRec.sid, studentName: sts.paymentRec.studentName },
-					amount: sts.paymentRec.amount
-					}
-				);
-				//clonedArray = ;
-				//console.log(_.sortBy(clonedArray, ["_id.studentName"]));
-				setPaymentArray(clonedArray);
+				// New Payment
+				console.log("payment new");
+				var clonedArray = [].concat(paymentArray);
+				var tmp = clonedArray.find( x => x._id.sid === sts.paymentRec.sid);
+				if (tmp) {
+					tmp.amount += sts.paymentRec.amount;
+					setPaymentArray(clonedArray);
+				}
+				else {
+					//console.log(sts.paymentRec);
+					clonedArray.push(
+						{ 
+						_id: {sid: sts.paymentRec.sid, studentName: sts.paymentRec.studentName },
+						amount: sts.paymentRec.amount
+						}
+					);
+					setPaymentArray(lodashSortBy(clonedArray, ['_id.studentName'] ));
+				}
 			}
-			console.log("About to update");
 		}
-		
+		else {
+			console.log("Yaha kaise aaya");
+		}
 		setDrawer("");
 	}
 	
@@ -217,13 +247,40 @@ export default function Payment() {
 	
 	function handleAddStudentPayment(rec) {
 		setSelStudent({sid: rec._id.sid});
+		setSelPaymentRec(null);
 		setDrawer("ADDPAYMENT");
 	}
 	
 	function handleEditStudentPayment(rec) {
-		console.log(rec);
-		setSelStudent({sid: rec._id.sid, paymentRec: rec});
+		//console.log(rec);
+		//console.log(selStudent);
+		setSelPaymentRec(rec);
 		setDrawer("EDITPAYMENT");
+	}
+	
+	
+	async function handleDelStudentPayment(rec) {
+		try {
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/payment/delete/${rec._id}`;
+			await axios.get(myUrl);
+			let newArray = studentPayments.filter(x => x._id !== rec._id);
+			setStudentPayments(newArray)
+			
+			if (newArray.length > 0) {
+				var clonedArray = [].concat(paymentArray);
+				let tmp = clonedArray.find( x => x._id.sid === rec.sid);
+				tmp.amount = lodashSumBy(newArray, 'amount');
+				setPaymentArray(clonedArray);
+			}
+			else {
+				setPaymentArray(paymentArray.filter( x => x._id.sid !== rec.sid));
+			}
+			toast.success(`Deleted payment record of ${mergedName( rec.studentName, rec.sid )}`);
+		}
+		catch (e) {
+			console.log(e);
+			toast.error(`Error deleting payment record`);
+		}
 	}
 	
 	
@@ -234,9 +291,18 @@ export default function Payment() {
 	}
 	
 
-	function handleInfo(r) {
-		setBatchtRec(r);
-		setDrawerDetail("detail");
+	async function handleInfo(rec) {
+		//console.log(rec);
+		setSelStudent({sid: rec._id.sid, studentName: rec._id.studentName});
+		try {
+			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/payment/list/${rec._id.sid}`);
+			setStudentPayments(response.data);
+			setDrawerInfo("detail");
+		}
+		catch(e) {
+			console.log(e);
+			toast.error("error fatching student payment detials.");
+		}
 	}
 
 
@@ -305,8 +371,46 @@ export default function Payment() {
 			<PaymentAddEdit mode="ADD" sid={selStudent.sid} paymentRec={null}  onReturn={handleBack} />
 		}
 		{(drawer === "EDITPAYMENT") &&
-			<PaymentAddEdit mode="EDIT" sid={selStudent.sid} paymentRec={selStudent.paymentRec}  onReturn={handleBack} />
+			<PaymentAddEdit mode="EDIT" sid={selStudent.sid} paymentRec={selPaymentRec}  onReturn={handleBack} />
 		}
+	</Drawer>
+	<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""}>
+	<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />
+	<DisplayPageHeader headerName={`Payment details of ${ mergedName(selStudent.studentName, selStudent.sid ) }`} groupName="" tournament="" />
+		<Table  align="center">
+		<TableHead p={0}>
+		<TableRow key="header" align="center">
+			<TableCell className={gClasses.th} p={0} align="center">Date</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center">Amount</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center">Mode</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center">Status</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center">Reference</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center"></TableCell>
+		</TableRow>
+		</TableHead>
+		<TableBody p={0}>
+			{studentPayments.map(x => {
+					var myClasses = gClasses.td ;
+					//console.log(x)
+				return (
+				<TableRow key={x._id}>
+					<TableCell className={myClasses} p={0} align="center" >{dateString(x.date)}</TableCell>
+					<TableCell className={myClasses} p={0}  >{x.amount}</TableCell>
+					<TableCell className={myClasses} align="center" p={0} >{x.mode}</TableCell>
+					<TableCell className={myClasses} align="center" p={0} >{x.status}</TableCell>
+					<TableCell className={myClasses} align="center" p={0} >{x.reference}</TableCell>
+					<TableCell className={myClasses} p={0} >
+						<IconButton color="primary"  size="small" onClick={() => {handleEditStudentPayment(x)}} ><EditIcon /></IconButton>
+						<IconButton color="secondary"  size="small" onClick={() => {handleDelStudentPayment(x)}} ><CancelIcon /></IconButton>
+						{/*<IconButton color="primary" size="small" onClick={() => {handleEditStudentPayment(x)}} ><EditIcon /></IconButton>
+						<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
+						<IconButton color="primary"  size="small" onClick={() => {handleAddStudentPayment(x)}} ><Money /></IconButton>*/}
+					</TableCell>
+				</TableRow>
+			)})}
+		</TableBody>
+		</Table>	
+		<br />
 	</Drawer>
 	<ToastContainer />
 	</div>

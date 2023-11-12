@@ -39,20 +39,17 @@ router.get('/list/all', async function (req, res, next) {
   sendok(res, sessionCount ); 
 })
 
-
-router.get('/list/disabled', async function (req, res, next) {
+router.get('/list/:sid', async function (req, res, next) {
   setHeader(res);
- 
-	var allRecs = await Batch.find({enabled: false}).sort({creationDate: -1});
-  sendok(res, allRecs ); 
+
+	var { sid } = req.params;
+	
+	var allPayments = await Payment.find({ sid: sid }).sort({date: -1});
+	console.log(allPayments);
+	
+  sendok(res, allPayments ); 
 })
 
-router.get('/list/enabled', async function (req, res, next) {
-  setHeader(res);
- 
-	var allRecs = await Batch.find({enabled: true}).sort({creationDate: -1});
-  sendok(res, allRecs ); 
-})
 
 
 router.get('/add/:paymentData', async function (req, res, next) {
@@ -91,87 +88,36 @@ router.get('/add/:paymentData', async function (req, res, next) {
 	
 })
 
-router.get('/update/:usid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4/:parName/:parMobile', async function (req, res, next) {
-  setHeader(res);
-  var { usid, uName, uPassword, uEmail, mobileNumber, addr1, addr2, addr3, addr4, parName, parMobile } = req.params;
 
-	var studentRec = await Student.findOne({sid: usid});
+router.get('/update/:paymentData', async function (req, res, next) {
+  setHeader(res);
+  var { paymentData } = req.params;
+
+	paymentData = JSON.parse(paymentData);
+	console.log(paymentData);
+
+	// first get the payment record
+	paymentRec = await Payment.findOne({_id: paymentData.paymentRec._id});
 	
-	// first it as a user
-	var myStatus = await updateUser(studentRec.uid, uName, uPassword, ROLE_STUDENT, uEmail, mobileNumber, addr1, addr2, addr3, addr4);
-	//console.log(myStatus);
-	if (myStatus.status != 0)
-		return senderr(res, myStatus.status, "Error");
+	paymentRec.amount = paymentData.amount;
+	paymentRec.mode = paymentData.paymentMode;
+	paymentRec.reference = paymentData.paymentRef;
+	paymentRec.status = paymentData.paymentStatus;
+	paymentRec.remarks = paymentData.remarks;
 	
-	// user added. Now update 
-	studentRec.name = myStatus.userRec.displayName;
-	studentRec.parentName = getDisplayName(parName);
-	studentRec.parentMobile = parMobile;
-  await studentRec.save();
-  sendok(res, studentRec ); 
+	await paymentRec.save();
+	
+	sendok(res, paymentRec);
+	
 })
 
-router.get('/delete/:bid', async function (req, res, next) {
+router.get('/delete/:myid', async function (req, res, next) {
   setHeader(res);
-  var {bid } = req.params;
+  var {myid } = req.params;
 
-	batchRec = await Batch.findOne({bid: bid});
-	if (!batchRec) return senderr(res, 601, "Invalid BID");
+	await Payment.deleteOne({_id: myid});
 
-	await Batch.deleteOne({bid: bid});
-
-	studentArray = await Student.find({bid: batchRec.bid});
-	for(var i=0; i<studentArray.length; ++i) {
-		studentArray[i].bid = "";
-		await studentArray[i].save();
-	}
-	
   sendok(res, "Deleted" ); 
-})
-
-router.get('/disabled/:bid', async function (req, res, next) {
-  setHeader(res);
-  var {bid } = req.params;
-
-	batchRec = await Batch.findOne({bid: bid});
-	if (!batchRec) return senderr(res, 601, "Invalid BID");
-
-	batchRec.enabled = false;
-	await batchRec.save();
-	
-	studentArray = await Student.find({bid: bid});
-	for(var i=0; i<studentArray.length; ++i) {
-		studentArray[i].bid = "";
-		await studentArray[i].save();
-	}
-	
-  sendok(res, batchRec ); 
-})
-
-router.get('/enabled/:bid', async function (req, res, next) {
-  setHeader(res);
-  var { bid } = req.params;
-
-	batchRec = await Batch.findOne({bid: bid});
-	console.log(batchRec);
-	if (!batchRec) return senderr(res, 601, "Invalid BID");
-	
-	// Now verify studnets still available
-	studentArray = await Student.find({sid: {$in: batchRec.sid } });
-	for(var i=0; i<studentArray.length; ++i) {
-		if (studentArray[i].bid != "") return senderr(res, 602, "Invalid BID");
-	}
-	
-	// Now okay. Now assign batch to students
-	for(var i=0; i<studentArray.length; ++i) {
-		studentArray[i].bid = batchRec.bid;
-		await studentArray[i].save();
-	}
-
-	batchRec.enabled = true;
-	await batchRec.save();
-	
-  sendok(res, batchRec ); 
 })
 
 
@@ -198,7 +144,6 @@ router.get('/total/all', async function (req, res, next) {
 
   sendok(res, paymentInfo ); 
 })
-
 
 
 function sendok(res, usrmgs) { res.send(usrmgs); }

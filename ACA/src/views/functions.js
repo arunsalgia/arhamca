@@ -6,6 +6,10 @@ import CircularProgressWithLabel from '@material-ui/core/LinearProgress';
 import moment from 'moment';
 import { func } from "prop-types";
 
+import {
+	DATESTR, MONTHNUMBERSTR 
+} from "views/globals";
+
 var crypto = require("crypto");
 var ifscsystem = require('ifsc-finder');
 var aadhar = require('aadhaar-validator')
@@ -691,3 +695,7 @@ export function isAdmManStu() {
  return ["Admin", "Manager", "Student"].includes(localSession.getItem("role")); 
 }
 
+export function dateString(dStr) {
+	let d = new Date(dStr);
+	return `${DATESTR[d.getDate()]}/${MONTHNUMBERSTR[d.getMonth()]}/${d.getFullYear()}`;
+}

@@ -48,10 +48,17 @@ router.get('/enabledbatch/:fid', async function (req, res, next) {
   setHeader(res);
   var { fid } = req.params;
 	
-	var allRecs = await Batch.find({fid: fid}).sort({creationDate: -1});
+	var allRecs = await Batch.find({fid: fid, enabled: true}).sort({creationDate: -1});
   sendok(res, allRecs ); 
 })
 
+router.get('/get/:fid', async function (req, res, next) {
+  setHeader(res);
+  var { fid } = req.params;
+	
+	var allRecs = await Batch.find({fid: fid}).sort({creationDate: -1});
+  sendok(res, allRecs ); 
+})
 
 router.get('/add/:batchData', async function (req, res, next) {
   setHeader(res);
@@ -154,24 +161,54 @@ router.get('/add/:batchData', async function (req, res, next) {
 	sendok(res, newBatch ); 
 })
 
-router.get('/update/:usid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4/:parName/:parMobile', async function (req, res, next) {
+router.get('/update/:batchData', async function (req, res, next) {
   setHeader(res);
-  var { usid, uName, uPassword, uEmail, mobileNumber, addr1, addr2, addr3, addr4, parName, parMobile } = req.params;
+  var { batchData } = req.params;
 
-	var studentRec = await Student.findOne({sid: usid});
+	batchData = JSON.parse(batchData);
+	console.log(batchData);
 	
-	// first it as a user
-	var myStatus = await updateUser(studentRec.uid, uName, uPassword, ROLE_STUDENT, uEmail, mobileNumber, addr1, addr2, addr3, addr4);
-	//console.log(myStatus);
-	if (myStatus.status != 0)
-		return senderr(res, myStatus.status, "Error");
+	// First get the batch record
+	var batchRec = await Batch.findOne( { bid: batchData.batchRec.bid });
+	console.log(batchRec);
 	
-	// user added. Now update 
-	studentRec.name = myStatus.userRec.displayName;
-	studentRec.parentName = getDisplayName(parName);
-	studentRec.parentMobile = parMobile;
-  await studentRec.save();
-  sendok(res, studentRec ); 
+	//first check if shecule clashes
+		// Now check for faculty if session is available. exclude the current batch
+	var allBatches = await Batch.find({fid: batchData.batchRec.fid, bid: {$ne: batchData.batchRec.bid},  enabled: true});
+	var facultyBlockList = getWeeklyBlock(allBatches);
+	//console.log(facultyBlockList);
+	
+	// Now check for each session if the block is available
+	console.log("Checking blocks");
+	var totalBlocks = batchData.duration;		// In block provided by frount end ( batchData.duration * MINUTES_IN_HOUR ) / BLOCK_IN_MINUTES;
+	console.log("Blocks", totalBlocks);
+	var sessionList = [];
+	console.log(batchData.sessions.length, batchData.sessions);
+	for(var sIdx=0; sIdx < batchData.sessions.length; ++sIdx) {
+		var sessRec = batchData.sessions[sIdx];
+		var hr = Number(sessRec.hour);
+		var mn = Number(sessRec.min) ;
+		sessionList.push({day: sessRec.day, hour: hr, minute: mn });			// will be put in batchrecord if all okay
+		var startBlock = timeToBlock(hr , mn);
+		var dayIdx = SHORTWEEKSTR.indexOf(sessRec.day);
+		console.log(dayIdx, startBlock);
+		for(var i=startBlock; i<(startBlock+totalBlocks); ++i) {
+			console.log(dayIdx, i, facultyBlockList[i][dayIdx]);
+			if (facultyBlockList[i][dayIdx] != "") return senderr(res, 604, "faculty block clash");			// faculty slot busy with another batch
+		}
+	};
+	
+	
+	batchRec.fees = batchData.fees;
+	batchRec.sessionTime = totalBlocks;				// session of # number blocks
+	batchRec.timings = sessionList;
+	
+	await batchRec.save();
+	
+	//return senderr(res, 605, "fqwdqwd");
+	
+	sendok(res, batchRec);
+
 })
 
 router.get('/delete/:bid', async function (req, res, next) {

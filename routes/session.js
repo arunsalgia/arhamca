@@ -40,6 +40,17 @@ router.get('/list/all', async function (req, res, next) {
 })
 
 
+router.get('/listbybid/:bid', async function (req, res, next) {
+  setHeader(res);
+
+	var { bid } = req.params;
+	
+	// First get list of students
+	var allSessions = await Sessions.find({bid: bid}).sort({sessionNumber: -1});
+	
+  sendok(res, allSessions ); 
+})
+
 router.get('/list/disabled', async function (req, res, next) {
   setHeader(res);
  
@@ -102,7 +113,7 @@ router.get('/add/:sessionData', async function (req, res, next) {
 	newSession.enabled = true;
 	
 	// Now get the sequnce number
-	var tmpRecs = await Session.find({bid: newSession.bid });
+	var tmpRecs = await Session.find({bid: newSession.bid }).limit(1).sort({sessionNumber: -1});
 	newSession.sessionNumber = (tmpRecs.length > 0) ? tmpRecs[0].sessionNumber + 1 : 1;
 	await newSession.save();
 	

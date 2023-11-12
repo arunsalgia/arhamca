@@ -48,6 +48,18 @@ router.get('/enabledfaculty/:fid', async function (req, res, next) {
 		senderr(res, 601, "No fac");
 })
 
+router.get('/get/:fid', async function (req, res, next) {
+  setHeader(res);
+	var {fid} = req.params;
+	
+	var myFaculty = await Faculty.findOne({fid: fid});
+	if (myFaculty)
+		sendok(res, myFaculty ); 
+	else
+		senderr(res, 601, "No fac");
+})
+
+
 router.get('/enabledfacultybyuid/:uid', async function (req, res, next) {
   setHeader(res);
 	var {uid} = req.params;

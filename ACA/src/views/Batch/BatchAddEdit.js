@@ -127,29 +127,56 @@ export default function BatchAddEdit(props) {
 			//setROWSPERPAGE(myRows);
 		}
 
-		async function getAllAreas() {
+		async function getAllAreas(myArea) {
+			var allAreas = [];
 			try {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/list`;
-				const response = await axios.get(myUrl);
-				//console.log(response.data);
-				var tmp = response.data;
-				for(var i=0; i<tmp.length; ++i) {
-					tmp[i]["mergedName"] = mergedName(tmp[i].longName, tmp[i].shortName);
-				}
-				if (props.mode === "ADD") {
-					setNewArea(tmp[0].mergedName);
-					setAreaArray(tmp);
+				if (myArea === "") {
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/list`;
+					const response = await axios.get(myUrl);
+					//console.log(response.data);
+					var allAreas = response.data;				
 				}
 				else {
-					var myAreaRec = tmp.find(x => x.shortName === getAreafromBid(props.batchRec.bid));
-					setNewArea(myAreaRec.mergedName);
-					setAreaArray([myAreaRec]);
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/get/shortname/${myArea}`;
+					const response = await axios.get(myUrl);
+					var allAreas = [response.data];
 				}
+				for(var i=0; i<allAreas.length; ++i) {
+					allAreas[i]["mergedName"] = mergedName(allAreas[i].longName, allAreas[i].shortName);
+				}
+				setNewArea(allAreas[0].mergedName);
+				setAreaArray(allAreas);
 			} catch (e) {
 				console.log(e);
 				toast.error("Error Fetching area");
 			}
 		}
+		
+
+		async function getAllFaculty(myFid) {	
+			var myFacultys = [];
+			try {
+				if (myFid == "") {
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/enabled`;
+					const response = await axios.get(myUrl);
+					myFacultys = response.data;
+				}
+				else {
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/get/${myFid}`;
+					const response = await axios.get(myUrl);
+					myFacultys = [response.data];
+				}
+				for(var i=0; i<myFacultys.length; ++i) {
+					myFacultys[i]["mergedName"] = mergedName(myFacultys[i].name, myFacultys[i].fid);
+				}
+				setFacultyArray(myFacultys);
+				setNewFaculty(myFacultys[0].mergedName);
+			} catch (e) {
+				console.log(e);
+				toast.error("Error Fetching Faculty");
+			}
+		}
+
 		
 		async function getAllStudents() {
 			try {
@@ -175,32 +202,9 @@ export default function BatchAddEdit(props) {
 				toast.error("Error Fetching Students");
 			}
 		}
-
-		async function getAllFaculty() {	
-			try {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/enabled`;
-				const response = await axios.get(myUrl);
-				//console.log(response.data);
-				var tmp = response.data;
-					for(var i=0; i<tmp.length; ++i) {
-						tmp[i]["mergedName"] = mergedName(tmp[i].name, tmp[i].fid);
-				}
-				setFacultyArray(tmp);
-				if (props.mode === "ADD") 
-					setNewFaculty(tmp[0].mergedName);
-				else {
-					var myFacRec = tmp.find(x => x.fid === props.batchRec.fid);
-					setNewFaculty(mergedName(myFacRec.name, myFacRec.fid));
-				}
-			} catch (e) {
-				console.log(e);
-				toast.error("Error Fetching Faculty");
-			}
-		}
-
 		// get the data
-		getAllAreas();
-		getAllFaculty();
+		getAllAreas( (props.mode === "EDIT") ?	getAreafromBid(props.batchRec.bid) : "" );
+		getAllFaculty( (props.mode === "EDIT") ?	props.batchRec.fid : "");
 		getAllStudents();
 		
 		// other batch infor set if props.mode 
@@ -307,11 +311,14 @@ async function handleAddEditSubmit() {
 	myData["duration"] = Number(tmp.block);
 	myData["students"] = batchStudents;
 	myData["sessions"] = batchSessions;
+	// findally add batch record. Required for Update
+	myData["batchRec"] = props.batchRec;
 	console.log(myData);
 	
 	var myJsonData = JSON.stringify(myData);
 	var finalData = encodeURI(myJsonData);
 
+	console.log(props.mode);
 	var batchRec;
 	try {
 		if (props.mode == "ADD") {
@@ -323,7 +330,7 @@ async function handleAddEditSubmit() {
 		}
 		else {
 			// for edit user
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/update/${props.batchRec.sid}/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;	
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/update/${finalData}`;	
 			//console.log(myUrl);
 			var response = await axios.get(myUrl);
 			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, batchRec: response.data, msg: `Successfully updated batch ${response.data.bid}.`} );
@@ -331,9 +338,37 @@ async function handleAddEditSubmit() {
 		}
 	}
 	catch (e) {
-		console.log("Error");
-		props.onReturn.call(this, {status: STATUS_INFO.ERROR, msg: "Error adding/updating batch."});
-		return
+		console.log(e);
+		var myMessage = "Error in add/update batch";
+		var stayback = false;
+		if (e.response)
+		switch (e.response.status) {
+			case 601: 
+				myMessage = "Student(s) not assigned"; 
+				stayback = true; 
+				break;
+			case 602: 
+				myMessage = "Session(s) not assigned"; 
+				stayback = true; 
+				break;
+			case 603: myMessage = "Student(s) aready assigned batch"; 
+				stayback = true; 
+				break;
+			case 604: myMessage = "faculty block clash"; 
+				stayback = true; 
+				break;
+			case 605: 
+				myMessage = "test edit batch error";  
+				break;
+		}
+		
+		if (stayback) {
+			toast.error(myMessage);
+		}
+		else {
+			props.onReturn.call(this, {status: STATUS_INFO.ERROR, msg: myMessage});
+		}
+		return;
 	}
 	
 }
@@ -595,7 +630,7 @@ return (
 							<TableRow key={x.sid} align="center">
 								<TableCell align="center" className={myClasses} p={0} >{x.mergedName}</TableCell>
 								<TableCell align="center" className={myClasses} p={0} >
-									<IconButton  color="primary"  size="small" onClick={() => {handleEditStudent(x)}} ><EditIcon /> </IconButton>
+									<IconButton disabled={props.mode !== "ADD"} color="primary"  size="small" onClick={() => {handleEditStudent(x)}} ><EditIcon /> </IconButton>
 									<IconButton disabled={props.mode !== "ADD"} color="secondary"  size="small" onClick={() => {handleDelStudent(x)}} ><CancelIcon /> </IconButton>
 								</TableCell>
 							</TableRow>
@@ -639,14 +674,9 @@ return (
 				<br />
 				<ShowResisterStatus />
 				<br />
-				<Grid item xs={3} sm={3} md={4} lg={5} />
-				<Grid item xs={3} sm={3} md={2} lg={1} >
-					<VsButton type="submit" name={(props.mode == "EDIT") ? "Update Batch" : "Add Batch"} />
+				<Grid item xs={12} sm={12} md={12} lg={12} >
+					<VsButton align="center" type="submit" name={(props.mode == "EDIT") ? "Update Batch" : "Add Batch"} />
 				</Grid>
-				<Grid  item xs={3} sm={3} md={2} lg={1} >
-					<VsButton type="button" name="Cancel" onClick={mainCancel}/>
-				</Grid>
-				<Grid item xs={3} sm={3} md={4} lg={5} />
 			</Grid>
 			</ValidatorForm>
 			<ValidComp />   

@@ -223,26 +223,31 @@ export default function Batch() {
 	{
 		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
 		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
-		if (sts.status === "ADD") {
-			var clonedBatchArray = [].concat(batchArray);
-			var myRec = clonedBatchArray.find(x => x.bid === batchRec.bid);
-			myRec.sessionCount += 1;
-			setBatchArray(clonedBatchArray);
-		}	
+		
+		if (sts.status !== STATUS_INFO.ERROR) {
+			if (drawer === "ADDSESSION") {
+				var clonedBatchArray = [].concat(batchArray);
+				var myRec = clonedBatchArray.find(x => x.bid === batchRec.bid);
+				myRec.sessionCount += 1;
+				setBatchArray(clonedBatchArray);
+			}	
+		}
 		setDrawer("");
 	}
 	
 	function handleBackBatch(sts)
 	{
 		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
-		if (sts.status === "ADD") {
-			var clonedBatchArray = batchArray.concat([sts.batchRec]);
-			setBatchArray(clonedBatchArray);
-		}	
-		else {
-			var clonedBatchArray = batchArray.filter(x => x.bid !== sts.batchRec.bid);
-			setBatchArray(clonedBatchArray.concat([sts.batchRec]));
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg);
+		if (sts.status !== STATUS_INFO.ERROR) {
+			if (drawer === "ADDBATCH") {
+				var clonedBatchArray = batchArray.concat([sts.batchRec]);
+				setBatchArray(clonedBatchArray);
+			}	
+			else {
+				var clonedBatchArray = batchArray.filter(x => x.bid !== sts.batchRec.bid);
+				setBatchArray(clonedBatchArray.concat([sts.batchRec]));
+			}
 		}
 		setDrawer("");
 	}

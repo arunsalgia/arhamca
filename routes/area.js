@@ -6,6 +6,8 @@ var router = express.Router();
 // let PrizeRes;
 
 /* GET users listing. */
+
+
 router.use('/', function(req, res, next) {
   // PrizeRes = res;
   setHeader(res);
@@ -53,131 +55,23 @@ router.get('/list', async function (req, res, next) {
 	sendok(res, allAreas);
 }); 
 
-
-
-router.get('/getprizeportion', async function (req, res, next) {
+router.get('/get/shortname/:shortName', async function (req, res, next) {
+  var { shortName } = req.params;
+	
   setHeader(res);
-  let myPortion = await getMaster("PRIZEPORTION");
-  console.log(myPortion);
-  let amt = (myPortion !== "") ? parseInt(myPortion) : 100;
-  sendok(res, {prizePortion: amt});
+	let myArea = await Area.findOne({shortName: shortName},{_id: 0, shortName: 1, longName: 1});
+	console.log(myArea);
+	sendok(res, myArea);
 }); 
 
-router.get('/setprizeportion/:percentage', async function (req, res, next) {
+router.get('/get/longName/:longName', async function (req, res, next) {
+  var { longName } = req.params;
+	
   setHeader(res);
-  var {percentage} = req.params;
-
-  await setMaster("PRIZEPORTION", percentage);
-  sendok(res, "OK");
+	let myArea = await Area.findPne({longName: longName},{_id: 0, shortName: 1, longName: 1});
+	sendok(res, myArea);
 }); 
 
-router.get('/prizecount/:num', async function (req, res, next) {
-  // PrizeRes = res;
-  setHeader(res);
-  var {num} = req.params;
-
-	let myPrize = await Prize.findOne({prizeCount: num})
-	sendok(res, myPrize);
-}); 
-
-
-router.get('/all/:amount', async function (req, res, next) {
-  // PrizeRes = res;
-  setHeader(res);
-
-  var { amount } = req.params;
- 
-  let allPrize=[];
-  for(i=1; i<=5; ++i) {
-    let mytab = await getPrizeTable(i, amount);
-    allPrize.push(mytab);
-  }
-  sendok(res, allPrize);
-}); 
-
-
-
-router.get('/addprize', async function (req, res, next) {
-  // PrizeRes = res;
-  setHeader(res);
-
-  let myPrize = new Prize({
-    prizeCount: 1,
-    prize1: 100,
-    prize2: 0,
-    prize3: 0,
-    prize4: 0,
-    prize5: 0,
-    prize6: 0,
-    prize7: 0,
-    prize8: 0,
-    prize9: 0,
-    prize10: 0,
-  })
-  myPrize.save();
-
-  myPrize = new Prize({
-    prizeCount: 2,
-    prize1: 60,
-    prize2: 40,
-    prize3: 0,
-    prize4: 0,
-    prize5: 0,
-    prize6: 0,
-    prize7: 0,
-    prize8: 0,
-    prize9: 0,
-    prize10: 0,
-  })
-  myPrize.save();
-
-  myPrize = new Prize({
-    prizeCount: 3,
-    prize1: 50,
-    prize2: 30,
-    prize3: 20,
-    prize4: 0,
-    prize5: 0,
-    prize6: 0,
-    prize7: 0,	
-    prize8: 0,
-    prize9: 0,
-    prize10: 0,
-  })
-  myPrize.save();
-
-  myPrize = new Prize({
-    prizeCount: 4,
-    prize1: 40,
-    prize2: 30,
-    prize3: 20,
-    prize4: 10,
-    prize5: 0,
-    prize6: 0,
-    prize7: 0,
-    prize8: 0,
-    prize9: 0,
-    prize10: 0,
-  })
-  myPrize.save();
-
-  myPrize = new Prize({
-    prizeCount: 5,
-    prize1: 35,
-    prize2: 25,
-    prize3: 20,
-    prize4: 13,
-    prize5: 7,
-    prize6: 0,
-    prize7: 0,
-    prize8: 0,
-    prize9: 0,
-    prize10: 0,
-  })
-  myPrize.save();
-
-  sendok(res, "ok");
-}); 
 
 
 function sendok(res, usrmsg) { res.send(usrmsg); }
