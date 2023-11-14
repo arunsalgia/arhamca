@@ -2,13 +2,13 @@ import React, { useState ,useContex, useEffect} from 'react';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import CssBaseline from '@material-ui/core/CssBaseline';
-// import TextField from '@material-ui/core/TextField';
-// import Grid from '@material-ui/core/Grid';
-// import Box from '@material-ui/core/Box';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
+import Grid from "@material-ui/core/Grid";
+
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -29,7 +29,8 @@ import {blue, red, deepOrange, yellow } from '@material-ui/core/colors';
 import { useHistory } from "react-router-dom";
 import { 
   encrypt, decrypt,
-  validateSpecialCharacters, validateEmail, isMobile,
+  validateSpecialCharacters, validateEmail, 
+	isMobile, getWindowDimensions, displayType, 
 } from "views/functions.js";
 import { BlankArea, ValidComp, DisplayPageHeader } from 'CustomComponents/CustomComponents.js';
 import { setTab } from "CustomComponents/CricDreamTabs.js"
@@ -38,6 +39,7 @@ import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 
+import globalStyles from "assets/globalStyles";
 
 const useStyles = makeStyles((theme) => ({
   icon : {
@@ -111,16 +113,22 @@ const useStyles = makeStyles((theme) => ({
   },    
 }));
 
+const spacing = "5px";
+
 
 export default function Profile() {
   const classes = useStyles();
+	const gClasses = globalStyles();
   const history = useHistory();
 
+	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+	const [dispType, setDispType] = useState("lg");
+	
   const [userCode, setUserCode] = useState("");
   const [userName, setUserName] = useState("");
   const [groupName, setGroupName] = useState("");
   const [email, setEmail] = useState("");
-  const [profile, setProfile] = useState({});
+  const [profile, setProfile] = useState(null);
   const [registerStatus, setRegisterStatus] = useState(199);
 
   const [balance, setBalance] = useState(0);
@@ -137,39 +145,42 @@ export default function Profile() {
   const [copyState, setCopyState] = useState({value: '', copied: false});
 
   useEffect(() => {
+		function handleResize() {
+			let myDim = getWindowDimensions();
+      setWindowDimensions(myDim);
+			//let myRows = 0;
+			let defHeight = 100;
+      //console.log(displayType(myDim.width)) ;
+      setDispType(displayType(myDim.width));
+     
+			//switch (displayType(myDim.width)) {
+			//	case 'xs': myRows = 10; break;
+			//	case 'sm': myRows = 24; break;
+			//	case 'md': myRows = 36; break;
+			//	case 'lg': myRows = 48; break;
+			//}
+			//console.log(myRows);
+			//setROWSPERPAGE(myRows);
+		}
+
+
     const profileInfo = async () => {
       try {
         // get user details
-        var userRes = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/cricprofile/${localStorage.getItem("uid")}`);
+        var userRes = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/acagetbyid/${sessionStorage.getItem("uid")}`);
         setProfile(userRes.data); // master data for comparision if changed by user
-        // setLoginName(userRes.data.loginName);
-        setUserCode(userRes.data.userCode);
-        setCopyState({value: userRes.data.userCode})
-        //setUserCode("ArunCode123456");
-        setUserName(userRes.data.userName);
-        setGroupName(userRes.data.defaultGroup);
-        let tmp = decrypt(userRes.data.email);
-        setEmail(tmp);
-
-        // get wallet transaction and also calculate balance
-        // let response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/wallet/details/${localStorage.getItem("uid")}`);
-        // setTransactions(response.data);
-        // let myempty = rowsPerPage - Math.min(rowsPerPage, response.data.length - page * rowsPerPage);
-        // setEmptyRows(myempty);
-
-        // let myBalance = response.data.reduce((accum,item) => accum + item.amount, 0);
-        // setBalance(myBalance);
-
       } catch (e) {
           console.log(e)
       }
     }
-    profileInfo();
+    
+		profileInfo();
+		handleResize();
+		window.addEventListener('resize', handleResize);
+		
   }, []);
 
-  // const { setUser } = useContext(UserContext);
 
-  
   const handleProfileSubmit = async() => {
     console.log("Submit command provided"); 
     let myUserName = document.getElementById("username").value;
@@ -262,62 +273,8 @@ export default function Profile() {
       <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
-        <Typography component="h1" variant="h5">User Profile</Typography>
-        <ValidatorForm className={classes.form} onSubmit={handleProfileSubmit}>
-          <TextValidator
-              className={classes.textColor}
-              variant="outlined"
-              required
-              fullWidth      
-              label="User Name"
-              // onChange={(event) => setUserName(event.target.value)}
-              id="username"
-              name="username"
-              // validators={['required', 'minLength', 'noSpecialCharacters']}
-              // errorMessages={['User Name to be provided', 'Mimumum 6 characters required', 'Special characters not permitted']}
-              // value={userName}
-              defaultValue={userName}
-          />
-          <BlankArea/>
-          <TextValidator
-              variant="outlined"
-              required
-              fullWidth      
-              label="Email"
-              // onChange={(event) => setEmail(event.target.value)}
-              id="email"
-              name="email"
-              type="email"
-              // validators={['isEmailOK', 'required']}
-              // errorMessages={['Invalid Email', 'Email to be provided']}
-              // value={email}
-              defaultValue={email}
-          />
-          {/* <BlankArea/> */}
-          {/* <TextValidator
-              variant="outlined"
-              // required
-              fullWidth      
-              // readonly
-              disabled
-              label="Default Group"
-              name="groupName"
-              value={groupName}
-          /> */}
-          <ShowResisterStatus/>
-          <BlankArea/>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            className={classes.submit}
-          >
-            Update
-        </Button>
-        </ValidatorForm>
-      </div>
-      <ValidComp />    
+
+			</div>
       </Container>
     );
   }   
@@ -865,17 +822,73 @@ export default function Profile() {
     </div>
   )
   }
-  
 
-  let headerText = localStorage.getItem("userName") + "\`s Profile";
+	if (!profile) return null;
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <BlankArea />
-      <DisplayPageHeader headerName={headerText} groupName="" tournament=""/>
+      <DisplayPageHeader headerName={profile.displayName + "\`s Profile"} groupName="" tournament=""/>
       <BlankArea />
-      <DisplayAccordian />
-      {/* <ShowResisterStatus/> */}
+			<Grid key="ADDEDITPROFILE" className={gClasses.noPadding} container >
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={2} lg={4} />
+			}
+			<Grid item xs={5} sm={5} md={3} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
+			</Grid>
+			<Grid item xs={7} sm={7} md={3} lg={1} >
+				<Typography align="left"  className={gClasses.info18} >{profile.displayName}</Typography>
+			</Grid>
+			<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />
+			
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={2} lg={4} />
+			}
+			<Grid item xs={5} sm={5} md={3} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
+			</Grid>
+			<Grid item xs={7} sm={7} md={3} lg={1} >
+				<Typography align="left"  className={gClasses.info18} >{profile.mobile}</Typography>
+			</Grid>
+			<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />
+
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={2} lg={4} />
+			}
+			<Grid item xs={5} sm={5} md={3} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Email</Typography>
+			</Grid>
+			<Grid item xs={7} sm={7} md={3} lg={1} >
+				<Typography align="left"  className={gClasses.info18} >{decrypt(profile.email)}</Typography>
+			</Grid>
+			<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />
+
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={2} lg={4} />
+			}
+			<Grid item xs={5} sm={5} md={3} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Role</Typography>
+			</Grid>
+			<Grid item xs={7} sm={7} md={3} lg={1} >
+				<Typography align="left"  className={gClasses.info18} >{profile.role}</Typography>
+			</Grid>
+			<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />
+
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={2} lg={4} />
+			}
+			<Grid item xs={5} sm={5} md={3} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Address</Typography>
+			</Grid>
+			<Grid item xs={7} sm={7} md={3} lg={1} >
+				<Typography align="left"  className={gClasses.info18} >{profile.addr1}</Typography>
+				<Typography align="left"  className={gClasses.info18} >{profile.addr2}</Typography>
+				<Typography align="left"  className={gClasses.info18} >{profile.addr3}</Typography>
+				<Typography align="left"  className={gClasses.info18} >{profile.addr4}</Typography>
+			</Grid>
+			<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />
+		</Grid>
     </Container>
   );
 

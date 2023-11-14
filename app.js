@@ -85,6 +85,7 @@ studentRouter = require('./routes/student');
 batchRouter = require('./routes/batch');
 sessionRouter = require('./routes/session');
 paymentRouter = require('./routes/payment');
+inquiryRouter = require('./routes/inquiry');
 
 walletRouter = require('./routes/wallet');
 masterRouter = require('./routes/master');
@@ -124,6 +125,7 @@ app.use('/student', studentRouter);
 app.use('/batch', batchRouter);
 app.use('/session', sessionRouter);
 app.use('/payment', paymentRouter);
+app.use('/inquiry', inquiryRouter);
 
 app.use('/wallet', walletRouter);
 app.use('/master', masterRouter);
@@ -233,6 +235,22 @@ PaymentSchema = mongoose.Schema({
 	creationDate: Date,
   enabled: Boolean	// Batch open (true) / closed false
 });
+
+InquirySchema = mongoose.Schema({
+	sequence: Number,
+  //iid: Number,		// Inquiry code
+	date: Date,			// inquiry date
+	area:	String,		// Short area name 
+	contactName: String,
+  contactNumber: String,
+	contactEmail: String,
+	reference:  String,
+	status: String,
+	remarks: String,
+	enabled: Boolean	// Batch open (true) / closed false
+});
+  
+  
 
 /*
 UserKycSchema = mongoose.Schema({
@@ -553,6 +571,7 @@ Student = mongoose.model("students", studentSchema);
 Batch   = mongoose.model("batchs", batchSchema);
 Session   = mongoose.model("sessions", sessionSchema);
 Payment   = mongoose.model("payments", PaymentSchema);
+Inquiry   = mongoose.model("inquirys", InquirySchema);
 
 
 //Guide = mongoose.model("guide", GuideSchema);

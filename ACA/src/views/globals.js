@@ -56,6 +56,8 @@ export const PAYMENTMODE = ["Online", "Cash", "NetBanking", "Cheque"];
 
 export const PAYMENTSTATUS = ["Received", "Pending" ];
 
+export const INQUIRYSTATUS = ["Inquiry", "Demo", "Confirmed", "Cancel" ];
+
 export const FREESTR = "";
 
 export const DURATIONSTR = [
@@ -102,6 +104,8 @@ export const BLOCK_START = 18;
 export const BLOCK_END = 41;
 
 export const MAXDISPLAYTEXTROWS = 6;
+
+export const MAXSTRINGLEN = 40;
 
 export const STATUS_INFO = 
 {

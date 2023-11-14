@@ -68,7 +68,7 @@ router.get('/get/longName/:longName', async function (req, res, next) {
   var { longName } = req.params;
 	
   setHeader(res);
-	let myArea = await Area.findPne({longName: longName},{_id: 0, shortName: 1, longName: 1});
+	let myArea = await Area.findOne({longName: longName},{_id: 0, shortName: 1, longName: 1});
 	sendok(res, myArea);
 }); 
 

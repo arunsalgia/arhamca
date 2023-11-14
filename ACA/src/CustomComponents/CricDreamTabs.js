@@ -35,6 +35,9 @@ import Session	 from "views/Session/Session"
 import BatchAddEdit	 from "views/Batch/BatchAddEdit"
 import SessionAddEdit	 from "views/Session/SessionAddEdit"
 import Payment	 from "views/Payment/Payment"
+import Inquiry	 from "views/Inquiry/Inquiry"
+import InquiryAddEdit	 from "views/Inquiry/InquiryAddEdit"
+import Summary	 from "views/Summary/Summary"
 
 
 import AdminWallet from "views/Wallet/AdminWallet"
@@ -55,6 +58,7 @@ import {cdRefresh, specialSetPos, upGradeRequired,
   downloadApk, clearBackupData,
   checkIdle, setIdle,
   internalToText, textToInternal,
+	isAdmin, isFaculty, isManager,
 } from "views/functions.js"
 import { LocalSee } from '@material-ui/icons';
 
@@ -303,6 +307,9 @@ export function AcaTabs() {
 	const handleSessionAddEdit = () => { handleClose(); setMenuValue(90061);}
 	const handleSession = () => { handleClose(); setMenuValue(9006);}
 	const handlePayment = () => { handleClose(); setMenuValue(9007);}
+	const handleInquiry = () => { handleClose(); setMenuValue(9008);}
+	const handleInquiryAddEdit = () => { handleClose(); setMenuValue(90081);}
+	const handleSummary = () => { handleClose(); setMenuValue(9009);}
 	
   const handleMatch = () => { handleClose(); setMenuValue(101);}
   const handleAuction = () => { handleClose(); setMenuValue(102);}
@@ -374,6 +381,9 @@ export function AcaTabs() {
 			case 9006: return <Session />;
 			case 90061: return <SessionAddEdit />;
 			case 9007: return <Payment />;
+			case 9008: return <Inquiry />;
+			case 90081: return <InquiryAddEdit />;
+			case 9009: return <Summary />;
 			
       default: return  <Typography>{`Inavlid value ${value}`}</Typography>;
     }
@@ -456,8 +466,6 @@ export function AcaTabs() {
                 <MenuItem onClick={handleProfile}>Profile</MenuItem>
                 <MenuItem onClick={handleWallet}>Wallet</MenuItem>
                 <Divider/>
-                <Show_Supervisor_Options/>
-                {/* <MenuItem onClick={handleHelpDesk}>How to play</MenuItem> */}
 								<MenuItem onClick={handleAbout}>About</MenuItem> 
                 <MenuItem onClick={handleContactUs}>Contact Us</MenuItem>                  
                 {(process.env.REACT_APP_DEVICE === "APK") && 
@@ -472,17 +480,35 @@ export function AcaTabs() {
             </div>
           )}
 					<HomeIcon className={classes.icon} onClick={handleHome} />
-          <Button color="inherit" className={classes.dashButton} onClick={handleBatch}>Batch</Button>
-          <Button color="inherit" className={classes.teamButton} onClick={handleSession}>Session</Button>
-          <Button color="inherit" className={classes.statButton} onClick={handleFaculty}>Faculty</Button>
-					<Avatar 
+					{(isAdmin()) &&
+						<div>
+						<Button color="inherit" className={classes.dashButton} onClick={handleInquiry}>Inquiry</Button>
+						<Button color="inherit" className={classes.teamButton} onClick={handleSummary}>Summary</Button>
+						<Button color="inherit" className={classes.statButton} onClick={handlePayment}>Payment</Button>
+						</div>
+					}
+					{(isManager()) &&
+						<div>
+						<Button color="inherit" className={classes.statButton} onClick={handlePayment}>Payment</Button>
+						<Button color="inherit" className={classes.statButton} onClick={handleSession}>Session</Button>
+						<Button color="inherit" className={classes.statButton} onClick={handleBatch}>Batch</Button>
+						</div>
+					}
+					{(isFaculty()) &&
+						<div>
+						<Button color="inherit" className={classes.statButton} onClick={handleSession}>Session</Button>
+						<Button color="inherit" className={classes.statButton} onClick={handleBatch}>Batch</Button>
+						<Button color="inherit" className={classes.statButton} onClick={handleFaculty}>Faculty</Button>
+						</div>
+					}
+					{/*<Avatar 
             aria-label="account of current user"
             aria-controls="user-appbar"
             aria-haspopup="true"
             onClick={handleUser}
             color="inherit"
             variant="circular" className={classes.avatar1}>{currencyChar}
-          </Avatar>
+          </Avatar>*/}
        </Toolbar>
       </AppBar>
       <DisplayCdItems/>

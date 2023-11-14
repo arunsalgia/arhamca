@@ -146,6 +146,94 @@ router.get('/total/all', async function (req, res, next) {
 })
 
 
+
+
+router.get('/summary/all', async function (req, res, next) {
+  setHeader(res);
+
+	var allSummary = [];
+	var i, j;
+	
+	// first fetch all the payment
+	var paymentInfo = await Payment.aggregate(
+		[{
+			"$group" : { 
+				"_id"   : {sid: "$sid", studentName: "$studentName" },
+				"amount"  : { "$sum" : "$amount"}
+			}
+		}]
+	).sort({"_id.studentName": 1});
+	for(i=0; i<paymentInfo.length; ++i) {
+		allSummary.push({sid: paymentInfo[i]._id.sid, studentName:  paymentInfo[i]._id.studentName, credit: paymentInfo[i].amount, debit: 0});
+	}
+	
+	// now fetch all batch sessions
+	var feesInfo = await Session.aggregate(
+		[{
+			"$group" : { 
+				"_id"   : { sidList: "$sidList", studentNameList: "$studentNameList" },
+				"fees"  : { "$sum" : "$fees" }
+			}
+		}]
+	);
+	
+	// Now add it in allSummary
+	for(i=0; i<feesInfo.length; ++i) {
+		for(j=0; j < feesInfo[i]._id.sidList.length; ++j) {
+			var tmp = allSummary.find( x => x.sid === feesInfo[i]._id.sidList[j]);
+			if (tmp) {
+				tmp.debit += feesInfo[i].fees;
+			}
+			else {
+				// new entry
+				allSummary.push({sid: feesInfo[i]._id.sidList[j], studentName:  feesInfo[i]._id.studentNameList[j], credit: 0, debit: feesInfo[i].fees});
+			}
+		}
+	}
+	
+	console.log(feesInfo);
+	//console.log(allSummary);
+  sendok(res, _.sortBy(allSummary, 'studentName') ); 
+})
+
+
+router.get('/summary/detail/:sid', async function (req, res, next) {
+  setHeader(res);
+
+	var { sid } = req.params;
+	
+	var allSummary = [];
+	var i, j;
+	
+	// first fetch all the payment
+	var paymentInfo = await Payment.find({sid: sid}, {date: 1, mode: 1, amount: 1} );
+	
+	for(i=0; i<paymentInfo.length; ++i) {
+		allSummary.push(
+		{
+			date: paymentInfo[i].date,
+			desc: `${paymentInfo[i].mode} payment`,
+			credit: paymentInfo[i].amount,
+			debit: 0
+		});
+	}
+	
+	var sessionInfo = await Session.find({sidList: [sid] }, {sessionDate: 1, bid: 1, fees: 1, sessionNumber: 1} );
+	for(i=0; i<sessionInfo.length; ++i) {
+		allSummary.push(
+		{
+			date: sessionInfo[i].sessionDate,
+			desc: `Session No. ${sessionInfo[i].sessionNumber} (batch: ${sessionInfo[i].bid})`,
+			credit: 0,
+			debit: sessionInfo[i].fees
+		});
+	}
+
+
+  sendok(res, _.sortBy(allSummary, 'date').reverse() ); 
+})
+
+
 function sendok(res, usrmgs) { res.send(usrmgs); }
 function senderr(res, errcode, errmsg) { res.status(errcode).send({error: errmsg}); }
 function setHeader(res) {

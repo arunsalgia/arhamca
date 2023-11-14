@@ -41,18 +41,9 @@ import VsCancel from "CustomComponents/VsCancel";
 import VsRadio from "CustomComponents/VsRadio";
 import VsSelect from "CustomComponents/VsSelect";
 
-const CHECKBALANCE_CREATEJOIN = true;
-
-// import NEWTOURNAMENTIMAGE from `${process.env.PUBLIC_URL}/NEWTOURNAMENT.JPG`;
-
-/*
-const cardStyles = {
-  cardImage: {
-      // backgroundImage: `url(${process.env.PUBLIC_URL}/NEWTOURNAMENT.JPG)`,
-      height: '20px'
-  }
-};
-*/
+import {
+	isAdmin, isFaculty, isManager,
+} from "views/functions.js"
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -205,6 +196,7 @@ export default function Home() {
 			let myDisable = (defaultGroup === "");
       return (
         <div>
+					{(isAdmin()) &&
           <Grid key="jp1" container >
             <Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_AREA} text="Area" />
@@ -216,26 +208,69 @@ export default function Home() {
             <Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_FACULTY} text="Faculty" />
             </Grid>
-						<br />
             <Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_STUDENT} text="Student" />
             </Grid>		
+						<br />
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_BATCH} text="Batch" />
             </Grid>								
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_SESSION} text="Session" />
             </Grid>								
+						<br />
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_PAYMENT} text="Payment" />
-            </Grid>			          </Grid>
+            </Grid>
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_INQUIRY} text="Inquiry" />
+            </Grid>
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_SUMMARY} text="Summary" />
+            </Grid>
+						<br />
+					</Grid>
+					}
+					{(isManager()) &&
+          <Grid key="jp1" container >
+            <Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_FACULTY} text="Faculty" />
+            </Grid>
+            <Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_STUDENT} text="Student" />
+            </Grid>		
+						<br />
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_BATCH} text="Batch" />
+            </Grid>								
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_SESSION} text="Session" />
+            </Grid>								
+					</Grid>
+					}
+					{(isFaculty()) &&
+          <Grid key="jp1" container >
+            <Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_FACULTY} text="Faculty" />
+            </Grid>
+            <Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_STUDENT} text="Student" />
+            </Grid>		
+						<br />
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_BATCH} text="Batch" />
+            </Grid>								
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_SESSION} text="Session" />
+            </Grid>								
+					</Grid>
+					}
         </div>
       )
     }
     
   
-  
-
+ 
     function ShowJumpButtons() {
 			let myDisable = (defaultGroup === "");
       return (
