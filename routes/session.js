@@ -14,7 +14,7 @@ const {
 } = require('./functions'); 
 
 
-router.get('/list/all', async function (req, res, next) {
+router.get('/oldlist/all', async function (req, res, next) {
   setHeader(res);
 
 	// First get list of students
@@ -40,6 +40,44 @@ router.get('/list/all', async function (req, res, next) {
 })
 
 
+router.get('/list/all', async function (req, res, next) {
+  setHeader(res);
+	
+	// first fetch all batch sessions
+	var sessionInfo = await Session.aggregate(
+		[ 
+			{
+			"$group" : { 
+				"_id"   : { bid: "$bid", sidList: "$sidList", studentNameList: "$studentNameList" },
+				sessionCount: { $sum: 1 } }
+			}
+		]
+	);
+	
+	// now segrate it by student wise
+	sessionCountArray = [];
+	for(var i=0; i < sessionInfo.length; ++i) {
+		console.log(sessionInfo[i]);
+		for(var j=0; j < sessionInfo[i]._id.sidList.length; ++j) {
+			var tmp = sessionCountArray.find(x => x.sid === sessionInfo[i]._id.sidList[j]);
+			if (tmp) {
+				tmp.count += sessionInfo[i].sessionCount;
+			}
+			else {
+				sessionCountArray.push({
+					sid: sessionInfo[i]._id.sidList[j], 
+					name: sessionInfo[i]._id.studentNameList[j], 
+					//not required bid: sessionInfo[i]._id.bid,  
+					count: sessionInfo[i].sessionCount});
+			}
+		}
+	}
+	
+	
+  sendok(res, _.sortBy(sessionCountArray, 'name') ); 
+})
+
+
 router.get('/listbybid/:bid', async function (req, res, next) {
   setHeader(res);
 
@@ -47,6 +85,19 @@ router.get('/listbybid/:bid', async function (req, res, next) {
 	
 	// First get list of students
 	var allSessions = await Sessions.find({bid: bid}).sort({sessionNumber: -1});
+	
+  sendok(res, allSessions ); 
+})
+
+
+router.get('/listbysid/:sid', async function (req, res, next) {
+  setHeader(res);
+
+	var { sid } = req.params;
+	
+	// First get list of students
+	var allSessions = await Session.find({sidList: [sid]} ).sort({sessionNumber: -1});
+	console.log(allSessions);
 	
   sendok(res, allSessions ); 
 })

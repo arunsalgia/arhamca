@@ -6,9 +6,9 @@ import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import TextField from '@material-ui/core/TextField';
 
 import Drawer from '@material-ui/core/Drawer';
-//import Tooltip from "react-tooltip";
-//import ReactTooltip from 'react-tooltip'
-//import { useAlert } from 'react-alert';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
 
@@ -63,6 +63,7 @@ import {
 
 
 import {
+	dateString,
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
 	isAdmMan, isAdmManFac, isFaculty,
 } from 'views/functions';
@@ -77,18 +78,19 @@ export default function Session() {
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	const [mode, setMode] = useState("");
-	const [batchArray, setBatchArray] = useState([]);
-	const [masterBatchArray, setMasterBatchArray] = useState([]);
+	const [sessionArray, setSessionArray] = useState([]);
+	const [studentSession, setStudentSession] = useState([]);
+	//const [masterBatchArray, setMasterBatchArray] = useState([]);
 
 
-	const [selBatch, setSelBatch] = useState("");
+	//const [selBatch, setSelBatch] = useState("");
 
 	// for faculty schule call
-	const [batchRec, setBatchRec] = useState({});
+	const [sessionRec, setSessionRec] = useState({});
 	const [showAll, setShowAll] = useState(false);
 	
 	const [drawer, setDrawer] = useState("");
-	const [drawerDetail, setDrawerDetail] = useState("");
+	const [drawerInfo, setDrawerInfo] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
@@ -120,8 +122,8 @@ export default function Session() {
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/session/list/all`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
-					setBatchArray(response.data);
-					setMasterBatchArray(response.data);
+					setSessionArray(response.data);
+					//setMasterBatchArray(response.data);
 				}
 				else if (isFaculty()) {
 					console.log("Facultyn");
@@ -132,8 +134,8 @@ export default function Session() {
 					if (response.data) {
 						myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabledbatch/${response.data.fid}`;
 						response = await axios.get(myUrl);
-						setBatchArray(response.data);
-						setMasterBatchArray(response.data);
+						setSessionArray(response.data);
+						//setMasterBatchArray(response.data);
 					}
 					
 				}
@@ -163,17 +165,6 @@ export default function Session() {
 	}, [])
 
 
-	function handleBack(msg)
-	{
-		console.log(sts.msg);
-		if (sts.msg !== "")  alert(sts.msg);
-		if (sts.status === "ADD") {
-			
-		}
-		
-		setDrawer("");
-	}
-	
 	function ShowResisterStatus() {
         // console.log(`Status is ${registerStatus}`);
         let myMsg;
@@ -217,113 +208,23 @@ export default function Session() {
         );
       }
 
-	function handleAddBatch() {
-		var batchInfo = {inUse: true, status: STATUS_INFO.ADD_BATCH, msg: "", record:  null };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
-	}
-	
-	function handleEditBatch(rec) {
-		var batchInfo = {inUse: true, status: STATUS_INFO.EDIT_BATCH, msg: "", record:  rec };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
-	}
-	
-	async function handleAddSession(rec) {
-		//var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.ADD_SESSION, msg: "", record:  rec, record2: null };
-		//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		//setTab(process.env.REACT_APP_BATCH_ADDEDITSESSION);
-		
-		// first get the batch record of the student
+
+	async function handleInfo(rec) {
+		setSessionRec(rec);
 		try {
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/get/${rec.bid}`;				
-			const response = await axios.get(myUrl);
-			//console.log(response.data);
-			setBatchRec(response.data);
-			setDrawer("ADDSESSION");
-		} 
-		catch (e) {
-			alert("Error getting batch of student");
-		}
-	}
-	
-	function handleInfo(r) {
-		setBatchtRec(r);
-		setDrawerDetail("detail");
-	}
-
-	async function handleDeleteBatch(rec) {
-		try {
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/delete/${rec.bid}`;
-			const response = await axios.get(myUrl);
-			var allRec  = batchArray.filter(x => x.bid !== rec.bid);
-			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentSelection);
-			alert(`Successfull deleted batch ${rec.bid}`);
-		} catch (e) {
-			console.log(e);
-			alert("Error deleting batch");
-		}
-	}
-
-	async function handleFacultySchedule(rec) {
-		/*
-		var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.FACULTYSCHEDULE, msg: "", record:  rec };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		setTab(process.env.REACT_APP_FACULTYSCHEDULE);
-		*/
-		setBatchRec(rec);
-		setShowAll(isAdmMan());
-		setDrawer("FACULTYSCHEDULE");
-		
-	}
-
-	function DisplayAllToolTips() {
-	return(
-		<div>
-		{batchArray.map( t =>
-			<DisplaySingleTip id={"USER"+t.uid} />
-		)}
-		</div>
-	)}
-
-	function DisplaySingleTip(props) {
-		return null; //<Tooltip className={gClasses.tooltip} backgroundColor='#42EEF9' borderColor='black' arrowColor='blue' textColor='black' key={props.id} type="info" effect="float" id={props.id} multiline={true}/>
-	}
-	
-	async function handleDisableBatch(rec) {
-		let myRec = masterBatchArray.find(x => x.bid === rec.bid);
-		try {
-			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/disabled/${myRec.bid}`);
-			myRec.enabled = false;
-			var allRec  = [].concat(masterBatchArray)
-			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentSelection);
+			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/session/listbysid/${rec.sid}`);
+			setStudentSession(response.data);
 		}
 		catch (e) {
-			// error 
+			setStudentSession([]);
 			console.log(e);
-			alert("Error disabling batch "+ rec.bid);
+			toast.error(`Error getting session details of ${mergedName(rec.name, rec.sid)}`);
 		}
+		setDrawerInfo("detail");
 	}
 
-	async function handleEnableBatch(rec) {
-		let myRec = masterBatchArray.find(x => x.bid === rec.bid);
-		try {
-			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabled/${myRec.bid}`);
-			myRec.enabled = true;
-			var allRec  = [].concat(masterBatchArray)
-			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentSelection);
-		}
-		catch (e) {
-			// error 
-			console.log(e);
-			alert("Error enabling batch "+rec.bid);
-		}
-	}
 
-	function DisplayAllBatch() {
+	function DisplayAllSession() {
 		//console.log(dispType);
 		return (
 			<div>
@@ -337,7 +238,7 @@ export default function Session() {
 			</TableRow>
 			</TableHead>
 			<TableBody p={0}>
-				{batchArray.map(x => {
+				{sessionArray.map(x => {
 						var myClasses = gClasses.td ;
 						//console.log(x)
 					return (
@@ -346,8 +247,7 @@ export default function Session() {
 						<TableCell className={myClasses} p={0}  >{x.name}</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.count}</TableCell>
 						<TableCell className={myClasses} p={0} >
-							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
-							{/*<IconButton color="primary" disabled={(!x.enabled || (x.bid === ""))} size="small" onClick={() => {handleAddSession(x)}} ><SchoolIcon /></IconButton>*/}
+							<IconButton disabled={x.count === 0} color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 						</TableCell>
 					</TableRow>
 				)})}
@@ -358,19 +258,7 @@ export default function Session() {
 
 	}
 	
-	function filterBatch(masterArray, x) {
-		switch (x) {
-			case "Disabled":  setBatchArray(masterArray.filter(x => !x.enabled ));  break;
-			case "Enabled":   setBatchArray(masterArray.filter(x => x.enabled ));  break;
-			default:          setBatchArray(masterArray);  break;
-		}
-	}
-	
-	function selectAll(x) {
-		setCurrentSelection(x);
-		filterBatch(masterBatchArray, x);
-	}
-	
+
 	// style={{marginTop: "5px" }}  
 	function DisplayOptions() {
 	return (
@@ -382,7 +270,6 @@ export default function Session() {
 			<span></span>
 		</Grid>
 		<Grid  item xs={3} sm={3} md={2} lg={1} >
-			<VsButton disabled={!isAdmMan()} name="New Batch" align="right" onClick={handleAddBatch} />
 		</Grid>
 	</Grid>
 	)}
@@ -391,17 +278,34 @@ export default function Session() {
 	<div>
 	<DisplayPageHeader headerName="Sessions" groupName="" tournament="" />
 	<DisplayOptions />
-	<DisplayAllBatch/>
-	{/*<DisplayAllToolTips />*/}
-	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>
-		<VsCancel align="right" onClick={() => { setDrawer("")}} />
-		{(drawer === "FACULTYSCHEDULE") &&
-			<FacultySchedule batchRec={batchRec} all={showAll} />
-		}
-		{(drawer === "ADDSESSION") &&
-			<SessionAddEdit mode="ADD" batchRec={batchRec} sessionRec={null} onReturn={handleBack} />
-		}
+	<DisplayAllSession/>
+	<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""} >
+		<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />	
+		<DisplayPageHeader headerName={`Session details of ${mergedName(sessionRec.name, sessionRec.sid)}`} groupName="" tournament="" />
+		<Table  align="center">
+		<TableHead p={0}>
+		<TableRow key="header" align="center">
+			<TableCell className={gClasses.th} p={0} align="center">Date</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center">Sess. Info</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center">Present</TableCell>
+		</TableRow>
+		</TableHead>
+		<TableBody p={0}>
+			{studentSession.map(x => {
+					var myClasses = gClasses.td ;
+					//console.log(x)
+					var isPresent = (x.attendedSidList.includes(sessionRec.sid)) ? "Yes" : "No";
+				return (
+				<TableRow key={x.sessionDate+x.sessionNumber}>
+					<TableCell className={myClasses} p={0} align="center" >{dateString(x.sessionDate)}</TableCell>
+					<TableCell className={myClasses} p={0}  >{`Sesion ${x.sessionNumber} of batch ${x.bid} by ${x.facultyName}`}</TableCell>
+					<TableCell className={myClasses} align="center" p={0} >{isPresent}</TableCell>
+				</TableRow>
+			)})}
+		</TableBody>
+		</Table>
 	</Drawer>
+	<ToastContainer />
 	</div>
 	);
 }

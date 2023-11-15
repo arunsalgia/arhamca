@@ -212,6 +212,12 @@ function ShowResisterStatus() {
 
 async function handleAddEditSubmit() {
 
+	var tmpattend = cbArray.filter(x => x === true);
+	console.log(tmpattend);
+	if 	(tmpattend.length === 0) {
+		toast.error("Atleast 1 student has to be present for the session");
+		return;
+	}
 	// luckily not validation required
 	var myData = {};
 	//console.log(origBatchRec)
