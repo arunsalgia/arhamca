@@ -583,7 +583,7 @@ export default function Student() {
 						<Grid item xs={1} sm={1} md={2} lg={4} />
 					}
 					<Grid item xs={5} sm={5} md={3} lg={2} >
-						<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
+						<Typography align="left"  className={gClasses.info18Blue} >Batch</Typography>
 					</Grid>
 					<Grid item xs={7} sm={7} md={3} lg={3} >
 						<TextField fullWidth value={filterBatch} onChange={(event) => { setFilterBatch(event.target.value)}} />	
