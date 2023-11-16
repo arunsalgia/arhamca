@@ -57,7 +57,7 @@ const globalStyles = makeStyles((theme) => ({
 	filter: {
 		padding: "2px",
 		margin: "3px", 
-		borderRadius: "25%",
+		borderRadius: "15%",
 		borderColor: 'blue',
 		border: 'solid',
 		

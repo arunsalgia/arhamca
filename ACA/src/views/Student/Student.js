@@ -35,12 +35,18 @@ import EditIcon from '@material-ui/icons/Edit';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 import FilterSharpIcon from '@material-ui/icons/FilterSharp';
+import SearchIcon from '@material-ui/icons/Search';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { 
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
 	isAdmin, isAdmMan, isAdmManFac, isStudent,
 } from 'views/functions';
+
+import {
+		FILTER_NONE,
+} from 'views/globals';
+
 
 import globalStyles from "assets/globalStyles";
 
@@ -477,10 +483,13 @@ export default function Student() {
 					return (
 					<span key={x.key} className={gClasses.filter}  >{x.key + ": " + x.value}</span>
 				)})}
+				{(filterDisplayData.length === 0) &&
+					<span key="NOKEY" className={gClasses.info16}  >{FILTER_NONE}</span>
+				}
 				</Typography>
 			</Grid>
 			<Grid align="right"  item xs={1} sm={1} md={1} lg={1} >
-				<IconButton color="primary" size="small" onClick={handleFilter}  ><FilterSharpIcon /></IconButton>
+				<IconButton color="primary" size="small" onClick={handleFilter}  ><SearchIcon /></IconButton>
 			</Grid>
 		</Grid>
 		</Box>

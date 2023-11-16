@@ -11,6 +11,8 @@ export const ROLE_STUDENT = "Student";
 export const ROLE_MANAGER = "Manager";
 export const ROLE_ADMIN   = "Admin";
 
+export const FILTER_NONE = "No filter applied";
+
 export const GENDER = ["Male", "Female", "Other"];
 
 export const WEEKSTR = ["Dummy", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
