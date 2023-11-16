@@ -10,7 +10,7 @@ import { AcaTabs, setTab }from "CustomComponents/CricDreamTabs"
 import axios from "axios";
 import SignIn from "views/Login/SignIn.js";
 import SignUp from "views/Login/SignUp.js";
-import Welcome from "views/APL/Welcome";
+import Welcome from "views/ACA/Welcome";
 import ResetPassword from "views/Login/ResetPassword";
 //import JoinGroup from "views/Group/JoinGroup.js"
 import ForgotPassword from "views/Login/ForgotPassword.js";

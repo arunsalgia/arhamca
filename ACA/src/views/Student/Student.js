@@ -3,6 +3,7 @@ import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
 // import { Switch, Route, Link } from 'react-router-dom';
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
+import { TextareaAutosize, TextField } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
@@ -33,11 +34,12 @@ import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
+import FilterSharpIcon from '@material-ui/icons/FilterSharp';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { 
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
-	isAdmMan, isAdmManFac, isStudent,
+	isAdmin, isAdmMan, isAdmManFac, isStudent,
 } from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
@@ -49,8 +51,13 @@ import VsRadio from "CustomComponents/VsRadio";
 
 //const ALLROLES = ["Student", "Faculty", "Admin"];
 
-const ALLSELCTIONS = ["All", "Enabled", "Disabled" ];
+const ALLSELCTIONS = ["Enabled", "Disabled", "All"];
+
 const BLANKCHAR = "-";
+
+//var props.mode = "ADD";
+const spacing = "5px"
+
 
 export default function Student() {
 	//const classes = useStyles();
@@ -61,6 +68,8 @@ export default function Student() {
 	
 	const [studentArray, setStudentArray] = useState([]);
 	const [masterStudentArray, setMasterStudentArray] = useState([]);
+	const [custFilter, setCustFilter] = useState({status: "Enabled"});
+	const [filterDisplayData, setFilterDisplayData] = useState([]);
 	
 	const [userName, setUserName] = useState("");
 	const [email, setEmail] = useState("");
@@ -80,6 +89,12 @@ export default function Student() {
 	const [areaDesc, setAreaDesc] = useState("");
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
+	const [drawerFilter, setDrawerFilter] = useState("");
+	
+	const [filterName,   setFilterName] = useState("");
+	const [filterBatch, setFilterBatch] = useState("");
+	const [filterStatus, setFilterStatus] = useState("Enabled");
+	
 	const [registerStatus, setRegisterStatus] = useState(0);
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
@@ -111,6 +126,7 @@ export default function Student() {
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
 					setStudentArray(response.data);
+					setFilter(response.data, custFilter);	
 					setMasterStudentArray(response.data);
 				}
 			} catch (e) {
@@ -186,8 +202,9 @@ export default function Student() {
 				var tmp = masterStudentArray.concat([response.data]);
 				tmp = lodashSortBy(tmp, 'name');
 				setMasterStudentArray(tmp);
-				filterStudent(tmp, currentSelection);
+				//filterStudent(tmp, currentSelection);
 				setDrawer("");
+				setFilter(tmp, custFilter);
 				toast.success("Successfully added details of " + userName);
 			}
 			else {
@@ -199,8 +216,9 @@ export default function Student() {
 				tmp = tmp.concat([response.data])
 				tmp = lodashSortBy(tmp, 'name');
 				setMasterStudentArray(tmp);
-				filterStudent(tmp, currentSelection);
+				//filterStudent(tmp, currentSelection);
 				setDrawer("");
+				setFilter(tmp, custFilter);
 				toast.success("Successfully updated details of " + userName);
 			}
 		}
@@ -287,7 +305,9 @@ export default function Student() {
 			myRec.enabled = false;
 			var allRec  = [].concat(masterStudentArray)
 			setMasterStudentArray(allRec);
-			filterStudent(allRec, currentSelection);
+			setFilter(allRec, custFilter);
+
+			//filterStudent(allRec, currentSelection);
 		}
 		catch (e) {
 			// error 
@@ -303,7 +323,8 @@ export default function Student() {
 			myRec.enabled = true;
 			var allRec  = [].concat(masterStudentArray)
 			setMasterStudentArray(allRec);
-			filterStudent(allRec, currentSelection);
+			setFilter(allRec, custFilter);
+			//filterStudent(allRec, currentSelection);
 		}
 		catch (e) {
 			// error 
@@ -373,7 +394,7 @@ export default function Student() {
 	}
 	
 	// style={{marginTop: "5px" }}  
-	function DisplayOptions() {
+	function DisplayOptionsOrg() {
 	return (
 	<Grid key="Options" className={gClasses.noPadding} container alignItems="center" >
 		<Grid  item xs={3} sm={2} md={2} lg={1} >
@@ -387,8 +408,88 @@ export default function Student() {
 		</Grid>
 	</Grid>
 	)}
+	
+	
+	function handleFilter() {
+		setFilterName( (custFilter["name"]) ? custFilter["name"] : "");
+		setFilterBatch((custFilter["batch"]) ? custFilter["batch"] : "");
+		setFilterStatus((custFilter["status"]) ? custFilter["status"] : "All");
+		setDrawerFilter("filter");
+	}
+	
+	function setFilter(masterData, filterObject) {
+		//console.log(filterObject);
+		var keyNames = Object.keys(filterObject);
+		//console.log(keyNames);
+		var myData = [];
+		for(var i=0; i<keyNames.length; ++i) {
+			myData.push({key: keyNames[i], value: filterObject[keyNames[i]] });
+		}
+		setFilterDisplayData(myData);
 		
-		return (
+		var myArray = [].concat(masterData);
+		//console.log(myArray);
+		if (filterObject.name) {
+			myArray = myArray.filter(x => x.name.toLowerCase().includes(filterName.toLowerCase()) );
+		}
+		
+		if (filterObject.batch) {
+			myArray = myArray.filter(x => x.bid.includes(filterBatch.toUpperCase()));
+		}
+		
+		if (filterObject.status)  {
+			if (filterObject.status === "Enabled")
+				myArray = myArray.filter(x => x.enabled);
+			else if (filterObject.status === "Disabled")
+				myArray = myArray.filter(x => !x.enabled);
+		}
+		setCustFilter(filterObject);
+		setStudentArray(myArray);	
+	}
+
+	function handleSubmitFilter() {
+		var myFilter = {};
+		if (filterName != "") {
+			myFilter["name"] = filterName;
+		}
+		if (filterBatch != "") {
+			myFilter["batch"] = filterBatch;
+		}
+		//console.log(filterRole);
+		if (filterStatus != "All") {
+			myFilter["status"] = filterStatus;
+		}
+		//console.log(myFilter);
+		setFilter(masterStudentArray, myFilter);
+		setCustFilter(myFilter);
+		setDrawerFilter("")
+	}
+		
+	function DisplayOptions() {
+	return (	
+		<div>
+		<VsButton align="right" disabled={!isAdmin()} name="New Student" align="right" onClick={handleAdd} />
+		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingTop={1} >
+		<Grid key="Filter" className={gClasses.noPadding} container  >
+			<Grid  align="left" item xs={11} sm={11} md={11} lg={11} >
+				<Typography>
+				{ filterDisplayData.map(x => {
+					return (
+					<span key={x.key} className={gClasses.filter}  >{x.key + ": " + x.value}</span>
+				)})}
+				</Typography>
+			</Grid>
+			<Grid align="right"  item xs={1} sm={1} md={1} lg={1} >
+				<IconButton color="primary" size="small" onClick={handleFilter}  ><FilterSharpIcon /></IconButton>
+			</Grid>
+		</Grid>
+		</Box>
+		</div>
+	)}
+	
+
+	
+	return (
 		<div>
 			<DisplayPageHeader headerName="Student" groupName="" tournament="" />
 			<DisplayOptions />
@@ -458,6 +559,53 @@ export default function Student() {
 					<VsButton name={(drawer == "New") ? "Add" : "Update"} />
 				</ValidatorForm>
 				<ValidComp p1={password}/>   
+			</Box>
+			</Drawer>
+			<Drawer anchor="left" variant="temporary" open={drawerFilter !== ""} >
+			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
+				<DisplayPageHeader headerName="Filter Options" groupName="" tournament="" />
+				<VsCancel align="right" onClick={() => { setDrawerFilter("")}} />
+				<br />
+				<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleSubmitFilter}  >
+				<Grid key="Filter" className={gClasses.noPadding} container >
+					{((dispType !== "xs") && (dispType !== "sm")) &&			
+						<Grid item xs={1} sm={1} md={2} lg={4} />
+					}
+					<Grid item xs={5} sm={5} md={3} lg={2} >
+						<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
+					</Grid>
+					<Grid item xs={7} sm={7} md={3} lg={3} >
+						<TextField fullWidth  value={filterName} onChange={(event) => { setFilterName(event.target.value)}} />	
+					</Grid>
+					<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />	
+					
+					{((dispType !== "xs") && (dispType !== "sm")) &&			
+						<Grid item xs={1} sm={1} md={2} lg={4} />
+					}
+					<Grid item xs={5} sm={5} md={3} lg={2} >
+						<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
+					</Grid>
+					<Grid item xs={7} sm={7} md={3} lg={3} >
+						<TextField fullWidth value={filterBatch} onChange={(event) => { setFilterBatch(event.target.value)}} />	
+					</Grid>
+					<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />	
+					
+					{((dispType !== "xs") && (dispType !== "sm")) &&			
+						<Grid item xs={1} sm={1} md={2} lg={4} />
+					}
+					<Grid item xs={5} sm={5} md={3} lg={2} >
+						<Typography align="left"  className={gClasses.info18Blue} >Status</Typography>
+					</Grid>
+					<Grid item xs={7} sm={7} md={3} lg={1} >
+						<VsSelect size="small" align="left" options={ALLSELCTIONS} value={filterStatus} onChange={(event) => { setFilterStatus(event.target.value)}} />
+					</Grid>
+					<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />	
+					
+					<Grid item xs={12} sm={12} md={12} lg={12} >
+						<VsButton type="submit" name="Apply Filter" />
+					</Grid>					
+					</Grid>
+					</ValidatorForm>
 			</Box>
 			</Drawer>
 			<ToastContainer />

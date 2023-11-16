@@ -88,7 +88,7 @@ export default function ForgotPassword() {
   const handleSubmit = async() => {
     let tmp1 = encrypt(email); 
     //let response = await fetch(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/cricemailpassword/${tmp1}`);
-		let response = await fetch(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/cricemailreset/${tmp1}`);
+		let response = await fetch(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/acaemailreset/${tmp1}`);
     setRegisterStatus(response.status);
   }
 

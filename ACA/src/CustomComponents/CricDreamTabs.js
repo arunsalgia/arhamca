@@ -48,9 +48,9 @@ import WithdrawWallet from "views/Wallet/WithdrawWallet";
 
 import Profile from "views/Profile/UserProfile"
 import ChangePassword from "views/Login/ChangePassword.js"
-import About from "views/APL/About.js";
-import Home from "views/APL/Home.js";
-import ContactUs from "views/APL/ContactUs.js";
+import About from "views/ACA/About.js";
+import Home from "views/ACA/Home.js";
+import ContactUs from "views/ACA/ContactUs.js";
 import Modal from 'react-modal';
 // import download from 'js-file-downloader';
 import { BlankArea } from './CustomComponents';

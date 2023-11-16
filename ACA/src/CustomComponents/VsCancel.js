@@ -18,6 +18,9 @@ if (props.disabled != null) {
 	myDisabled = props.disabled;
 }
 //console.log(myDisabled);
+if (props.align == null) return <IconButton color="secondary"  disabled={myDisabled} size="small" onClick={props.onClick} ><CancelIcon /></IconButton>
+
+
 return(	
 <div align={props.align}>
 	<IconButton color="secondary"  disabled={myDisabled} size="small" onClick={props.onClick} >

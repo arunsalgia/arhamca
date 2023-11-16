@@ -1599,3 +1599,105 @@ router.get('/acaupdate/:uUid/:uName/:uPassword/:uRole/:uEmail/:mobileNumber/:add
 })
 
 
+/* send user name by email */
+router.get('/acamailusername/:mailid', async function (req, res, next) {
+  setHeader(res);
+  var {mailid} = req.params;
+  mailid = mailid.toLowerCase();
+	
+  let uRec = await User.findOne({ email: svrToDbText(mailid), status: true });
+  if (!uRec) {senderr(res, 602, "Invalid email id"); return  }
+  console.log(uRec);
+	
+  
+  let text = `Dear User,
+  
+	Greetings from Arham Chess Acedemy.
+
+	You user name, user for login, is ${uRec.displayName}
+	
+	Best Regards,
+	for Arham Chess Acedemy` 
+
+	let htmlText = `<div style="background-image: url('https://i.pinimg.com/originals/29/9c/a1/299ca187762b51cb637f29cf7472e574.png');">
+<h4 style="text-align: left;">&nbsp;</h4>
+<h4 style="text-align: left;"><strong>Dear ${uRec.displayName},</strong></h4>
+<p>Greetings from Arham Chess Acedemy.</p>
+<p>&nbsp;</p>
+<p>You user name is:</p>
+<p>${uRec.userName}</p>
+<p>&nbsp;</p>
+<p><span style="color: #993300; background-color: #ffff00;">Regards,</span><br /><span style="color: #993300; background-color: #ffff00;">for Auction Premier League.</span></p>
+</div>`
+	let xxx = decrypt(mailid);
+	console.log(`Send message to ${xxx}`);
+	//let resp = await sendCricMail(xxx, 'Auction Premier League - Reset user password link', text);
+	let resp = await sendCricHtmlMail(xxx, 'Arham Chess Acedemy - Reset user password link', htmlText);
+
+	
+	if (resp.status) {
+    //console.log('Email sent: ' + resp.error);
+    sendok(res, `Email sent to ${resp.error}`);
+  } else {
+    console.log(`error sending email to ${xxx}`);
+    console.log(resp.error);
+    senderr(res, 603, resp.error);
+  }
+}); 
+
+/* send reset link by email */
+router.get('/acaemailreset/:mailid', async function (req, res, next) {
+  setHeader(res);
+  var {mailid} = req.params;
+  mailid = mailid.toLowerCase();
+	
+  let uRec = await User.findOne({ email: svrToDbText(mailid), enabled: true });
+  if (!uRec) {senderr(res, 602, "Invalid email id"); return  }
+  console.log(uRec);
+	
+	let T1 = new Date();
+	T1.setMinutes(T1.getMinutes()+PASSWORDLINKVALIDTIME);
+	let myCode = encrypt( uRec._id + "/" + T1.getTime() );
+	console.log(myCode);
+	
+  myLink = `${BASELINK}/aplmaster/resetpasswordconfirm/${myCode}`;
+  
+  let text = `Dear User,
+  
+	Greetings from Arham Chess Acedemy.
+
+	Reset your password using the link given below.
+
+	${myLink} 
+
+	Kindly note that this link is valid only for ${PASSWORDLINKVALIDTIME} minutes.
+	
+	Best Regards,
+	for Arham Chess Acedemy` 
+
+	let htmlText = `<div style="background-image: url('https://i.pinimg.com/originals/29/9c/a1/299ca187762b51cb637f29cf7472e574.png');">
+<h4 style="text-align: left;">&nbsp;</h4>
+<h4 style="text-align: left;"><strong>Dear ${uRec.displayName},</strong></h4>
+<p>Greetings from Arham Chess Acedemy.</p>
+<p>Reset your password using the link given below.&nbsp;</p>
+<h3><span style="color: #993300;">${myLink}</span></h3>
+<p>Kindly note that this link is valid only for ${PASSWORDLINKVALIDTIME} minutes.</p>
+<p>&nbsp;</p>
+<p><span style="color: #993300; background-color: #ffff00;">Regards,</span><br /><span style="color: #993300; background-color: #ffff00;">for Arham Chess Acedemy</span></p>
+</div>`
+	let xxx = decrypt(mailid);
+	console.log(`Send message to ${xxx}`);
+	//let resp = await sendCricMail(xxx, 'Auction Premier League - Reset user password link', text);
+	let resp = await sendCricHtmlMail(xxx, 'Arham Chess Acedemy - Reset user password link', htmlText);
+
+	
+	if (resp.status) {
+    //console.log('Email sent: ' + resp.error);
+    sendok(res, `Email sent to ${resp.error}`);
+  } else {
+    console.log(`error sending email to ${xxx}`);
+    console.log(resp.error);
+    senderr(res, 603, resp.error);
+  }
+}); 
+

@@ -54,6 +54,14 @@ const globalStyles = makeStyles((theme) => ({
 				padding: '5px',
 		}
 },
+	filter: {
+		padding: "2px",
+		margin: "3px", 
+		borderRadius: "25%",
+		borderColor: 'blue',
+		border: 'solid',
+		
+	},
 	boxStyleOdd: {
 		padding: "5px 10px", 
 		margin: "4px 2px", 

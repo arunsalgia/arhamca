@@ -3,12 +3,14 @@ import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
 // import { Switch, Route, Link } from 'react-router-dom';
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
+import { TextareaAutosize, TextField } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Box from '@material-ui/core/Box';
+import Grid from "@material-ui/core/Grid";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -27,6 +29,7 @@ import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomCompon
 import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
+import FilterSharpIcon from '@material-ui/icons/FilterSharp';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { 
@@ -40,14 +43,22 @@ import VsButton from "CustomComponents/VsButton";
 import VsCancel from "CustomComponents/VsCancel";
 import VsSelect from "CustomComponents/VsSelect";
 
+
 const MAXAREACODELENGTH = 4;
 const ALLROLES = ["Manager", "Student", "Faculty", "Admin"];
+
+//var props.mode = "ADD";
+const spacing = "5px"
 
 export default function User() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
 
 	const [userArray, setUserArray] = useState([]);
+	const [userMasterArray, setUserMasterArray] = useState([]);
+	const [custFilter, setCustFilter] = useState({role: "Faculty"})
+	const [filterDisplayData, setFilterDisplayData] = useState([])
+	
 	const [userName, setUserName] = useState("");
 	const [email, setEmail] = useState("");
 	const [mobile, setMobile] = useState("");
@@ -61,13 +72,23 @@ export default function User() {
 	
 	const [areaCode, setAreaCode] = useState("");
 	const [areaDesc, setAreaDesc] = useState("");
+	
+	const [registerStatus, setRegisterStatus] = useState(0);
+	
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
-	const [registerStatus, setRegisterStatus] = useState(0);
+	const [drawerFilter, setDrawerFilter] = useState("");
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 	const [dispType, setDispType] = useState("lg");
 
+	const [filterName,   setFilterName] = useState("");
+	const [filterMobile, setFilterMobile] = useState("");
+	const [filterRole, setFilterRole] = useState("Faculty");
+	
+	var myStyle = {margin: "3px",  border: 'solid', borderColor: 'blue'};
+
+	
 	useEffect(() => {
 		function handleResize() {
 			let myDim = getWindowDimensions();
@@ -93,7 +114,8 @@ export default function User() {
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/user/acalist`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
-					setUserArray(response.data);
+					setUserMasterArray(response.data);
+					setFilter(response.data, custFilter);
 				}
 			} catch (e) {
 				console.log(e);
@@ -216,24 +238,61 @@ export default function User() {
 		setDrawerDetail("detail");
 	}
 
-	function DisplayAllToolTips() {
-	return(
-		<div>
-		{userArray.map( t =>
-			<DisplaySingleTip id={"USER"+t.uid} />
-		)}
-		</div>
-	)}
-
-	function DisplaySingleTip(props) {
-		return null; //<Tooltip className={gClasses.tooltip} backgroundColor='#42EEF9' borderColor='black' arrowColor='blue' textColor='black' key={props.id} type="info" effect="float" id={props.id} multiline={true}/>
+	function handleFilter() {
+		setFilterName( (custFilter["name"]) ? custFilter["name"] : "");
+		setFilterMobile((custFilter["mobile"]) ? custFilter["mobile"] : "");
+		setFilterRole((custFilter["role"]) ? custFilter["role"] : "All");
+		setDrawerFilter("filter");
 	}
+	
+	function setFilter(masterData, filterObject) {
+		//console.log(filterObject);
+		var keyNames = Object.keys(filterObject);
+		//console.log(keyNames);
+		var myData = [];
+		for(var i=0; i<keyNames.length; ++i) {
+			myData.push({key: keyNames[i], value: filterObject[keyNames[i]] });
+		}
+		setFilterDisplayData(myData);
+		
+		var myArray = [].concat(masterData);
+		if (filterObject.name) {
+			myArray = myArray.filter(x => x.displayName.toLowerCase().includes(filterName.toLowerCase()) );
+		}
+		
+		if (filterObject.mobile) {
+			myArray = myArray.filter(x => x.mobile.includes(filterMobile));
+		}
+		
+		if (filterObject.role)  {
+			myArray = myArray.filter(x => x.role === filterRole);
+		}
+		setCustFilter(filterObject);
+		setUserArray(myArray);	
+	}
+
+	function handleSubmitFilter() {
+		var myFilter = {};
+		if (filterName != "") {
+			myFilter["name"] = filterName;
+		}
+		if (filterMobile != "") {
+			myFilter["mobile"] = filterMobile;
+		}
+		//console.log(filterRole);
+		if (filterRole != "All") {
+			myFilter["role"] = filterRole;
+		}
+		setFilter(userMasterArray, myFilter);
+		setCustFilter(myFilter);
+		setDrawerFilter("")
+	}
+	
 	
 	function DisplayUsers() {
 		//console.log(dispType);
 		return (
 			<div>
-			 <VsButton disabled={!isAdmin()} name="New User" align="right" onClick={handleAdd} />
 			<Table  align="center">
 			<TableHead p={0}>
 			<TableRow key="header" align="center">
@@ -284,12 +343,36 @@ export default function User() {
 		);
 
 	}
-		
+
+	
+	function DisplayOptions() {
+	return (	
+		<div>
+		<VsButton align="right" disabled={!isAdmin()} name="New User" align="right" onClick={handleAdd} />
+		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingTop={1} >
+		<Grid key="Filter" className={gClasses.noPadding} container  >
+			<Grid  align="left" item xs={11} sm={11} md={11} lg={11} >
+				<Typography>
+				{ filterDisplayData.map(x => {
+					return (
+					<span key={x.key} className={gClasses.filter}  >{x.key + ": " + x.value}</span>
+				)})}
+				</Typography>
+			</Grid>
+			<Grid align="right"  item xs={1} sm={1} md={1} lg={1} >
+				<IconButton color="primary" size="small" onClick={handleFilter}  ><FilterSharpIcon /></IconButton>
+			</Grid>
+		</Grid>
+		</Box>
+		</div>
+	)}
+	
+	
 		return (
 		<div>
 			<DisplayPageHeader headerName="Users" groupName="" tournament="" />
+			<DisplayOptions />
 			<DisplayUsers/>
-			{/*<DisplayAllToolTips />*/}
 			<Drawer anchor="right" variant="temporary" open={drawer !== ""}>
 			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
 				<VsCancel align="right" onClick={() => { setDrawer("")}} />
@@ -345,6 +428,53 @@ export default function User() {
 					<VsButton name={(drawer == "New") ? "Add" : "Update"} />
 				</ValidatorForm>
 				<ValidComp p1={password}/>   
+			</Box>
+			</Drawer>
+			<Drawer anchor="left" variant="temporary" open={drawerFilter !== ""}>
+			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
+				<DisplayPageHeader headerName="Filter Options" groupName="" tournament="" />
+				<VsCancel align="right" onClick={() => { setDrawerFilter("")}} />
+				<br />
+				<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleSubmitFilter}  >
+				<Grid key="Filter" className={gClasses.noPadding} container >
+					{((dispType !== "xs") && (dispType !== "sm")) &&			
+						<Grid item xs={1} sm={1} md={2} lg={4} />
+					}
+					<Grid item xs={5} sm={5} md={3} lg={2} >
+						<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
+					</Grid>
+					<Grid item xs={7} sm={7} md={3} lg={3} >
+						<TextField fullWidth  value={filterName} onChange={(event) => { setFilterName(event.target.value)}} />	
+					</Grid>
+					<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />	
+					
+					{((dispType !== "xs") && (dispType !== "sm")) &&			
+						<Grid item xs={1} sm={1} md={2} lg={4} />
+					}
+					<Grid item xs={5} sm={5} md={3} lg={2} >
+						<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
+					</Grid>
+					<Grid item xs={7} sm={7} md={3} lg={3} >
+						<TextField fullWidth value={filterMobile} onChange={(event) => { setFilterMobile(event.target.value)}} />	
+					</Grid>
+					<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />	
+					
+					{((dispType !== "xs") && (dispType !== "sm")) &&			
+						<Grid item xs={1} sm={1} md={2} lg={4} />
+					}
+					<Grid item xs={5} sm={5} md={3} lg={2} >
+						<Typography align="left"  className={gClasses.info18Blue} >Role</Typography>
+					</Grid>
+					<Grid item xs={7} sm={7} md={3} lg={1} >
+						<VsSelect size="small" align="left" options={["All"].concat(ALLROLES)} value={filterRole} onChange={(event) => { setFilterRole(event.target.value)}} />
+					</Grid>
+					<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />	
+					
+					<Grid item xs={12} sm={12} md={12} lg={12} >
+						<VsButton type="submit" name="Apply Filter" />
+					</Grid>					
+					</Grid>
+					</ValidatorForm>
 			</Box>
 			</Drawer>
 			<ToastContainer />

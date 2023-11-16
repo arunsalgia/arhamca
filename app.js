@@ -13,7 +13,7 @@ nodemailer = require('nodemailer');
 crypto = require('crypto');
 //Razorpay = require("razorpay");
 //import {scheduledJobs} from 'node-schedule';
-//nodeSched = require('node-schedule');
+//nodeSched = require('node-schedule
  
 const { 
   akshuGetGroup, 
@@ -51,7 +51,7 @@ PASSWORDLINKVALIDTIME=10			// Password link valid time in minutes
 //
 if (PRODUCTION) {
   //PORT = process.env.PORT || 80;
-  BASELINK='https://auctionpremierleague.herokuapp.com';
+  BASELINK='https://arhamca-b96a0110bfdc.herokuapp.com/';
 } else {
   //PORT = process.env.PORT || 4000;
   BASELINK='http://localhost:3000';
