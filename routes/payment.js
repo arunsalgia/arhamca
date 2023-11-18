@@ -164,7 +164,7 @@ router.get('/summary/all', async function (req, res, next) {
 		}]
 	).sort({"_id.studentName": 1});
 	for(i=0; i<paymentInfo.length; ++i) {
-		allSummary.push({sid: paymentInfo[i]._id.sid, studentName:  paymentInfo[i]._id.studentName, credit: paymentInfo[i].amount, debit: 0});
+		allSummary.push({sid: paymentInfo[i]._id.sid, studentName:  paymentInfo[i]._id.studentName, credit: paymentInfo[i].amount, debit: 0, dues: 0});
 	}
 	
 	// now fetch all batch sessions
@@ -186,14 +186,18 @@ router.get('/summary/all', async function (req, res, next) {
 			}
 			else {
 				// new entry
-				allSummary.push({sid: feesInfo[i]._id.sidList[j], studentName:  feesInfo[i]._id.studentNameList[j], credit: 0, debit: feesInfo[i].fees});
+				allSummary.push({sid: feesInfo[i]._id.sidList[j], studentName:  feesInfo[i]._id.studentNameList[j], credit: 0, debit: feesInfo[i].fees, dues: 0});
 			}
 		}
 	}
 	
-	console.log(feesInfo);
+	// now calculate and sort by dues
+	for (var i=0; i<allSummary.length; ++i) {
+		allSummary[i].dues = (allSummary[i].credit - allSummary[i].debit)*DUE_MF;
+	}
+	//console.log(feesInfo);
 	//console.log(allSummary);
-  sendok(res, _.sortBy(allSummary, 'studentName') ); 
+  sendok(res, _.sortBy(allSummary, 'dues').reverse() ); 
 })
 
 
@@ -212,7 +216,7 @@ router.get('/summary/detail/:sid', async function (req, res, next) {
 		allSummary.push(
 		{
 			date: paymentInfo[i].date,
-			desc: `${paymentInfo[i].mode} payment`,
+			desc: `Payment mode: ${paymentInfo[i].mode}`,
 			credit: paymentInfo[i].amount,
 			debit: 0
 		});

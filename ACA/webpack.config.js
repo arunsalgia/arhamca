@@ -1,13 +1,17 @@
 const config = {
   mode: 'development', // "production" | "development" | "none"
-  resolve: {
-    extensions: ['*', '.mjs', '.js', '.json']
+	resolve: {
+		fallback: {
+
+    },
+    extensions: ['*', '.mjs', '.js', '.json'],
   },
+	
   module: {
     rules: [
       {
         test: /\.mjs$/,
-        include: /node_modules/,
+        include: /node_modules/,s
         type: 'javascript/auto',	
       }
     ]

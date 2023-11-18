@@ -983,3 +983,5 @@ Z5 = "00000";
 
 SEQUENCE_CURRENT = 9999999;
 SEQUENCE_START   = 1;
+
+DUE_MF = -1;			// for ankit

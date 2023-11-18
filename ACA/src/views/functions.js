@@ -3,6 +3,8 @@ import download from 'js-file-download';
 import LinearProgressWithLabel from '@material-ui/core/LinearProgress';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CircularProgressWithLabel from '@material-ui/core/LinearProgress';
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 import moment from 'moment';
 import { func } from "prop-types";
 

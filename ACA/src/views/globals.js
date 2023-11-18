@@ -123,3 +123,6 @@ EDIT_SESSION: 5,
 FACULTYSCHEDULE: 6,
 
 };
+
+export const DUES_MF = -1;			// for ankit
+

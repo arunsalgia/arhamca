@@ -64,6 +64,7 @@ import VsRadio from "CustomComponents/VsRadio";
 import {
 	ROLE_FACULTY, ROLE_STUDENT,
 	ALLSELECTIONS, BLANKCHAR, STATUS_INFO,
+	DUES_MF,
 } from 'views/globals';
 
 
@@ -79,8 +80,8 @@ export default function Summary() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
 	
-	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
-	const [mode, setMode] = useState("");
+	//const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
+	//const [mode, setMode] = useState("");
 	const [summaryArray, setSummaryArray] = useState([]);
 	//const [masterBatchArray, setMasterBatchArray] = useState([]);
 
@@ -89,8 +90,8 @@ export default function Summary() {
 	const [selPaymentRec, setSelPaymentRec] = useState("");
 
 	// for faculty schule call
-	const [batchRec, setBatchRec] = useState({});
-	const [showAll, setShowAll] = useState(false);
+	//const [batchRec, setBatchRec] = useState({});
+	//const [showAll, setShowAll] = useState(false);
 	
 	const [drawer, setDrawer] = useState("");
 	const [drawerInfo, setDrawerInfo] = useState("");
@@ -149,48 +150,11 @@ export default function Summary() {
 		
 		//console.log(sts.status, selPaymentRec);
 		if (sts.status == STATUS_INFO.SUCCESS) {
-			if (selPaymentRec) {
-				//console.log("in edit payment return");
-				//console.log(sts.paymentRec);
-			
-				// two chnages to be done.
-				// first chnage in studentSummary Array
-				//console.log(sts.paymentRec._id);
-				var clonedArray = studentSummary.filter(x => x._id !== sts.paymentRec._id);
-				clonedArray.push(sts.paymentRec);
-				let sorted_array = lodashSortBy(clonedArray, 'date').reverse();
-				setStudentSummary(sorted_array);
-			
-				// Now make correction in grand total
-				var clonedMainArray = [].concat(summaryArray);
-				var tmp = clonedMainArray.find(x => x._id.sid === sts.paymentRec.sid);
-				var sum = 0;
-				clonedArray.map(x => sum += x.amount);
-				//console.log(sum);
-				tmp.amount = sum;
-				//console.log(tmp);
-				setSummaryArray(clonedMainArray);				
-			}
-			else {
-				// New Payment
-				console.log("payment new");
-				var clonedArray = [].concat(summaryArray);
-				var tmp = clonedArray.find( x => x._id.sid === sts.paymentRec.sid);
-				if (tmp) {
-					tmp.amount += sts.paymentRec.amount;
-					setSummaryArray(clonedArray);
-				}
-				else {
-					//console.log(sts.paymentRec);
-					clonedArray.push(
-						{ 
-						_id: {sid: sts.paymentRec.sid, studentName: sts.paymentRec.studentName },
-						amount: sts.paymentRec.amount
-						}
-					);
-					setSummaryArray(lodashSortBy(clonedArray, ['_id.studentName'] ));
-				}
-			}
+			var clonedArray = [].concat(summaryArray);
+			var tmp = clonedArray.find(x => x.sid === sts.paymentRec.sid);
+			tmp.credit += sts.paymentRec.amount;
+			tmp.dues = (tmp.credit - tmp.debit)*DUES_MF;
+			setSummaryArray( lodashSortBy(clonedArray, 'dues').reverse() );				
 		}
 		else {
 			console.log("Yaha kaise aaya");
@@ -240,57 +204,21 @@ export default function Summary() {
         );
       }
 
-	function handleNewPayment() {
-		setSelStudent({sid: ""});
-		setDrawer("ADDPAYMENT");
-	}
-	
 	function handleAddStudentPayment(rec) {
-		setSelStudent({sid: rec._id.sid});
+		setSelStudent({sid: rec.sid});
 		setSelPaymentRec(null);
 		setDrawer("ADDPAYMENT");
 	}
+
+	function handleDelStudentPayment(rec) {
+		toast.info("Delete payment from summary to be implemented");
+	}
 	
 	function handleEditStudentPayment(rec) {
-		//console.log(rec);
-		//console.log(selStudent);
-		setSelPaymentRec(rec);
-		setDrawer("EDITPAYMENT");
-	}
+		toast.info("Edit payment from summary to be implemented");
+	}	
 	
 	
-	async function handleDelStudentPayment(rec) {
-		try {
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/payment/delete/${rec._id}`;
-			await axios.get(myUrl);
-			let newArray = studentSummary.filter(x => x._id !== rec._id);
-			setStudentSummary(newArray)
-			
-			if (newArray.length > 0) {
-				var clonedArray = [].concat(summaryArray);
-				let tmp = clonedArray.find( x => x._id.sid === rec.sid);
-				tmp.amount = lodashSumBy(newArray, 'amount');
-				setSummaryArray(clonedArray);
-			}
-			else {
-				setSummaryArray(summaryArray.filter( x => x._id.sid !== rec.sid));
-			}
-			toast.success(`Deleted payment record of ${mergedName( rec.studentName, rec.sid )}`);
-		}
-		catch (e) {
-			console.log(e);
-			toast.error(`Error deleting payment record`);
-		}
-	}
-	
-	
-	function handleEditBatch(rec) {
-		var batchInfo = {inUse: true, status: STATUS_INFO.EDIT_BATCH, msg: "", record:  rec };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
-	}
-	
-
 	async function handleInfo(rec) {
 		//console.log(rec);
 		setSelStudent({sid: rec.sid, studentName: rec.studentName});
@@ -332,9 +260,10 @@ export default function Summary() {
 						<TableCell className={myClasses} p={0}  >{x.studentName}</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.credit}</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.debit}</TableCell>
-						<TableCell className={myClasses} align="center" p={0} >{x.debit - x.credit}</TableCell>
+						<TableCell className={myClasses} align="center" p={0} >{x.dues}</TableCell>
 						<TableCell className={myClasses} p={0} >
 							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
+							<IconButton color="primary"  size="small" onClick={() => {handleAddStudentPayment(x)}} ><Money /></IconButton>
 						</TableCell>
 					</TableRow>
 				)})}
@@ -385,6 +314,7 @@ export default function Summary() {
 			<TableCell className={gClasses.th} p={0} align="center">Desc</TableCell>
 			<TableCell className={gClasses.th} p={0} align="center">Credit</TableCell>
 			<TableCell className={gClasses.th} p={0} align="center">Debit</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center"></TableCell>
 		</TableRow>
 		</TableHead>
 		<TableBody p={0}>
@@ -394,9 +324,13 @@ export default function Summary() {
 				return (
 				<TableRow key={x.date+x.desc}>
 					<TableCell className={myClasses} p={0} align="center" >{dateString(x.date)}</TableCell>
-					<TableCell className={myClasses} align="center" p={0} >{x.desc}</TableCell>
+					<TableCell className={myClasses}  p={0} >{x.desc}</TableCell>
 					<TableCell className={myClasses} align="center" p={0} >{(x.credit !== 0) ? x.credit : ""}</TableCell>
 					<TableCell className={myClasses} align="center" p={0} >{(x.debit !== 0)  ? x.debit  : ""}</TableCell>
+					<TableCell className={myClasses} p={0} >
+						<IconButton color="primary"  disabled={x.credit === 0} size="small" onClick={() => {handleEditStudentPayment(x)}} ><EditIcon /></IconButton>
+						<IconButton color="secondary" disabled={x.credit === 0} size="small" onClick={() => {handleDelStudentPayment(x)}} ><CancelIcon /></IconButton>
+					</TableCell>
 				</TableRow>
 			)})}
 		</TableBody>
