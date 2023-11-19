@@ -118,7 +118,6 @@ export default function Session() {
 		async function getAllSessions() {
 			try {
 				if (isAdmMan()) {
-					console.log("Admin or Main");
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/session/list/all`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
@@ -126,13 +125,13 @@ export default function Session() {
 					//setMasterBatchArray(response.data);
 				}
 				else if (isFaculty()) {
-					console.log("Facultyn");
 					// first get the faculty id
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/enabledfacultybyuid/${sessionStorage.getItem("uid")}/`;				
 					var response = await axios.get(myUrl);
-					// not using facilty id. Get facult's batch
+					//console.log(response.data);
+					// now using faculty id. Get faculty's batch
 					if (response.data) {
-						myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabledbatch/${response.data.fid}`;
+						myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/session/list/byFaculty/${response.data.fid}`;
 						response = await axios.get(myUrl);
 						setSessionArray(response.data);
 						//setMasterBatchArray(response.data);
@@ -140,7 +139,7 @@ export default function Session() {
 					
 				}
 				else {
-					console.log("Not correctr role");
+					console.log("Not correct role");
 				}
 			} catch (e) {
 				console.log(e);

@@ -78,6 +78,47 @@ router.get('/list/all', async function (req, res, next) {
 })
 
 
+router.get('/list/byFaculty/:fid', async function (req, res, next) {
+  setHeader(res);
+	
+	var { fid } = req.params;
+	
+	// first fetch all batch sessions
+	var sessionInfo = await Session.aggregate(
+		[ 
+			{ $match: { fid: fid } },
+			{
+			"$group" : { 
+				"_id"   : { bid: "$bid", sidList: "$sidList", studentNameList: "$studentNameList" },
+				sessionCount: { $sum: 1 } }
+			}
+		]
+	);
+	
+	// now segrate it by student wise
+	sessionCountArray = [];
+	for(var i=0; i < sessionInfo.length; ++i) {
+		console.log(sessionInfo[i]);
+		for(var j=0; j < sessionInfo[i]._id.sidList.length; ++j) {
+			var tmp = sessionCountArray.find(x => x.sid === sessionInfo[i]._id.sidList[j]);
+			if (tmp) {
+				tmp.count += sessionInfo[i].sessionCount;
+			}
+			else {
+				sessionCountArray.push({
+					sid: sessionInfo[i]._id.sidList[j], 
+					name: sessionInfo[i]._id.studentNameList[j], 
+					//not required bid: sessionInfo[i]._id.bid,  
+					count: sessionInfo[i].sessionCount});
+			}
+		}
+	}
+	
+	
+  sendok(res, _.sortBy(sessionCountArray, 'name') ); 
+})
+
+
 router.get('/listbybid/:bid', async function (req, res, next) {
   setHeader(res);
 

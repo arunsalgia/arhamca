@@ -40,7 +40,7 @@ import SearchIcon from '@material-ui/icons/Search';
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { 
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
-	isAdmin, isAdmMan, isAdmManFac, isStudent,
+	isAdmin, isAdmMan, isAdmManFac, isStudent, isFaculty,
 	mergedName,
 	vsDialog,
 } from 'views/functions';
@@ -131,8 +131,16 @@ export default function Student() {
 		//console.log(firsTime);
 		async function getAllStudent() {
 			try {
-				if (isAdmMan() || isStudent()) { 
+				if ( isAdmMan() ) { 
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/list/all`;
+					const response = await axios.get(myUrl);
+					//console.log(response.data);
+					setStudentArray(response.data);
+					setFilter(response.data, custFilter);	
+					setMasterStudentArray(response.data);
+				}
+				else if ( isFaculty() ) {
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/byfacultyuid/${sessionStorage.getItem("uid")}`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
 					setStudentArray(response.data);

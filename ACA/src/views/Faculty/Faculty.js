@@ -308,7 +308,7 @@ export default function Faculty() {
 	
 		
 	function handleDisableFaculty(t) {
-		vsDialog("Disable Faculty", `Are you sure you want disable faculty ${mergedName(t.name, t.sid)}?`,
+		vsDialog("Disable Faculty", `Are you sure you want disable faculty ${mergedName(t.name, t.fid)}?`,
 			{label: "Yes", onClick: () => handleDisableFacultyConfirm(t) },
 			{label: "No" }
 		);
@@ -336,7 +336,7 @@ export default function Faculty() {
 	}
 	
 	function handleEnableFaculty(t) {
-		vsDialog("Enable Faculty", `Are you sure you want enable faculty ${mergedName(t.name, t.sid)}?`,
+		vsDialog("Enable Faculty", `Are you sure you want enable faculty ${mergedName(t.name, t.fid)}?`,
 			{label: "Yes", onClick: () => handleEnableFacultyConfirm(t) },
 			{label: "No" }
 		);

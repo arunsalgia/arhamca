@@ -27,6 +27,36 @@ router.get('/list/disabled', async function (req, res, next) {
   sendok(res, allRecs ); 
 })
 
+// get students of faculty whose uid is provided
+router.get('/byfacultyuid/:uid', async function (req, res, next) {
+  setHeader(res);
+	
+	var { uid } = req.params;
+	
+	// first get faculty id using uid
+	var tmp = await Faculty.findOne({uid: uid });
+	var fid = tmp.fid;
+	
+	// not get all batches taken by faculty
+	var allBatches = await Batch.find({fid: fid, enabled: true});
+	
+	// from batches get all studnets
+	var allStudents = [];
+	for (var i=0; i < allBatches.length; ++i) {
+		allStudents = allStudents.concat(allBatches[i].sid);
+	}
+	allStudents = _.uniqBy(allStudents);
+	console.log(allStudents);
+	
+	var allStudentsRec = [];
+	if (allStudents.length > 0) {
+		allStudentsRec = await Student.find({ sid: {$in: allStudents } });
+	}
+	
+  sendok(res, allStudentsRec ); 
+})
+
+
 router.get('/list/enabled', async function (req, res, next) {
   setHeader(res);
  
