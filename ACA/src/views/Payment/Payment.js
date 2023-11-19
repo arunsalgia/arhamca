@@ -50,7 +50,11 @@ import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 import Money from '@material-ui/icons/Money';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
+import { 
+	isMobile, getWindowDimensions, displayType, 
+	decrypt, encrypt ,
+	vsDialog,
+} from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
 
@@ -258,8 +262,16 @@ export default function Payment() {
 		setDrawer("EDITPAYMENT");
 	}
 	
+	function handleDelStudentPayment(t) {
+		setDrawerInfo("")
+		vsDialog("Delete Payment", `Are you sure you want to delete payment of ${mergedName(t.studentName, t.sid)}?`,
+			{label: "Yes", onClick: () => handleDelStudentPaymentConfirm(t) },
+			{label: "No",  onClick: () => setDrawerInfo("detail") }
+		);
+	}
 	
-	async function handleDelStudentPayment(rec) {
+	async function handleDelStudentPaymentConfirm(rec) {
+		setDrawerInfo("detail");
 		try {
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/payment/delete/${rec._id}`;
 			await axios.get(myUrl);

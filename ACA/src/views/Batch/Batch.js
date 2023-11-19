@@ -45,7 +45,11 @@ import CancelIcon from '@material-ui/icons/Cancel';
 import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
+import { 
+	isMobile, getWindowDimensions, displayType, 
+	decrypt, encrypt ,
+	vsDialog,
+} from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
 
@@ -257,7 +261,14 @@ export default function Batch() {
 		setDrawerDetail("detail");
 	}
 
-	async function handleDeleteBatch(rec) {
+	function handleDeleteBatch(t) {
+		vsDialog("Delete Batch", `Are you sure you want to delete batch ${t.bid}?`,
+			{label: "Yes", onClick: () => handleDeleteBatchConfirm(t) },
+			{label: "No" }
+		);
+	}
+	
+	async function handleDeleteBatchConfirm(rec) {
 		try {
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/delete/${rec.bid}`;
 			const response = await axios.get(myUrl);
@@ -296,7 +307,14 @@ export default function Batch() {
 		return null; //<Tooltip className={gClasses.tooltip} backgroundColor='#42EEF9' borderColor='black' arrowColor='blue' textColor='black' key={props.id} type="info" effect="float" id={props.id} multiline={true}/>
 	}
 	
-	async function handleDisableBatch(rec) {
+		function handleDisableBatch(t) {
+		vsDialog("Disable Batch", `Are you sure you want disable batch ${t.bid}?`,
+			{label: "Yes", onClick: () => handleDisableBatchConfirm(t) },
+			{label: "No" }
+		);
+	}
+	
+	async function handleDisableBatchConfirm(rec) {
 		let myRec = masterBatchArray.find(x => x.bid === rec.bid);
 		try {
 			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/disabled/${myRec.bid}`);
@@ -304,6 +322,7 @@ export default function Batch() {
 			var allRec  = [].concat(masterBatchArray)
 			setMasterBatchArray(allRec);
 			filterBatch(allRec, currentSelection);
+			toast.success(`Disabled batch ${myRec.bid}`);
 		}
 		catch (e) {
 			// error 
@@ -312,14 +331,22 @@ export default function Batch() {
 		}
 	}
 
-	async function handleEnableBatch(rec) {
+	function handleEnableBatch(t) {
+		vsDialog("Enable Batch", `Are you sure you want enable batch ${t.bid}?`,
+			{label: "Yes", onClick: () => handleEnableBatchConfirm(t) },
+			{label: "No" }
+		);
+	}
+	
+	async function handleEnableBatchConfirm(rec) {
 		let myRec = masterBatchArray.find(x => x.bid === rec.bid);
 		try {
 			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabled/${myRec.bid}`);
 			myRec.enabled = true;
-			var allRec  = [].concat(masterBatchArray)
+			var allRec  = [].concat(masterBatchArray);
 			setMasterBatchArray(allRec);
 			filterBatch(allRec, currentSelection);
+			toast.success(`Disabled batch ${myRec.bid}`);
 		}
 		catch (e) {
 			// error 

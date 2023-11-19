@@ -41,7 +41,11 @@ import SearchIcon from '@material-ui/icons/Search';
 import { 
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
 	isAdmin, isAdmMan, isAdmManFac, isStudent,
+	mergedName,
+	vsDialog,
 } from 'views/functions';
+
+
 
 import {
 		FILTER_NONE,
@@ -300,7 +304,14 @@ export default function Student() {
 		return null; //<Tooltip className={gClasses.tooltip} backgroundColor='#42EEF9' borderColor='black' arrowColor='blue' textColor='black' key={props.id} type="info" effect="float" id={props.id} multiline={true}/>
 	}
 	
-	async function handleDisableStudent(x) {
+	function handleDisableStudent(t) {
+		vsDialog("Disable Student", `Are you sure you want disable student ${mergedName(t.name, t.sid)}?`,
+			{label: "Yes", onClick: () => handleDisableStudentConfirm(t) },
+			{label: "No" }
+		);
+	}
+	
+	async function handleDisableStudentConfirm(x) {
 		let myRec = masterStudentArray.find(rrr => rrr.sid === x.sid);
 		if (myRec.bid != "") {
 			toast.error(`Student ${myRec.name} has batch ${myRec.bid} in progress.`);
@@ -310,9 +321,10 @@ export default function Student() {
 			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/disabled/${myRec.sid}`);
 			myRec.enabled = false;
 			var allRec  = [].concat(masterStudentArray)
+			toast.success(`Disabled Student ${mergedName( myRec.name, myRec.sid)}`);
 			setMasterStudentArray(allRec);
 			setFilter(allRec, custFilter);
-
+			
 			//filterStudent(allRec, currentSelection);
 		}
 		catch (e) {
@@ -322,12 +334,21 @@ export default function Student() {
 		}
 	}
 
-	async function handleEnableStudent(x) {
+	function handleEnableStudent(t) {
+		vsDialog("Enable Student", `Are you sure you want enable student ${mergedName(t.name, t.sid)}?`,
+			{label: "Yes", onClick: () => handleEnableStudentConfirm(t) },
+			{label: "No" }
+		);
+	}
+	
+	
+	async function handleEnableStudentConfirm(x) {
 		let myRec = masterStudentArray.find(rrr => rrr.sid === x.sid);
 		try {
 			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/enabled/${myRec.sid}`);
 			myRec.enabled = true;
 			var allRec  = [].concat(masterStudentArray)
+			toast.success(`Enabled Student ${mergedName( myRec.name, myRec.sid)}`);
 			setMasterStudentArray(allRec);
 			setFilter(allRec, custFilter);
 			//filterStudent(allRec, currentSelection);

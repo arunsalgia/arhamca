@@ -257,6 +257,9 @@ function ShowResisterStatus() {
 		}
 
 	//console.log(dispType);
+	//
+	// 					{teacherSchedule.slice(BLOCK_START, BLOCK_END+1).map( (x, index) => {
+	//
 	return (
 	<div align="center">
 	{/*<DisplayPageHeader headerName="Faculty Schedule" groupName="" tournament="" />*/}
@@ -285,6 +288,8 @@ function ShowResisterStatus() {
 				</TableHead>
 				<TableBody p={0}>
 					{teacherSchedule.slice(BLOCK_START, BLOCK_END+1).map( (x, index) => {
+							var test = x.filter(x => x !== "");
+							if (test.length === 0) return;
 							var myClasses = gClasses.td;
 							//console.log(index, x);
 							var tmp = BATCHTIMESTR[index];

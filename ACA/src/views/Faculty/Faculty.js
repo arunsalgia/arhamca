@@ -42,6 +42,8 @@ import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 import { 
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
 	isAdmMan, isAdmManFac, isFaculty,
+	mergedName,
+	vsDialog,
 
 } from 'views/functions';
 
@@ -303,7 +305,16 @@ export default function Faculty() {
 		return null; //<Tooltip className={gClasses.tooltip} backgroundColor='#42EEF9' borderColor='black' arrowColor='blue' textColor='black' key={props.id} type="info" effect="float" id={props.id} multiline={true}/>
 	}
 	
-	async function handleDisableFaculty(x) {
+	
+		
+	function handleDisableFaculty(t) {
+		vsDialog("Disable Faculty", `Are you sure you want disable faculty ${mergedName(t.name, t.sid)}?`,
+			{label: "Yes", onClick: () => handleDisableFacultyConfirm(t) },
+			{label: "No" }
+		);
+	}
+
+	async function handleDisableFacultyConfirm(x) {
 		let myRec = masterFacultyArray.find(rrr => rrr.fid === x.fid);
 		if (myRec.batchCount > 0) {
 			toast.error(`Faculty ${myRec.name} has ${myRec.batchCount} batches in progress.`);
@@ -315,6 +326,7 @@ export default function Faculty() {
 			var allRec  = [].concat(masterFacultyArray)
 			setMasterFacultyArray(allRec);
 			filterFaculty(allRec, currentSelection);
+			toast.success(`Disabled Faculty ${mergedName( myRec.name, myRec.fid)}`);
 		}
 		catch (e) {
 			// error 
@@ -322,15 +334,23 @@ export default function Faculty() {
 			toast.error("Error disabling faculty "+x.name);
 		}
 	}
+	
+	function handleEnableFaculty(t) {
+		vsDialog("Enable Faculty", `Are you sure you want enable faculty ${mergedName(t.name, t.sid)}?`,
+			{label: "Yes", onClick: () => handleEnableFacultyConfirm(t) },
+			{label: "No" }
+		);
+	}
 
-	async function handleEnableFaculty(x) {
+	async function handleEnableFacultyConfirm(x) {
 		let myRec = masterFacultyArray.find(rrr => rrr.fid === x.fid);
 		try {
 			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/enabled/${myRec.fid}`);
 			myRec.enabled = true;
-			var allRec  = [].concat(masterFacultyArray)
+			var allRec  = [].concat(masterFacultyArray);
 			setMasterFacultyArray(allRec);
 			filterFaculty(allRec, currentSelection);
+			toast.success(`Enabled Faculty ${mergedName( myRec.name, myRec.fid)}`);
 		}
 		catch (e) {
 			// error 

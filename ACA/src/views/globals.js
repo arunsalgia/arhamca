@@ -5,6 +5,25 @@ export const NOFRACTION = 'Fraction not allowed';
 export const ALLSELECTIONS = ["All", "Enabled", "Disabled" ];
 export const BLANKCHAR = "-";
 
+export const dialogOptions={
+  title: 'Title',
+  message: 'Message',
+  buttons: [
+    {label: 'Yes', onClick: () => alert('Click Yes')},
+    {label: 'No',  onClick: () => alert('Click No')}
+  ],
+  childrenElement: () => <div />,
+  //customUI: ({ onClose }) => <div>Custom UI</div>,
+  closeOnEscape: false,
+  closeOnClickOutside: false,
+  willUnmount: () => {},
+  afterClose: () => {},
+  onClickOutside: () => {},
+  onKeypressEscape: () => {},
+  overlayClassName: "overlay-custom-class-name"
+};
+
+
 /// Constants
 export const ROLE_FACULTY = "Faculty";
 export const ROLE_STUDENT = "Student";

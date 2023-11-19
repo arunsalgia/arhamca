@@ -45,7 +45,11 @@ import CancelIcon from '@material-ui/icons/Cancel';
 import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
+import { 
+	isMobile, getWindowDimensions, displayType, 
+	decrypt, encrypt ,
+	vsDialog,
+} from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
 
@@ -233,7 +237,13 @@ export default function Inquiry() {
 		setDrawerInfo("detail");
 	}
 
-	async function handleDeleteInquiry(rec) {
+	function handleDeleteInquiry(t) {
+		vsDialog("Delete inquiry", `Are you sure you want to delete inquiry of ${mergedName(t.contactName, t.contactNumber)}?`,
+			{label: "Yes", onClick: () => handleDeleteInquiryConfirm(t) },
+			{label: "No" }
+		);
+	}
+	async function handleDeleteInquiryConfirm(rec) {
 		try {
 			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/inquiry/delete/${rec._id}`;
 			const response = await axios.get(myUrl);
