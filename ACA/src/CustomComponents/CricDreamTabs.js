@@ -200,8 +200,14 @@ export function AcaTabs() {
         sessionStorage.setItem("menuValue", process.env.REACT_APP_WALLET);
         history.push("/");
       } else if (checkIdle()) {
-        sessionStorage.setItem("menuValue", process.env.REACT_APP_HOME);
+				if (isAdmin())
+					sessionStorage.setItem("menuValue", process.env.REACT_APP_SUMMARY);
+				else if (isFaculty())
+					sessionStorage.setItem("menuValue", process.env.REACT_APP_BATCH);
+				else
+					sessionStorage.setItem("menuValue", process.env.REACT_APP_HOME);
       } 
+			console.log("Menu value: ",sessionStorage.getItem("menuValue"));
       setValue(parseInt(sessionStorage.getItem("menuValue")));
       setIdle(false);
     }
@@ -339,22 +345,39 @@ export function AcaTabs() {
   const handleLogout = () => {
     handleClose();
     sessionStorage.setItem("uid", "");
+		sessionStorage.removeItem("menuValue");
+		sessionStorage.removeItem("role");
+		sessionStorage.removeItem("displayName");
+		sessionStorage.removeItem("isAdmin");
+		sessionStorage.removeItem("notidle");
+		sessionStorage.removeItem("tabpos");
+		sessionStorage.removeItem("userName");
     //sessionStorage.setItem("menuValue", process.env.REACT_APP_DASHBOARD);
     cdRefresh();  
   };
 
-  function Show_Supervisor_Options() {
-    if (true) {  //sessionStorage.getItem("userPlan") == process.env.REACT_APP_SUPERUSER) {  
+  function ShowUserOptions() {
+    if (isAdmin()) {  //sessionStorage.getItem("userPlan") == process.env.REACT_APP_SUPERUSER) {  
       return (
         <div>
-        <MenuItem onClick={handleBatch}>Batch</MenuItem>
+        <MenuItem onClick={handleArea}>Area</MenuItem>
+        <MenuItem onClick={handleUser}>User</MenuItem>
         <MenuItem onClick={handleFaculty}>Faculty</MenuItem>
-        <MenuItem onClick={handleStudent}>Student</MenuItem>
-        {/* <MenuItem onClick={handleSuImage}>SU Load Image</MenuItem> */}
-        <Divider />
-        </div>)
-    } else {
+				<MenuItem onClick={handleStudent}>Student</MenuItem>
+				<MenuItem onClick={handleBatch}>Batch</MenuItem>
+				<MenuItem onClick={handleSession}>Session</MenuItem>
+        </div>
+			);
+    } 
+		else if (isManager()) {
       return null;
+    }
+		else if (isFaculty()) {
+      return (
+        <div>
+				<MenuItem onClick={handleStudent}>Student</MenuItem>
+        </div>
+			);
     }
   }
 
@@ -466,6 +489,8 @@ export function AcaTabs() {
                 <MenuItem onClick={handleProfile}>Profile</MenuItem>
                 <MenuItem onClick={handleWallet}>Wallet</MenuItem>
                 <Divider/>
+								<ShowUserOptions />
+								<Divider/>
 								<MenuItem onClick={handleAbout}>About</MenuItem> 
                 <MenuItem onClick={handleContactUs}>Contact Us</MenuItem>                  
                 {(process.env.REACT_APP_DEVICE === "APK") && 
