@@ -147,8 +147,65 @@ router.get('/update/:usid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/
 	if (myStatus.status != 0)
 		return senderr(res, myStatus.status, "Error");
 	
-	// user added. Now update 
-	studentRec.name = myStatus.userRec.displayName;
+	// user added. Check if name chnaged. If yes then make changes in other documents
+	if (studentRec.name !== myStatus.userRec.displayName) {
+		console.log("in name change");
+		// Change name in Student record. Do not save it now. Other changes pending
+		studentRec.name = myStatus.userRec.displayName;
+		
+		// Now make changes in all Batch record
+		var allRecs = await Batch.find({sid: studentRec.sid });
+		console.log("Batch count: ",allRecs.length);
+		for (var i=0; i<allRecs.length; ++i) {
+			var myNameList = allRecs[i].studentNameList;
+			for (var sidx=0; sidx < allRecs[i].sid.length; ++sidx) {
+				if (allRecs[i].sid[sidx] === studentRec.sid) {
+					myNameList[sidx] = myStatus.userRec.displayName;
+				}
+			}
+			console.log(myNameList);
+			//allRecs[i].studentNameList = myNameList;
+			//await allRecs[i].save();
+			await Batch.updateOne({_id: allRecs[i]._id},{$set:{ studentNameList: myNameList}})
+		}
+
+	
+		// Now make changes in all Session records
+		// Note changes in 2 places (studentNameList and attendedStudentNameList)
+		var allRecs = await Session.find({sidList: studentRec.sid });
+		console.log("Seesion coint:", allRecs.length);
+		for (var i=0; i<allRecs.length; ++i) {
+			var myList1 = allRecs[i].studentNameList;
+			var myList2 = allRecs[i].attendedStudentNameList;
+			
+			for (var sidx=0; sidx < allRecs[i].sidList.length; ++sidx) {
+				console.log(allRecs[i].sidList[sidx], allRecs[i].studentNameList[sidx],studentRec.sid, myStatus.userRec.displayName);
+				if (allRecs[i].sidList[sidx] === studentRec.sid) {
+					myList1[sidx] = myStatus.userRec.displayName;
+					console.log(allRecs[i].studentNameList[sidx]);
+				}
+				if (allRecs[i].attendedSidList[sidx] === studentRec.sid) {
+					myList2[sidx] = myStatus.userRec.displayName;
+					console.log(allRecs[i].attendedStudentNameList[sidx]);
+				}
+			}
+			//await allRecs[i].save();
+			await Session.updateOne({_id: allRecs[i]._id},{$set:{ studentNameList: myList1}})
+			await Session.updateOne({_id: allRecs[i]._id},{$set:{ attendedStudentNameList: myList2}})
+		}
+
+		
+		// Now make changes in all Payment records
+		var allRecs = await Payment.find({sid: studentRec.sid });
+		console.log("Payment count: ",allRecs.length);
+		for (var i=0; i<allRecs.length; ++i) {
+			allRecs[i].studentName = myStatus.userRec.displayName;
+			await allRecs[i].save();
+		}
+		// All done for name changes
+	}
+	
+	// Now update pending data in Student record and save
 	studentRec.parentName = getDisplayName(parName);
 	studentRec.parentMobile = parMobile;
   await studentRec.save();

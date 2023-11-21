@@ -325,7 +325,6 @@ export default function Payment() {
 			<Table  align="center">
 			<TableHead p={0}>
 			<TableRow key="header" align="center">
-				<TableCell className={gClasses.th} p={0} align="center">Code</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center">Student</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center">Payment</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center"></TableCell>
@@ -337,8 +336,7 @@ export default function Payment() {
 						//console.log(x)
 					return (
 					<TableRow key={x._id.sid}>
-						<TableCell className={myClasses} p={0} align="center" >{x._id.sid}</TableCell>
-						<TableCell className={myClasses} p={0}  >{x._id.studentName}</TableCell>
+						<TableCell className={myClasses} align="center" p={0}  >{mergedName( x._id.studentName, x._id.sid)}</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.amount}</TableCell>
 						<TableCell className={myClasses} p={0} >
 							{/*<IconButton color="primary" size="small" onClick={() => {handleEditStudentPayment(x)}} ><EditIcon /></IconButton>*/}

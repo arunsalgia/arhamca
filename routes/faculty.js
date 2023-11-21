@@ -114,9 +114,28 @@ router.get('/update/:ufid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/
 	if (myStatus.status != 0)
 		return senderr(res, myStatus.status, "Error");
 	
-	// user added. Now update 
-	facRec.name = myStatus.userRec.displayName;
-  await facRec.save();
+	// user update. Now check if user name changed
+	if (facRec.name !== myStatus.userRec.displayName) {
+		// first update name in Faculty record and save
+		facRec.name = myStatus.userRec.displayName;
+		await facRec.save();
+		
+		// Now update name in all the Batch records
+		var allFacRecs = await Batch.find({fid: facRec.fid});
+		for (var i=0; i<allFacRecs.length; ++i) {
+			allFacRecs[i].facultyName = myStatus.userRec.displayName;
+			allFacRecs[i].save();
+		}
+		
+		// Now update name in all the Session records
+		var allSessRecs = await Session.find({fid: facRec.fid});
+		for (var i=0; i<allSessRecs.length; ++i) {
+			allSessRecs[i].facultyName = myStatus.userRec.displayName;
+			allSessRecs[i].save();
+		}	
+		// All done for name change of faculty
+	}
+	
   sendok(res, facRec ); 
 })
 

@@ -241,7 +241,6 @@ export default function Summary() {
 			<Table  align="center">
 			<TableHead p={0}>
 			<TableRow key="header" align="center">
-				<TableCell className={gClasses.th} p={0} align="center">Code</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center">Student</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center">Credit</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center">Debit</TableCell>
@@ -256,8 +255,7 @@ export default function Summary() {
 						//console.log(myClasses)
 					return (
 					<TableRow key={x.sid}>
-						<TableCell className={myClasses} p={0} align="center" >{x.sid}</TableCell>
-						<TableCell className={myClasses} p={0}  >{x.studentName}</TableCell>
+						<TableCell className={myClasses} align="center" p={0} >{mergedName(x.studentName,x.sid) }</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.credit}</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.debit}</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.dues}</TableCell>
