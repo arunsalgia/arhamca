@@ -44,6 +44,8 @@ const MINAREACODELENGTH = 3;
 import { 
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
 	isAdmin, isAdmMan, isAdmManFac, isStudent, isFaculty,
+	vsDialog,
+	
 } from 'views/functions';
 
 
@@ -72,7 +74,7 @@ export default function Area() {
 					console.log(e);
 				}
 			}
-			getAllAreas();
+			if (isAdmin()) getAllAreas();
     }, [])
 
     // function handleTimer() {}
@@ -185,10 +187,15 @@ export default function Area() {
 	}
 	
 	
+	function handleDelArea(rec) {
+		vsDialog("Delete Area", `Are you sure you want to delete area ${rec.longName}?`,
+			{label: "Yes", onClick: () => handleDelAreaConfirm(rec) },
+			{label: "No",   }
+		);		
+	}
 	
 	
-	
-  async function handleDelArea(rec) {
+  async function handleDelAreaConfirm(rec) {
 		try {
 			//console.log("Setting utl");
 			//console.log(areaRec);
@@ -209,7 +216,9 @@ export default function Area() {
 	function DisplayAreas() {
 		return (
 			<div>
+			{(isAdmin()) &&
 			 <VsButton name="New Area" align="right" onClick={handleAdd} />
+			}
 			<Table>
 			<TableHead p={0}>
 			<TableRow key="header" align="center">
@@ -228,7 +237,7 @@ export default function Area() {
 							{x.longName}
 						</TableCell>
 						<TableCell className={gClasses.td} p={0} align="center" >
-							<IconButton disabled={!isAdmin()} color="primary" size="small" onClick={() => {handleEdit(x) }} ><EditIcon /></IconButton>
+							<IconButton color="primary" size="small" onClick={() => {handleEdit(x) }} ><EditIcon /></IconButton>
 							<IconButton color="secondary"  size="small" onClick={() => {handleDelArea(x)}} ><CancelIcon /></IconButton>
 						</TableCell>
 					</TableRow>

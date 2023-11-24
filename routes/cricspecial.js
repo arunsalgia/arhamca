@@ -123,13 +123,10 @@ const svrToDbText = (text) => {
   }
 
 const dbToSvrText = (text) => {
-		console.log(text);
 		// first decrypt text of database
     let xxx = dbdecrypt(text);
-		console.log(xxx);
 		// now encrypt this for server
 		xxx = encrypt(xxx);
-		console.log(xxx);
     return xxx;
   }
 

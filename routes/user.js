@@ -1571,9 +1571,9 @@ router.get('/acaupdate/:uUid/:uName/:uPassword/:uRole/:uEmail/:mobileNumber/:add
 	
 	// check duplicate email id
 	var dbEmail = svrToDbText(uEmail);
-	console.log(uEmail);
-	console.log(dbEmail);
-	console.log(userRec.email);
+	//console.log(uEmail);
+	//console.log(dbEmail);
+	//console.log(userRec.email);
 	if (userRec.email !== dbEmail) {
 		uuu = await User.findOne({ email: dbEmail });
 		if (uuu) return senderr(res, 602, "Duplicate Email id.");
@@ -1589,8 +1589,8 @@ router.get('/acaupdate/:uUid/:uName/:uPassword/:uRole/:uEmail/:mobileNumber/:add
 	userRec.addr2 = addr2;
 	userRec.addr3 = addr3;
 	userRec.addr4 = addr4;
-	console.log(userRec);
-	console.log(addr1, addr2, addr3, addr4);
+	//console.log(userRec);
+	//console.log(addr1, addr2, addr3, addr4);
   await userRec.save();
 	
 	userRec.password = uPassword;

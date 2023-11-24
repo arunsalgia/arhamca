@@ -3,6 +3,8 @@ import React from 'react';
 export const NOFRACTION = 'Fraction not allowed';
 
 export const ALLSELECTIONS = ["All", "Enabled", "Disabled" ];
+
+
 export const BLANKCHAR = "-";
 
 export const dialogOptions={

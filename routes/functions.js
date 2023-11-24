@@ -7,9 +7,9 @@ const {
 
 
 function timeToBlock(hr, min) {
-	console.log(hr, MINUTES_IN_HOUR, min, BLOCK_IN_MINUTES);
+	//console.log(hr, MINUTES_IN_HOUR, min, BLOCK_IN_MINUTES);
 	var blk = (hr*MINUTES_IN_HOUR + min) / BLOCK_IN_MINUTES;
-	console.log(hr, min, blk);
+	//console.log(hr, min, blk);
 	return blk;
 }
 
@@ -107,9 +107,9 @@ async function updateUser(uUid, uName, uPassword, uRole, uEmail, mobileNumber, a
 	
 	// check duplicate email id
 	var dbEmail = svrToDbText(uEmail);
-	console.log(uEmail);
-	console.log(dbEmail);
-	console.log(userRec.email);
+	//console.log(uEmail);
+	//console.log(dbEmail);
+	//console.log(userRec.email);
 	if (userRec.email !== dbEmail) {
 		uuu = await User.findOne({ email: dbEmail });
 		if (uuu) { retstatus.status = 602;   return retstatus; }

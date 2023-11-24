@@ -43,6 +43,7 @@ import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox'
 import SchoolIcon from '@material-ui/icons/School';
 import CancelIcon from '@material-ui/icons/Cancel';
 import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
+import SearchIcon from '@material-ui/icons/Search';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { 
@@ -69,7 +70,7 @@ import {
 
 import {
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
-	isAdmMan, isAdmManFac, isFaculty,
+	isAdmin, isAdmMan, isAdmManFac, isFaculty,
 } from 'views/functions';
 
 
@@ -78,12 +79,14 @@ export default function Batch() {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
 	
-	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
+	
 	const [mode, setMode] = useState("");
 	const [batchArray, setBatchArray] = useState([]);
 	const [masterBatchArray, setMasterBatchArray] = useState([]);
 
-
+	const [currentMode, setCurrentMode] = useState(ALLSELECTIONS[1]);
+	const [currentText, setCurrentText] = useState("");
+	
 	//const [batchRec, setBatchRec] = useState("");
 
 	// for faculty schule call
@@ -122,12 +125,12 @@ export default function Batch() {
 		async function getAllBatch() {
 			try {
 				if (isAdmMan()) {
-					console.log("Admin or Main");
+					//console.log("Admin or Main");
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/list/all`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
-					setBatchArray(response.data);
 					setMasterBatchArray(response.data);
+					filterBatch(response.data, currentText, currentMode);
 				}
 				else if (isFaculty()) {
 					console.log("Facultyn");
@@ -138,8 +141,8 @@ export default function Batch() {
 					if (response.data) {
 						myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabledbatch/${response.data.fid}`;
 						response = await axios.get(myUrl);
-						setBatchArray(response.data);
 						setMasterBatchArray(response.data);
+						filterBatch(response.data, currentText, currentMode);
 					}
 					
 				}
@@ -207,7 +210,7 @@ export default function Batch() {
 		//var batchInfo = {inUse: true, status: STATUS_INFO.ADD_BATCH, msg: "", record:  null };
 		//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
 		//setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
-		setBatchRec(null);
+		setBatchRec({sid: [], timings: []});
 		setDrawer("ADDBATCH");
 	}
 	
@@ -280,8 +283,8 @@ export default function Batch() {
 			const response = await axios.get(myUrl);
 			var allRec  = batchArray.filter(x => x.bid !== rec.bid);
 			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentSelection);
-			toast.success(`Successfull deleted batch ${rec.bid}`);
+			filterBatch(allRec, currentText, currentMode);
+			toast.success(`Successfully deleted batch ${rec.bid}`);
 		} catch (e) {
 			console.log(e);
 			toast.error("Error deleting batch");
@@ -327,7 +330,7 @@ export default function Batch() {
 			myRec.enabled = false;
 			var allRec  = [].concat(masterBatchArray)
 			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentSelection);
+			filterBatch(allRec, currentText, currentMode);
 			toast.success(`Disabled batch ${myRec.bid}`);
 		}
 		catch (e) {
@@ -351,7 +354,7 @@ export default function Batch() {
 			myRec.enabled = true;
 			var allRec  = [].concat(masterBatchArray);
 			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentSelection);
+			filterBatch(allRec, currentText, currentMode);
 			toast.success(`Disabled batch ${myRec.bid}`);
 		}
 		catch (e) {
@@ -436,25 +439,53 @@ export default function Batch() {
 
 	}
 	
-	function filterBatch(masterArray, x) {
-		switch (x) {
-			case "Disabled":  setBatchArray(masterArray.filter(x => !x.enabled ));  break;
-			case "Enabled":   setBatchArray(masterArray.filter(x => x.enabled ));  break;
-			default:          setBatchArray(masterArray);  break;
+	function filterBatch(masterArray, textFilter, modeFilter) {
+		var filteredArray = [].concat(masterArray);
+		
+		// First filter on mode
+		switch (modeFilter) {
+			case "Disabled":  filteredArray = filteredArray.filter(x => !x.enabled );  break;
+			case "Enabled":   filteredArray = filteredArray.filter(x => x.enabled );  break;
+			//default:          setBatchArray(masterArray);  break;
 		}
+		
+		var finalFilterArray = [];
+		// Now filter on text
+		if (textFilter !== "") {
+			textFilter = textFilter.toUpperCase();
+			// start filter process on all records one by one
+			for(var i=0; i<filteredArray.length; ++i) {
+				if (
+					(filteredArray[i].bid.includes(textFilter)) ||
+					(filteredArray[i].fid.includes(textFilter)) ||
+					(filteredArray[i].facultyName.toUpperCase().includes(textFilter)) ||
+					(filteredArray[i].sid.includes(textFilter))
+				) {
+					finalFilterArray.push(filteredArray[i]);					
+				}
+				else {
+					for(var j=0; j<filteredArray[i].studentNameList.length; ++j) {
+						if (filteredArray[i].studentNameList[j].toUpperCase().includes(textFilter)) {
+							finalFilterArray.push(filteredArray[i]);
+							break;
+						}
+					}
+				}
+			}
+		}
+		else  {
+			finalFilterArray = filteredArray			// no filter required
+		}
+		setBatchArray(finalFilterArray);
 	}
 	
-	function selectAll(x) {
-		setCurrentSelection(x);
-		filterBatch(masterBatchArray, x);
-	}
-	
+
 	// style={{marginTop: "5px" }}  
 	function DisplayOptions() {
 	return (
 	<Grid key="Options" className={gClasses.noPadding} container alignItems="center" >
 		<Grid  item xs={3} sm={2} md={2} lg={1} >
-			<VsSelect size="small" align="center" label="Selection" options={ALLSELECTIONS} value={currentSelection} onChange={(event) => { selectAll(event.target.value)}} />
+			<VsSelect size="small" align="center" label="Selection" options={ALLSELECTIONS} value={currentMode} onChange={(event) => { setModeFilter(event.target.value)}} />
 		</Grid>
 		<Grid align="left"  item xs={6} sm={7} md={8} lg={10} >
 			<span></span>
@@ -465,11 +496,60 @@ export default function Batch() {
 	</Grid>
 	)}
 	
+	function setTextFilter(textValue) {
+		textValue = textValue.toLowerCase();
+		setCurrentText(textValue);
+		filterBatch(masterBatchArray, textValue, currentMode);
+	}
+
+	function setModeFilter(modeValue) {
+		setCurrentMode(modeValue);
+		filterBatch(masterBatchArray, currentText, modeValue);
+	}
 	
+	function DisplayFilter() {
+	return (	
+		<div>
+		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingTop={1} >
+		<Grid key="Filter" className={gClasses.noPadding} container  >
+			<Grid  item xs={3} sm={2} md={2} lg={1} align="left"  >
+				<VsSelect size="small" align="left" options={ALLSELECTIONS} value={currentMode} onChange={(event) => { setModeFilter(event.target.value)}} />
+			</Grid>
+			<Grid item xs={1} sm={1} md={1} lg={1} align="right"   >
+				<TextField fullWidth  value={currentText} onChange={ (event) => { setTextFilter(event.target.value) } } />	
+			</Grid>
+			<Grid  item xs={5} sm={6} md={7} lg={9} >
+			</Grid>
+			<Grid item xs={1} sm={1} md={1} lg={1} align="right"   >
+				<IconButton align="right"  color="primary" size="small" onClick={(event) => {setTextFilter(event.target.value) } } ><SearchIcon /></IconButton>
+			</Grid>
+			<Grid  item xs={3} sm={3} md={2} lg={1} >
+				<VsButton disabled={!isAdmMan()} name="New Batch" align="right" onClick={handleAddBatch} />
+			</Grid>
+		</Grid>
+		</Box>
+		</div>
+	)}
+	
+
 	return (
 	<div>
 	<DisplayPageHeader headerName="Batch" groupName="" tournament="" />
-	<DisplayOptions />
+	<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingTop={1} >
+		<Grid key="Filter" className={gClasses.noPadding} container  >
+			<Grid  item xs={3} sm={2} md={2} lg={1} align="left"  >
+				<VsSelect size="small" align="left" options={ALLSELECTIONS} value={currentMode} onChange={(event) => { setModeFilter(event.target.value)}} />
+			</Grid>
+			<Grid item xs={1} sm={1} md={4} lg={3}  >
+				<TextField fullWidth label="Filter Text" value={currentText} onChange={ (event) => { setTextFilter(event.target.value) } } />	
+			</Grid>
+			<Grid  item xs={5} sm={6} md={4} lg={7} >
+			</Grid>
+			<Grid  item xs={3} sm={3} md={2} lg={1} >
+				<VsButton disabled={!isAdmin()} name="New Batch" align="right" onClick={handleAddBatch} />
+			</Grid>
+		</Grid>
+	</Box>
 	<DisplayAllBatch/>
 	{/*<DisplayAllToolTips />*/}
 	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>

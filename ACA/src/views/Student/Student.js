@@ -60,7 +60,7 @@ import globalStyles from "assets/globalStyles";
 import VsButton from "CustomComponents/VsButton"; 
 import VsCancel from "CustomComponents/VsCancel";
 import VsSelect from "CustomComponents/VsSelect";
-import VsRadio from "CustomComponents/VsRadio";
+//import VsRadio from "CustomComponents/VsRadio";
 
 //const ALLROLES = ["Student", "Faculty", "Admin"];
 

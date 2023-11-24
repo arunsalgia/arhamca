@@ -52,7 +52,8 @@ import VsSelect from "CustomComponents/VsSelect";
 
 
 const MAXAREACODELENGTH = 4;
-const ALLROLES = ["Manager", "Student", "Faculty", "Admin"];
+const ALLROLES = ["Faculty", "Student", "Manager", "Admin"];
+const VALIDADDEDITROLES = [ "Manager", "Admin" ];
 
 //var props.mode = "ADD";
 const spacing = "5px"
@@ -117,7 +118,7 @@ export default function User() {
 		//console.log(firsTime);
 		async function getAllUsers() {
 			try {
-				if (isAdmin()) {
+				if (isAdmMan()) {
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/user/acalist`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
@@ -126,6 +127,7 @@ export default function User() {
 				}
 			} catch (e) {
 				console.log(e);
+				oast.error("Error fetching User records");
 			}
 		}
 		getAllUsers();
@@ -216,7 +218,7 @@ export default function User() {
 		setUserName("");
 		setMobile("");
 		setEmail("")
-		setRole(ALLROLES[0]);
+		setRole(VALIDADDEDITROLES[0]);
 		setPassword("");
 		setArea1("");
 		setArea2("");
@@ -339,7 +341,7 @@ export default function User() {
 						<TableCell align="center" className={gClasses.td} p={0} >{x.mobile}</TableCell>
 						}
 						<TableCell className={gClasses.td} p={0} >
-							<IconButton color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
+							<IconButton color="primary" disabled={!VALIDADDEDITROLES.includes(x.role)} size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
 							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 						</TableCell>
 					</TableRow>
@@ -395,7 +397,7 @@ export default function User() {
 						value={userName} onChange={() => { setUserName(event.target.value) }}
 					/>
 					<BlankArea/>
-					<VsSelect fullWidth align="center" label="Role" options={ALLROLES} value={role} onChange={(event) => { setRole(event.target.value)}} />
+					<VsSelect fullWidth align="center" label="Role" options={VALIDADDEDITROLES} value={role} onChange={(event) => { setRole(event.target.value)}} />
 					<BlankArea/>
 					<TextValidator variant="outlined" required fullWidth id="emaild" label="Email" name="Email"
 						validators={['isEmailOK', 'required']}

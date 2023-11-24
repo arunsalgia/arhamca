@@ -207,7 +207,7 @@ export function AcaTabs() {
 				else
 					sessionStorage.setItem("menuValue", process.env.REACT_APP_HOME);
       } 
-			console.log("Menu value: ",sessionStorage.getItem("menuValue"));
+			//console.log("Menu value: ",sessionStorage.getItem("menuValue"));
       setValue(parseInt(sessionStorage.getItem("menuValue")));
       setIdle(false);
     }
