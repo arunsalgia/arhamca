@@ -82,8 +82,7 @@ export default function Session() {
 	const [studentSession, setStudentSession] = useState([]);
 	//const [masterBatchArray, setMasterBatchArray] = useState([]);
 
-
-	//const [selBatch, setSelBatch] = useState("");
+	const [batchRec, setBatchRec] = useState({});
 
 	// for faculty schule call
 	const [sessionRec, setSessionRec] = useState({});
@@ -207,7 +206,40 @@ export default function Session() {
         );
       }
 
+	async function handleAddSession(rec) {
+		try {
+			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/getbatch/${rec.sid}`);
+			if (response.data.bid === "") {
+				toast.error(`No current batch for student ${rec.sid}`);
+				return;
+			}
+			setBatchRec(response.data);
+			setDrawer("ADDSESSION");
+		}
+		catch (e) {
+			console.log(e);
+			toast.error(`Error getting batch record of ${rec.sid}`);
+		}
+	}
 
+	function handleBack(sts)
+	{
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		
+		if (sts.status !== STATUS_INFO.ERROR) {
+			if (drawer === "ADDSESSION") {
+				var clonedSessionArray = [].concat(sessionArray);
+				for(var i = 0; i < clonedSessionArray.length; ++i) {
+					if ( batchRec.sid.includes(clonedSessionArray[i].sid) )
+						clonedSessionArray[i].count += 1;
+				}
+				setSessionArray(clonedSessionArray);
+			}	
+		}
+		setDrawer("");
+	}
+		
 	async function handleInfo(rec) {
 		setSessionRec(rec);
 		try {
@@ -247,6 +279,7 @@ export default function Session() {
 						<TableCell className={myClasses} align="center" p={0} >{x.count}</TableCell>
 						<TableCell className={myClasses} p={0} >
 							<IconButton disabled={x.count === 0} color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
+							<IconButton color="primary"  size="small" onClick={() => {handleAddSession(x)}} ><SchoolIcon /></IconButton>
 						</TableCell>
 					</TableRow>
 				)})}
@@ -304,6 +337,12 @@ export default function Session() {
 		</TableBody>
 		</Table>
 	</Drawer>
+	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>
+		<VsCancel align="right" onClick={() => { setDrawer("")}} />
+		{(drawer === "ADDSESSION") &&
+			<SessionAddEdit mode="ADD" batchRec={batchRec} sessionRec={null} onReturn={handleBack} />
+		}
+	</Drawer>	
 	<ToastContainer />
 	</div>
 	);

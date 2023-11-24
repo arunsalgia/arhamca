@@ -218,25 +218,44 @@ router.get('/add/:sessionData', async function (req, res, next) {
 	
 })
 
-router.get('/update/:usid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4/:parName/:parMobile', async function (req, res, next) {
+router.get('/update/:sessionData', async function (req, res, next) {
   setHeader(res);
-  var { usid, uName, uPassword, uEmail, mobileNumber, addr1, addr2, addr3, addr4, parName, parMobile } = req.params;
+  var { sessionData } = req.params;
 
-	var studentRec = await Student.findOne({sid: usid});
+	sessionData = JSON.parse(sessionData);
+	console.log(sessionData);
+	/*
+	sequence: Number,
+	sessionNumber: Number,
+  bid: String,		// Batch code
+	fees: Number,		// Batch fees per session per student
+	sessionDate: Date,
+	fid: String,		// Faculty of this batch
+	facultyName: String, // Faculty name
+	sidList: [String],		// list of Id of students in batch
+	studentNameList: [String],		// list of names of students in batch
+	attendedSidList: [String],		// list of Id of students who attended the session
+	attendedStudentNameList: [String],		// list of name of students who attended the session
+	creationDate: Date,
+  enabled: Boolean	// Batch open (true) / closed false	
+	*/
+	var sessioRec = await Session.findOne({_id: sessionData.sessioId});
+	sessioRec.sessionDate = sessionData.sessionDate;
+	sessioRec.attendedSidList = sessionData.attendanceList;
+	// no remarks
+	var tmp  = [];
+	for(var i=0; i < sessionData.attendanceList.length; ++i) {
+		var sid_idx = sessionData.batchData.sid.indexOf(sessionData.attendanceList[i]);
+		tmp.push(sessionData.batchData.studentNameList[sid_idx]);
+	}	
+	sessioRec.attendedStudentNameList = tmp;
 	
-	// first it as a user
-	var myStatus = await updateUser(studentRec.uid, uName, uPassword, ROLE_STUDENT, uEmail, mobileNumber, addr1, addr2, addr3, addr4);
-	//console.log(myStatus);
-	if (myStatus.status != 0)
-		return senderr(res, myStatus.status, "Error");
+	await sessioRec.save();
 	
-	// user added. Now update 
-	studentRec.name = myStatus.userRec.displayName;
-	studentRec.parentName = getDisplayName(parName);
-	studentRec.parentMobile = parMobile;
-  await studentRec.save();
-  sendok(res, studentRec ); 
+	sendok(res, sessioRec);
+	
 })
+
 
 router.get('/delete/:bid', async function (req, res, next) {
   setHeader(res);

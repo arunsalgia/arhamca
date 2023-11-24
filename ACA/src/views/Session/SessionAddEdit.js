@@ -139,11 +139,22 @@ export default function SessionAddEdit(props) {
 			}
 		}
 		
-		//console.log(props.batchRec)
+		console.log(props.batchRec)
 		setOrigBatchRec(props.batchRec);
 		setOrigBid(props.batchRec.bid);
 		setOrigSessionRec(props.sessionRec);		
 		getAllStudents(props.batchRec.sid);
+		
+		if (mode === "EDIT") {
+			setSessionDate(props.sessionRec.sessionDate);
+			var tmpCbArray = [];
+			for(var i=0; i<props.sessionRec.sidList; ++i) {
+				tmpCbArray.push(
+					(props.sessionRec.attendedSidList.includes(props.sessionRec.sidList[i])) ? true : false
+				);
+			}
+			setCbArray(tmpCbArray);
+		}
 		
 		handleResize();
 		window.addEventListener('resize', handleResize);
@@ -215,12 +226,13 @@ async function handleAddEditSubmit() {
 	var tmpattend = cbArray.filter(x => x === true);
 	console.log(tmpattend);
 	if 	(tmpattend.length === 0) {
-		toast.error("Atleast 1 student has to be present for the session");
+		toast.error("Minimum 1 student has to be present for the session");
 		return;
 	}
-	// luckily not validation required
+	// luckily no validation required
 	var myData = {};
 	//console.log(origBatchRec)
+	myData["sessionId"] = (mode === "EDIT") ? origSessionRec._id : "";
 	myData["batchData"] = origBatchRec;
 	myData["remarks"] = myNotes;
 	myData["sessionDate"] = sessionDate;

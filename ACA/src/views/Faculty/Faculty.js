@@ -289,7 +289,8 @@ export default function Faculty() {
 	
 	function handleInfo(r) {
 		setFacultyRec(r);
-		setDrawerDetail("DETAIL");
+		//setDrawerDetail("DETAIL");
+		toast.info("Faculty detail to be implemneted");
 	}
 
 	function DisplayAllToolTips() {

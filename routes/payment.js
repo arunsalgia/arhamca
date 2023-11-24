@@ -215,6 +215,7 @@ router.get('/summary/detail/:sid', async function (req, res, next) {
 	for(i=0; i<paymentInfo.length; ++i) {
 		allSummary.push(
 		{
+			_id:  paymentInfo[i]._id,
 			date: paymentInfo[i].date,
 			desc: `Payment mode: ${paymentInfo[i].mode}`,
 			credit: paymentInfo[i].amount,
@@ -226,6 +227,7 @@ router.get('/summary/detail/:sid', async function (req, res, next) {
 	for(i=0; i<sessionInfo.length; ++i) {
 		allSummary.push(
 		{
+			_id:  sessionInfo[i]._id,
 			date: sessionInfo[i].sessionDate,
 			desc: `Session No. ${sessionInfo[i].sessionNumber} (batch: ${sessionInfo[i].bid})`,
 			credit: 0,

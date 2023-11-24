@@ -81,6 +81,20 @@ router.get('/get/:sid', async function (req, res, next) {
   sendok(res, studRec ); 
 })
 
+router.get('/getbatch/:sid', async function (req, res, next) {
+  setHeader(res);
+	
+	var { sid } = req.params;
+ 
+	var studRec = await Student.findOne({sid: sid});
+	var batchRec = {bid: ""};
+	if (studRec.bid !== "") {
+		batchRec = await Batch.findOne({bid: studRec.bid });
+	}
+  sendok(res, batchRec ); 
+})
+
+
 
 router.get('/list/freeorbatch/:bid', async function (req, res, next) {
   setHeader(res);

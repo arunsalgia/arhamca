@@ -20,7 +20,11 @@ import BlueRadio from 'components/Radio/BlueRadio';
 import { UserContext } from "../../UserContext";
 import { JumpButton, DisplayPageHeader } from 'CustomComponents/CustomComponents.js';
 
-import EditIcon from '@material-ui/icons/Edit';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import lodashSortBy from "lodash/sortBy";
+
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 //import { hasGroup } from 'views/functions';
@@ -30,7 +34,18 @@ import globalStyles from "assets/globalStyles";
 import VsButton from "CustomComponents/VsButton"; 
 import VsCancel from "CustomComponents/VsCancel";
 
+import IconButton from '@material-ui/core/IconButton';
+import EditIcon from '@material-ui/icons/Edit';
+import CancelIcon from '@material-ui/icons/Cancel';
+
 const MAXAREACODELENGTH = 4;
+const MINAREACODELENGTH = 3;
+
+import { 
+	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
+	isAdmin, isAdmMan, isAdmManFac, isStudent, isFaculty,
+} from 'views/functions';
+
 
 export default function Area() {
     //const classes = useStyles();
@@ -51,7 +66,7 @@ export default function Area() {
 				try {
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/list`;
 					const response = await axios.get(myUrl);
-					console.log(response.data);
+					//console.log(response.data);
 					setAreaArray(response.data);
 				} catch (e) {
 					console.log(e);
@@ -99,13 +114,13 @@ export default function Area() {
       }
 
   async function handleAddEditSubmit() {
-		console.log("Add / Edit Area");
+		console.log("Add / Edit Area", areaRec);
 		var myShortCode = areaCode.toUpperCase();
     if (myShortCode.length == 0) {
 			setRegisterStatus(-1);
       return;
 		}
-    if (myShortCode.length > MAXAREACODELENGTH) {
+    if ((myShortCode.length < MINAREACODELENGTH) || (myShortCode.length > MAXAREACODELENGTH)) {
 			setRegisterStatus(-2);
       return;
 		}
@@ -122,26 +137,35 @@ export default function Area() {
 			setRegisterStatus(-4);
 			return;
 		}
-		console.log("about to tell backend");
+		//console.log("about to tell backend");
+		//console.log("2", areaRec);
 		try {
-			console.log("Setting utl");
-			console.log(areaRec);
+			//console.log("Setting utl");
+			//console.log(areaRec);
 			var myUrl = (areaRec == null)
-				? `${process.env.REACT_APP_AXIOS_BASEPATH}/area/add/${areaCode}/${areaDesc}`
-				: `${process.env.REACT_APP_AXIOS_BASEPATH}/area/update/${areaRec.aid}/${areaCode}/${areaDesc}`;
-			console.log(myUrl);
+				? `${process.env.REACT_APP_AXIOS_BASEPATH}/area/add/${myShortCode}/${areaDesc}`
+				: `${process.env.REACT_APP_AXIOS_BASEPATH}/area/update/${areaRec.aid}/${myShortCode}/${areaDesc}`;
+			//console.log(myUrl);
 			var response = await axios.get(myUrl);
-			console.log("axios done");
-			var tmp = areaArray.filter(x => x.shortName !== areaCode);
-			console.log("Filter", tmp);
+			var tmp = (areaRec == null)
+				? [].concat(areaArray) 
+				: areaArray.filter(x => x.shortName !== areaRec.shortName);
+			//console.log("Filter", tmp);
+			
 			tmp.push(response.data);
-			setAreaArray(tmp);
-			console.log("All done");
+			var myMsg = (areaRec == null) 
+				? `Successfully added new area ${myShortCode}` 
+				: `Successfully changed area ${areaRec.shortName} to ${myShortCode}` ;
+			//console.log(myMsg);
+			toast.success( myMsg );
+			setAreaArray(lodashSortBy(tmp, 'shortName'));
 		}
 		catch (e) {
 			//alert.error("Error adding / updateing Area");
-			console.log("Error");
+			//console.log("Error");
+			toast.error(`Error adding/updating area`);
 		}
+		setDrawer("");
 	}
 	
 	function handleAdd() {
@@ -159,6 +183,28 @@ export default function Area() {
 		setAreaDesc(r.longName);
 		setDrawer("Edit");
 	}
+	
+	
+	
+	
+	
+  async function handleDelArea(rec) {
+		try {
+			//console.log("Setting utl");
+			//console.log(areaRec);
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/delete/${rec.shortName}`;
+			//console.log(myUrl);
+			var response = await axios.get(myUrl);
+			setAreaArray(lodashSortBy(areaArray.filter(x => x.shortName !== rec.shortName), 'shortName'));
+			setDrawer("");
+			toast.success( `Successfully deleted area ${rec.shortName}` );
+			
+		}
+		catch (e) {
+			toast.error(`Error deleting area. In use`);
+		}
+	}
+	
 	
 	function DisplayAreas() {
 		return (
@@ -182,7 +228,8 @@ export default function Area() {
 							{x.longName}
 						</TableCell>
 						<TableCell className={gClasses.td} p={0} align="center" >
-							<EditIcon className={gClasses.blue} size="small" onClick={() => {handleEdit(x)}}  />
+							<IconButton disabled={!isAdmin()} color="primary" size="small" onClick={() => {handleEdit(x) }} ><EditIcon /></IconButton>
+							<IconButton color="secondary"  size="small" onClick={() => {handleDelArea(x)}} ><CancelIcon /></IconButton>
 						</TableCell>
 					</TableRow>
 				)}
@@ -217,6 +264,7 @@ export default function Area() {
 				</ValidatorForm>
 			</Box>
 			</Drawer>
+			<ToastContainer />
 		</div>
 		)
 }

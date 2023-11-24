@@ -50,7 +50,11 @@ import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 import Money from '@material-ui/icons/Money';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
+import { 
+	isMobile, getWindowDimensions, displayType, 
+	decrypt, encrypt,
+	vsDialog,
+} from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
 
@@ -211,7 +215,32 @@ export default function Summary() {
 	}
 
 	function handleDelStudentPayment(rec) {
-		toast.info("Delete payment from summary to be implemented");
+		setDrawerInfo("");
+		vsDialog("Delete Payment", `Are you sure you want delet payment of amount ${rec.credit}?`,
+			{label: "Yes", onClick: () => handleDelStudentPaymentConfirm(rec) },
+			{label: "No", onClick: () => setDrawerInfo("detail") }
+		);
+	}
+	
+	async function handleDelStudentPaymentConfirm(rec) {
+		setDrawerInfo("detail");
+		console.log(rec);
+		try {
+			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/payment/delete/${rec._id}`);
+			// remove this payment entry
+			setStudentSummary(studentSummary.filter(x => x._id !== rec._id));
+			// remove from total 
+			var clonedArray = [].concat(summaryArray);
+			var tmp = clonedArray.find(x => x.sid === selStudent.sid);
+			tmp.credit -= rec.credit;
+			tmp.dues += rec.credit;
+			setSummaryArray(clonedArray);
+			toast.success(`Delete payment entry of amount ${rec.credit} for ${mergedName(selStudent.studentName, selStudent.sid)} `);
+		}
+		catch(e) {
+			console.log(e);
+			toast.error("error deleting payment record of amount ${rec.credit}");
+		}
 	}
 	
 	function handleEditStudentPayment(rec) {
@@ -229,7 +258,7 @@ export default function Summary() {
 		}
 		catch(e) {
 			console.log(e);
-			toast.error("error fatching student payment detials.");
+			toast.error("error fetching student payment details.");
 		}
 	}
 

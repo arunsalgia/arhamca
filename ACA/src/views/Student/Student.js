@@ -36,8 +36,10 @@ import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 import FilterSharpIcon from '@material-ui/icons/FilterSharp';
 import SearchIcon from '@material-ui/icons/Search';
+import SchoolIcon from '@material-ui/icons/School';
 
-//import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
+import SessionAddEdit	 from "views/Session/SessionAddEdit"
+
 import { 
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
 	isAdmin, isAdmMan, isAdmManFac, isStudent, isFaculty,
@@ -49,6 +51,7 @@ import {
 
 import {
 		FILTER_NONE,
+		STATUS_INFO,
 } from 'views/globals';
 
 
@@ -81,6 +84,8 @@ export default function Student() {
 	const [custFilter, setCustFilter] = useState({status: "Enabled"});
 	const [filterDisplayData, setFilterDisplayData] = useState([]);
 	
+	const [batchRec, setBatchRec] = useState({});
+	
 	const [userName, setUserName] = useState("");
 	const [email, setEmail] = useState("");
 	const [mobile, setMobile] = useState("");
@@ -97,8 +102,10 @@ export default function Student() {
 	
 	const [areaCode, setAreaCode] = useState("");
 	const [areaDesc, setAreaDesc] = useState("");
+	
+	const [drawerAddEdit, setDrawerAddEdit] = useState("");
+	const [drawerInfo, setDrawerInfo] = useState("");
 	const [drawer, setDrawer] = useState("");
-	const [drawerDetail, setDrawerDetail] = useState("");
 	const [drawerFilter, setDrawerFilter] = useState("");
 	
 	const [filterName,   setFilterName] = useState("");
@@ -221,7 +228,7 @@ export default function Student() {
 				tmp = lodashSortBy(tmp, 'name');
 				setMasterStudentArray(tmp);
 				//filterStudent(tmp, currentSelection);
-				setDrawer("");
+				setDrawerAddEdit("");
 				setFilter(tmp, custFilter);
 				toast.success("Successfully added details of " + userName);
 			}
@@ -235,7 +242,7 @@ export default function Student() {
 				tmp = lodashSortBy(tmp, 'name');
 				setMasterStudentArray(tmp);
 				//filterStudent(tmp, currentSelection);
-				setDrawer("");
+				setDrawerAddEdit("");
 				setFilter(tmp, custFilter);
 				toast.success("Successfully updated details of " + userName);
 			}
@@ -261,7 +268,7 @@ export default function Student() {
 		setArea4("");
 		setParentName("");
 		setParentMobile("");
-		setDrawer("New");
+		setDrawerAddEdit("New");
 	}
 	
 	async function handleEdit(r) {
@@ -291,14 +298,40 @@ export default function Student() {
 		setArea4(myUser.addr4);
 		setParentName(r.parentName);
 		setParentMobile(r.parentMobile);
-		setDrawer("Edit");
+		setDrawerAddEdit("Edit");
 	}
 	
 	function handleInfo(r) {
 		setStudentRec(r);
-		setDrawerDetail("detail");
+		//setDrawerInfo("detail");
+		toast.info("Student info to be implemented");
 	}
 
+
+
+	async function handleAddSession(rec) {
+		try {
+			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/get/${rec.bid}`);
+			setBatchRec(response.data);
+			setDrawer("ADDSESSION");
+		}
+		catch (e) {
+			console.log(e);
+			toast.error(`Error getting batch record of ${rec.bid}`);
+		}
+	}
+	
+	function handleBack(sts)
+	{
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		
+		// Yeah. Nothing to be modified in student record.
+		setDrawer("");
+	}
+	
+
+	
 	function DisplayAllToolTips() {
 	return(
 		<div>
@@ -399,6 +432,7 @@ export default function Student() {
 						<TableCell className={myClasses} p={0} >
 							<IconButton disabled={!isAdmMan()} color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
 							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
+							<IconButton color="primary" disabled={!x.enabled || (x.bid === "")} size="small" onClick={() => {handleAddSession(x)}} ><SchoolIcon /></IconButton>
 							{(x.enabled) &&
 								<IconButton disabled={(x.bid != "") || !isAdmMan() } color="primary" size="small" onClick={() => {handleDisableStudent(x)}} ><IndeterminateCheckBoxIcon /></IconButton>							
 							}
@@ -533,13 +567,13 @@ export default function Student() {
 			<DisplayOptions />
 			<DisplayAllStudent/>
 			{/*<DisplayAllToolTips />*/}
-			<Drawer anchor="right" variant="temporary" open={drawer !== ""}>
+			<Drawer anchor="right" variant="temporary" open={drawerAddEdit !== ""}>
 			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
-				<VsCancel align="right" onClick={() => { setDrawer("")}} />
+				<VsCancel align="right" onClick={() => { setDrawerAddEdit("")}} />
 				<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditSubmit}>
-					<Typography className={gClasses.title}>{drawer+" Student "}</Typography>	
+					<Typography className={gClasses.title}>{drawerAddEdit+" Student "}</Typography>	
 					<br />
-					<TextValidator enable={(drawer == "New") ? "true" : "false"}  variant="outlined" required fullWidth id="userName" label="User Name" name="username"
+					<TextValidator enable={(drawerAddEdit == "New") ? "true" : "false"}  variant="outlined" required fullWidth id="userName" label="User Name" name="username"
 						validators={['required', 'minLength', 'noSpecialCharacters']}
 						errorMessages={['User Name to be provided', 'Mimumum 6 characters required', ]}
 						value={userName} onChange={() => { setUserName(event.target.value) }}
@@ -594,11 +628,17 @@ export default function Student() {
 					/>
 					<ShowResisterStatus />
 					<br />
-					<VsButton name={(drawer == "New") ? "Add" : "Update"} />
+					<VsButton name={(drawerAddEdit == "New") ? "Add" : "Update"} />
 				</ValidatorForm>
 				<ValidComp p1={password}/>   
 			</Box>
 			</Drawer>
+			<Drawer anchor="top" variant="temporary" open={drawer !== ""}>
+				<VsCancel align="right" onClick={() => { setDrawer("")}} />
+				{(drawer === "ADDSESSION") &&
+					<SessionAddEdit mode="ADD" batchRec={batchRec} sessionRec={null} onReturn={handleBack} />
+				}
+			</Drawer>			
 			<Drawer anchor="left" variant="temporary" open={drawerFilter !== ""} >
 			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
 				<DisplayPageHeader headerName="Filter Options" groupName="" tournament="" />

@@ -63,6 +63,7 @@ import BatchAddEdit from "views/Batch/BatchAddEdit";
 import {
 	ROLE_FACULTY, ROLE_STUDENT,
 	ALLSELECTIONS, BLANKCHAR, STATUS_INFO,
+	DURATIONSTR,
 } from 'views/globals';
 
 
@@ -83,13 +84,16 @@ export default function Batch() {
 	const [masterBatchArray, setMasterBatchArray] = useState([]);
 
 
-	const [selBatch, setSelBatch] = useState("");
+	//const [batchRec, setBatchRec] = useState("");
 
 	// for faculty schule call
-	const [batchRec, setBatchRec] = useState({});
+	const [batchRec, setBatchRec] = useState({sid: [], timings: []});
+	const [batchTime, setBatchTime] = useState("");
+	
 	const [showAll, setShowAll] = useState(false);
 	
 	const [drawer, setDrawer] = useState("");
+	const [drawerInfo, setDrawerInfo] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
 	
@@ -256,9 +260,11 @@ export default function Batch() {
 		setDrawer("");
 	}
 	
-	function handleInfo(r) {
-		setBatchtRec(r);
-		setDrawerDetail("detail");
+	function handleInfo(rec) {
+		setBatchRec(rec);
+		let tmp = DURATIONSTR.find(x => x.block === rec.sessionTime);
+		setBatchTime(tmp.name);
+		setDrawerInfo("detail");
 	}
 
 	function handleDeleteBatch(t) {
@@ -458,7 +464,8 @@ export default function Batch() {
 		</Grid>
 	</Grid>
 	)}
-		
+	
+	
 	return (
 	<div>
 	<DisplayPageHeader headerName="Batch" groupName="" tournament="" />
@@ -476,6 +483,97 @@ export default function Batch() {
 		{( (drawer === "ADDBATCH") || (drawer === "EDITBATCH") ) &&
 			<BatchAddEdit mode={(drawer === "ADDBATCH") ? "ADD" : "EDIT"}  batchRec={batchRec} onReturn={handleBackBatch} />
 		}
+	</Drawer>
+	<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""} >
+		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >		<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />	
+		<DisplayPageHeader headerName={`Batch details`} groupName="" tournament="" />
+			<Grid key="INFOBATCH" className={gClasses.noPadding} container alignItems="flex-start" >
+				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				<Grid item xs={6} sm={6} md={3} lg={3} >
+					<Typography style={{margin: "10px"}} className={gClasses.info18Blue} >Batch Id</Typography>
+				</Grid>
+				<Grid item xs={6} sm={6} md={3} lg={3} >
+					<Typography className={gClasses.info18} >{batchRec.bid}</Typography>
+				</Grid>
+				{((dispType == "xs") || (dispType == "sm")) &&
+					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				}
+				<Grid item xs={6} sm={6} md={3} lg={3} >
+					<Typography style={{margin: "10px"}} className={gClasses.info18Blue} >Faculty</Typography>
+				</Grid>
+				<Grid item xs={6} sm={6} md={3} lg={3} >
+					<Typography className={gClasses.info18} >{mergedName(batchRec.facultyName,  batchRec.fid)}</Typography>
+				</Grid>
+				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				<Grid item xs={6} sm={6} md={3} lg={3} >
+					<Typography style={{margin: "10px"}} className={gClasses.info18Blue} >Fees</Typography>
+				</Grid>
+				<Grid item xs={6} sm={6} md={3} lg={3} >
+					<Typography className={gClasses.info18} >{batchRec.fees}</Typography>
+				</Grid>
+				{((dispType == "xs") || (dispType == "sm")) &&
+					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				}
+				<Grid item xs={6} sm={6} md={3} lg={3} >
+					<Typography style={{margin: "10px"}} className={gClasses.info18Blue} >Duration</Typography>
+				</Grid>
+				<Grid item xs={6} sm={6} md={3} lg={3} >
+					<Typography className={gClasses.info18} >{batchTime}</Typography>
+				</Grid>
+				{((dispType == "xs") || (dispType == "sm")) &&
+					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				}
+				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				<Grid item xs={8} sm={8} md={10} lg={10} >
+					<Typography style={{margin: "10px"}} className={gClasses.info18Blue}>Batch students</Typography>
+				</Grid>
+				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} >
+					<Table  align="center">
+					<TableHead p={0}>
+					<TableRow key="header" align="center">
+						<TableCell className={gClasses.th} p={0} align="center">Name</TableCell>
+					</TableRow>
+					</TableHead>
+					<TableBody p={0}>
+						{batchRec.sid.map( (x, index) => {
+								var myClasses = gClasses.td;
+							return (
+							<TableRow key={x} align="center">
+								<TableCell align="center" className={myClasses} p={0} >{mergedName(batchRec.studentNameList[index], batchRec.sid[index])}</TableCell>
+							</TableRow>
+						)})}
+					</TableBody>
+					</Table>
+				</Grid>
+				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				<Grid item xs={12} sm={12} md={12} lg={12} >
+					<Typography style={{margin: "10px"}} className={gClasses.info18Blue}>Session schedule (per week)</Typography>
+				</Grid>
+				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} >
+					<Table  align="center">
+					<TableHead p={0}>
+					<TableRow key="header" align="center">
+						<TableCell className={gClasses.th} p={0} align="center">Day</TableCell>
+						<TableCell className={gClasses.th} p={0} align="center">Time</TableCell>
+					</TableRow>
+					</TableHead>
+					<TableBody p={0}>
+						{batchRec.timings.map( x => {
+								var myClasses = gClasses.td;
+								//var timStr = `x.name`;
+							return (
+							<TableRow key={x.day+x.hour+x.minute} align="center">
+								<TableCell align="center"  className={myClasses} p={0} >{x.day}</TableCell>
+								<TableCell align="center"  className={myClasses} p={0} >{x.hour+":"+x.minute}</TableCell>
+							</TableRow>
+						)})}
+					</TableBody>
+					</Table>
+					</Grid>
+				<br />
+			</Grid>
+			</Box>
 	</Drawer>
 	<ToastContainer />
 	</div>

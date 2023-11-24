@@ -289,11 +289,9 @@ function ShowResisterStatus() {
 				<TableBody p={0}>
 					{teacherSchedule.slice(BLOCK_START, BLOCK_END+1).map( (x, index) => {
 							var test = x.filter(x => x !== "");
-							if (test.length === 0) return;
+							//if (test.length === 0) return;
 							var myClasses = gClasses.td;
-							//console.log(index, x);
 							var tmp = BATCHTIMESTR[index];
-							//console.log(index, tmp.name);
 						return (
 						<TableRow key={index} align="center">
 							<TableCell align="center" className={gClasses.th} p={0} >{BATCHTIMESTR[index].name}</TableCell>
