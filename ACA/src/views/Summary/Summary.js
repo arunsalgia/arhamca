@@ -49,6 +49,8 @@ import CancelIcon from '@material-ui/icons/Cancel';
 import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 import Money from '@material-ui/icons/Money';
 
+import SessionAddEdit	 from "views/Session/SessionAddEdit"
+
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { 
 	isMobile, getWindowDimensions, displayType, 
@@ -93,8 +95,8 @@ export default function Summary() {
 	const [selStudent, setSelStudent] = useState("");
 	const [selPaymentRec, setSelPaymentRec] = useState("");
 
-	// for faculty schule call
-	//const [batchRec, setBatchRec] = useState({});
+	const [batchRec, setBatchRec] = useState({});
+	const [sessionRec, setSessionRec] = useState({});	
 	//const [showAll, setShowAll] = useState(false);
 	
 	const [drawer, setDrawer] = useState("");
@@ -214,6 +216,62 @@ export default function Summary() {
 		setDrawer("ADDPAYMENT");
 	}
 
+
+	async function handleEditStudentSession(rec) {
+		try {
+			// fetch both session and batch
+			var response1 = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/session/get/${rec._id}`);
+			setSessionRec(response1.data);
+			// now get batch record
+			var response2 = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/getbatch/${selStudent.sid}`);
+			setBatchRec(response2.data);
+			setDrawer("EDITSESSION");
+		}
+		catch (e) {
+			console.log(e);
+			toast.error(`Error getting batch/session record of ${ mergedName(selStudent.name, selStudent.sid) }`);
+		}
+	}
+
+	function handleBackSession(sts)
+	{
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		
+		if (sts.status !== STATUS_INFO.ERROR) {
+			if (drawer === "ADDSESSION") {
+				var clonedSessionArray = [].concat(sessionArray);
+				for(var i = 0; i < clonedSessionArray.length; ++i) {
+					if ( batchRec.sid.includes(clonedSessionArray[i].sid) )
+						clonedSessionArray[i].count += 1;
+				}
+				setSessionArray(clonedSessionArray);
+			}	
+			else {
+				// Edit session
+				var clonedArray = [].concat(studentSummary);
+				var tmp = clonedArray.find(x => x._id === sts.sessionRec._id);
+				
+				tmp.date = sts.sessionRec.sessionDate;
+				
+				// check if student is absent in the batch. If yes reduce debit and dues
+				if (!sts.sessionRec.attendedSidList.includes(selStudent.sid)) {
+					console.log(tmp);
+					console.log(sessionRec);
+					var cloneSummaryArray = [].concat(summaryArray);
+					var tmpRec = cloneSummaryArray.find(x => x.sid === selStudent.sid);
+					tmpRec.debit -= sts.sessionRec.fees;
+					tmpRec.dues -= sts.sessionRec.fees;
+					setSummaryArray(cloneSummaryArray);
+				}
+				
+				// finally save session details
+				setStudentSummary(clonedArray);
+			}
+		}
+		setDrawer("");
+	}
+			
 	function handleDelStudentPayment(rec) {
 		setDrawerInfo("");
 		vsDialog("Delete Payment", `Are you sure you want delet payment of amount ${rec.credit}?`,
@@ -242,6 +300,38 @@ export default function Summary() {
 			toast.error("error deleting payment record of amount ${rec.credit}");
 		}
 	}
+	
+	
+	function handleDelStudentSession(rec) {
+		console.log(rec);
+		setDrawerInfo("");
+		vsDialog("Delete Session", `Are you sure you want delete ${rec.desc} ?`,
+			{label: "Yes", onClick: () => handleDelStudentSessiontConfirm(rec) },
+			{label: "No", onClick: () => setDrawerInfo("detail") }
+		);
+	}
+	
+	async function handleDelStudentSessiontConfirm(rec) {
+		setDrawerInfo("detail");
+		console.log(rec);
+		try {
+			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/session/delete/${rec._id}`);
+			// remove this payment entry
+			setStudentSummary(studentSummary.filter(x => x._id !== rec._id));
+			// reduce session amount from debit 
+			var clonedArray = [].concat(summaryArray);
+			var tmp = clonedArray.find(x => x.sid === selStudent.sid);
+			tmp.debit -= rec.debit;
+			tmp.dues -= rec.debit;
+			setSummaryArray(clonedArray);
+			toast.success(`Successfully deleted ${rec.desc} for ${mergedName(selStudent.studentName, selStudent.sid)} `);
+		}
+		catch(e) {
+			console.log(e);
+			toast.error("error deleting payment record of amount ${rec.credit}");
+		}
+	}
+	
 	
 	function handleEditStudentPayment(rec) {
 		toast.info("Edit payment from summary to be implemented");
@@ -316,6 +406,19 @@ export default function Summary() {
 	</Grid>
 	)}
 	
+	function handleEditPaymentOrSession(rec) {
+		if (rec.credit === 0)
+			handleEditStudentSession(rec) 	// Edit session
+		else
+			handleEditStudentPayment(rec) 	// Edit Payment
+	}
+	
+	function handleDelPaymentOrSession(rec) {
+		if (rec.credit === 0)
+			handleDelStudentSession(rec) 	// Del session
+		else
+			handleDelStudentPayment(rec) 	// Del Payment
+	}
 	
 	return (
 	<div>
@@ -329,6 +432,9 @@ export default function Summary() {
 		}
 		{(drawer === "EDITPAYMENT") &&
 			<PaymentAddEdit mode="EDIT" sid={selStudent.sid} paymentRec={selPaymentRec}  onReturn={handleBack} />
+		}
+		{(drawer === "EDITSESSION") &&
+			<SessionAddEdit mode="EDIT" batchRec={batchRec} sessionRec={sessionRec}  onReturn={handleBackSession} />
 		}
 	</Drawer>
 	<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""}>
@@ -355,8 +461,8 @@ export default function Summary() {
 					<TableCell className={myClasses} align="center" p={0} >{(x.credit !== 0) ? x.credit : ""}</TableCell>
 					<TableCell className={myClasses} align="center" p={0} >{(x.debit !== 0)  ? x.debit  : ""}</TableCell>
 					<TableCell className={myClasses} p={0} >
-						<IconButton color="primary"  disabled={x.credit === 0} size="small" onClick={() => {handleEditStudentPayment(x)}} ><EditIcon /></IconButton>
-						<IconButton color="secondary" disabled={x.credit === 0} size="small" onClick={() => {handleDelStudentPayment(x)}} ><CancelIcon /></IconButton>
+						<IconButton color="primary"  size="small"  onClick={() => {handleEditPaymentOrSession(x) }} ><EditIcon /></IconButton>
+						<IconButton color="secondary" size="small" onClick={() => { handleDelPaymentOrSession(x) }} ><CancelIcon /></IconButton>
 					</TableCell>
 				</TableRow>
 			)})}

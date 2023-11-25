@@ -249,7 +249,7 @@ export default function Inquiry() {
 			const response = await axios.get(myUrl);
 			var allRec  = inquiryArray.filter(x => x._id !== rec._id);
 			setInquiryArray(allRec);
-			toast.success(`Successfull deleted inquiry`);
+			toast.success(`Successfully deleted inquiry`);
 		} catch (e) {
 			console.log(e);
 			toast.error("Error deleting inquiry");

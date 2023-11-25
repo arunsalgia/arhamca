@@ -84,7 +84,7 @@ export default function User() {
 	const [registerStatus, setRegisterStatus] = useState(0);
 	
 	const [drawer, setDrawer] = useState("");
-	const [drawerDetail, setDrawerDetail] = useState("");
+	const [drawerInfo, setDrawerInfo] = useState("");
 	const [drawerFilter, setDrawerFilter] = useState("");
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
@@ -228,6 +228,11 @@ export default function User() {
 	}
 	
 	function handleEdit(r) {
+		// Allow only Manager and Admin to be edit
+		if (!VALIDADDEDITROLES.includes(r.role)) {
+			toast.info("Add /Edit user with role Faculty and Student to be done from its respective page");
+			return;
+		}
 		//console.log(r);
     setUserRec(r);
 		setUserName(r.displayName);
@@ -244,7 +249,7 @@ export default function User() {
 	
 	function handleInfo(r) {
 		setUserRec(r);
-		setDrawerDetail("detail");
+		setDrawerInfo("detail");
 	}
 
 	function handleFilter() {
@@ -297,6 +302,76 @@ export default function User() {
 		setDrawerFilter("")
 	}
 	
+	function handleInfo(rec) {
+		setUserRec(rec);
+		setDrawerInfo("detail");
+	}
+
+	function DisplayUserInfo(props) {
+	return(
+		<div>
+		<Grid key="UserINFO" className={gClasses.noPadding} container >
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.displayName}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Role</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.role}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.mobile}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Email</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{decrypt(props.userRecord.email)}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Address</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr1}</Typography>
+				{(props.userRecord.addr2 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr2}</Typography>
+				}
+				{(props.userRecord.addr3 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr3}</Typography>
+				}
+				{(props.userRecord.addr4 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr4}</Typography>
+				}
+			</Grid>
+			<Grid item xs={12} sm={12} md={12} lg={12} align="left" />
+		</Grid>
+		<br />
+		<br />
+		</div>
+	)}
+
 	
 	function DisplayUsers() {
 		//console.log(dispType);
@@ -341,7 +416,7 @@ export default function User() {
 						<TableCell align="center" className={gClasses.td} p={0} >{x.mobile}</TableCell>
 						}
 						<TableCell className={gClasses.td} p={0} >
-							<IconButton color="primary" disabled={!VALIDADDEDITROLES.includes(x.role)} size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
+							<IconButton color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
 							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
 						</TableCell>
 					</TableRow>
@@ -489,6 +564,14 @@ export default function User() {
 					</ValidatorForm>
 			</Box>
 			</Drawer>
+			<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""}>
+			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
+				<DisplayPageHeader headerName="User Details" groupName="" tournament="" />
+				<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />
+				<br />
+				<DisplayUserInfo userRecord={userRec} />
+			</Box>
+			</Drawer>			
 			<ToastContainer />
 		</div>
 		)

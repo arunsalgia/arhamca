@@ -87,8 +87,11 @@ export default function Faculty() {
 	
 	const [areaCode, setAreaCode] = useState("");
 	const [areaDesc, setAreaDesc] = useState("");
+
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
+	const [drawerInfo, setDrawerInfo] = useState("");
+
 	const [registerStatus, setRegisterStatus] = useState(0);
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
@@ -201,7 +204,8 @@ export default function Faculty() {
 		setDrawerDetail("FACULTYSCHEDULE");
 		
 	}
-  async function handleAddEditSubmit() {
+  
+	async function handleAddEditSubmit() {
 		//console.log("Add / Edit User");
 		var response;
 		var a1 = (area1 !== "") ? area1 : BLANKCHAR;
@@ -287,11 +291,98 @@ export default function Faculty() {
 		setDrawer("Edit");
 	}
 	
-	function handleInfo(r) {
-		setFacultyRec(r);
-		//setDrawerDetail("DETAIL");
-		toast.info("Faculty detail to be implemneted");
+	
+	async function handleInfo(rec) {
+		setFacultyRec(rec);
+		// Now fetch User details of the student
+		// Now get the user record
+		try {
+			var resp = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/acagetbyid/${rec.uid}`);
+			setUserRec(resp.data);
+			setDrawerInfo("detail");
+		}
+		catch (e) {
+			toast.error('Error fetching user record');
+			setFacultyRec(null);
+		}
 	}
+
+	function DisplayFacultyInfo(props) {
+		//console.log(props.facultyRecord);
+		//console.log(props.userRecord);
+	return(
+		<div>
+		<Grid key="FACULTYINFO" className={gClasses.noPadding} container >
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.displayName}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Code</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.facultyRecord.fid}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Batch Count</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.facultyRecord.batchCount}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.mobile}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Email</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{decrypt(props.userRecord.email)}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Address</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr1}</Typography>
+				{(props.userRecord.addr2 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr2}</Typography>
+				}
+				{(props.userRecord.addr3 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr3}</Typography>
+				}
+				{(props.userRecord.addr4 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr4}</Typography>
+				}
+			</Grid>
+			<Grid item xs={12} sm={12} md={12} lg={12} align="left" />
+		</Grid>
+		<br />
+		<br />
+		</div>
+	)}
+
 
 	function DisplayAllToolTips() {
 	return(
@@ -505,6 +596,14 @@ export default function Faculty() {
 					<FacultySchedule faculty={facultyInfo} all={showAll} />
 				}
 			</Drawer>
+			<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""}>
+			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
+				<DisplayPageHeader headerName="Faculty Details" groupName="" tournament="" />
+				<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />
+				<br />
+				<DisplayFacultyInfo facultyRecord={facultyRec} userRecord={userRec} />
+			</Box>
+			</Drawer>			
 			<ToastContainer />
 		</div>
 		)

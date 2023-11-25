@@ -138,7 +138,7 @@ router.get('/listbysid/:sid', async function (req, res, next) {
 	
 	// First get list of students
 	var allSessions = await Session.find({sidList: [sid]} ).sort({sessionNumber: -1});
-	console.log(allSessions);
+	//console.log(allSessions);
 	
   sendok(res, allSessions ); 
 })
@@ -239,7 +239,7 @@ router.get('/update/:sessionData', async function (req, res, next) {
 	creationDate: Date,
   enabled: Boolean	// Batch open (true) / closed false	
 	*/
-	var sessioRec = await Session.findOne({_id: sessionData.sessioId});
+	var sessioRec = await Session.findOne({_id: sessionData.sessionId});
 	sessioRec.sessionDate = sessionData.sessionDate;
 	sessioRec.attendedSidList = sessionData.attendanceList;
 	// no remarks
@@ -257,20 +257,45 @@ router.get('/update/:sessionData', async function (req, res, next) {
 })
 
 
-router.get('/delete/:bid', async function (req, res, next) {
+router.get('/get/:sessionId', async function (req, res, next) {
   setHeader(res);
-  var {bid } = req.params;
+	
+  var { sessionId } = req.params;
+	
+	var sessRec = await Session.findOne({_id: sessionId});  // fetch to get the batch Id
+	
+  sendok(res, sessRec ); 
+})
 
+router.get('/delete/:sessionId/:bid', async function (req, res, next) {
+  setHeader(res);
+  var { sessionId, bid } = req.params;
+
+	await Session.deleteOne({_id: sessionId});
+	
+	// reduce session count in batch record
 	batchRec = await Batch.findOne({bid: bid});
 	if (!batchRec) return senderr(res, 601, "Invalid BID");
+	batchRec.sessionCount -= 1;
+	await batchRec.save();
+	
+  sendok(res, "Deleted" ); 
+})
 
-	await Batch.deleteOne({bid: bid});
+router.get('/delete/:sessionId', async function (req, res, next) {
+  setHeader(res);
+  var { sessionId } = req.params;
 
-	studentArray = await Student.find({bid: batchRec.bid});
-	for(var i=0; i<studentArray.length; ++i) {
-		studentArray[i].bid = "";
-		await studentArray[i].save();
-	}
+	var sessRec = await Session.findOne({_id: sessionId});  // fetch to get the batch Id
+	
+	// delete the session
+	await Session.deleteOne({_id: sessionId});
+	
+	// reduce session count in batch record
+	batchRec = await Batch.findOne({bid: sessRec.bid});
+	if (!batchRec) return senderr(res, 601, "Invalid BID");
+	batchRec.sessionCount -= 1;
+	await batchRec.save();
 	
   sendok(res, "Deleted" ); 
 })

@@ -44,9 +44,6 @@ import SchoolIcon from '@material-ui/icons/School';
 import CancelIcon from '@material-ui/icons/Cancel';
 import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 
-//import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
-
 import globalStyles from "assets/globalStyles";
 
 import VsButton from "CustomComponents/VsButton"; 
@@ -63,9 +60,11 @@ import {
 
 
 import {
-	dateString,
+	isMobile, getWindowDimensions, displayType, 
+	decrypt, encrypt,
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
-	isAdmMan, isAdmManFac, isFaculty,
+	isAdmin, isAdmMan, isAdmManFac, isFaculty,
+	dateString, vsDialog,
 } from 'views/functions';
 
 
@@ -80,6 +79,7 @@ export default function Session() {
 	const [mode, setMode] = useState("");
 	const [sessionArray, setSessionArray] = useState([]);
 	const [studentSession, setStudentSession] = useState([]);
+	const [studentRec, setStudentRec] = useState([]);
 	//const [masterBatchArray, setMasterBatchArray] = useState([]);
 
 	const [batchRec, setBatchRec] = useState({});
@@ -206,6 +206,38 @@ export default function Session() {
         );
       }
 
+
+	function handleDelSession(rec) {
+		setDrawerInfo("");
+		vsDialog("Delete Session", `Are you sure you want delete session number ${rec.sessionNumber} dated ${dateString(rec.sessionDate)}?`,
+			{label: "Yes", onClick: () => handleDelSessionConfirm(rec) },
+			{label: "No", onClick: () => setDrawerInfo("detail") }
+		);
+		
+	}
+	
+	async function  handleDelSessionConfirm(rec) {
+		setDrawerInfo("detail");
+		try {
+			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/session/delete/${rec._id}/${rec.bid}`);
+			// Delete the session entry
+			setStudentSession(studentSession.filter(x => x._id !== rec._id));
+			// Now reduce session count in session array
+			var clonedArray = [].concat(sessionArray);
+			var tmp = clonedArray.find(x => x.sid === studentRec.sid);
+			tmp.count -= 1;
+			if (tmp.count === 0) 
+				clonedArray = clonedArray.filter(x => x.sid !== studentRec.sid);		// remove entry if no sessions
+			setSessionArray(clonedArray);
+			toast.success(`Deleted  session number ${rec.sessionNumber} dated ${dateString(rec.sessionDate)}`);
+		}
+		catch (e) {
+			// error 
+			console.log(e);
+			toast.error(`Error deleting session number ${rec.sessionNumber} dated ${dateString(rec.sessionDate)}`);
+		}
+	}
+
 	async function handleAddSession(rec) {
 		try {
 			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/getbatch/${rec.sid}`);
@@ -222,6 +254,19 @@ export default function Session() {
 		}
 	}
 
+	async function handleEditSession(rec) {
+		try {
+			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/getbatch/${studentRec.sid}`);
+			setBatchRec(response.data);
+			setSessionRec(rec);
+			setDrawer("EDITSESSION");
+		}
+		catch (e) {
+			console.log(e);
+			toast.error(`Error getting batch record of ${rec.bid}`);
+		}
+	}
+	
 	function handleBack(sts)
 	{
 		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
@@ -236,12 +281,19 @@ export default function Session() {
 				}
 				setSessionArray(clonedSessionArray);
 			}	
+			else {
+				// Edit session
+				var clonedArray = studentSession.filter(x => x._id !== sessionRec._id);
+				clonedArray.push(sts.sessionRec);
+				setStudentSession(lodashSortBy(clonedArray, 'sessionNumber').reverse());
+			}
 		}
 		setDrawer("");
 	}
 		
 	async function handleInfo(rec) {
-		setSessionRec(rec);
+		//setSessionRec(rec);
+		setStudentRec(rec);
 		try {
 			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/session/listbysid/${rec.sid}`);
 			setStudentSession(response.data);
@@ -313,36 +365,45 @@ export default function Session() {
 	<DisplayAllSession/>
 	<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""} >
 		<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />	
-		<DisplayPageHeader headerName={`Session details of ${mergedName(sessionRec.name, sessionRec.sid)}`} groupName="" tournament="" />
+		<DisplayPageHeader headerName={`Session details of ${mergedName(studentRec.name, studentRec.sid)}`} groupName="" tournament="" />
 		<Table  align="center">
 		<TableHead p={0}>
 		<TableRow key="header" align="center">
 			<TableCell className={gClasses.th} p={0} align="center">Date</TableCell>
 			<TableCell className={gClasses.th} p={0} align="center">Sess. Info</TableCell>
 			<TableCell className={gClasses.th} p={0} align="center">Present</TableCell>
+			<TableCell className={gClasses.th} p={0} align="center"></TableCell>
 		</TableRow>
 		</TableHead>
 		<TableBody p={0}>
 			{studentSession.map(x => {
-					var myClasses = gClasses.td ;
 					//console.log(x)
-					var isPresent = (x.attendedSidList.includes(sessionRec.sid)) ? "Yes" : "No";
+					var myClasses = gClasses.td ;
+					var isPresent = (x.attendedSidList.includes(studentRec.sid)) ? "Yes" : "No";					
 				return (
 				<TableRow key={x.sessionDate+x.sessionNumber}>
 					<TableCell className={myClasses} p={0} align="center" >{dateString(x.sessionDate)}</TableCell>
-					<TableCell className={myClasses} p={0}  >{`Sesion ${x.sessionNumber} of batch ${x.bid} by ${x.facultyName}`}</TableCell>
+					<TableCell className={myClasses} p={0}  >{`Session ${x.sessionNumber} of batch ${x.bid} by ${x.facultyName}`}</TableCell>
 					<TableCell className={myClasses} align="center" p={0} >{isPresent}</TableCell>
+					<TableCell className={myClasses} align="center" p={0} >
+						<IconButton color="primary" size="small" onClick={() => {handleEditSession(x)}} ><EditIcon /></IconButton>
+						<IconButton color="primary"  size="small" onClick={() => {handleDelSession(x)}} ><CancelIcon /></IconButton>
+					</TableCell>
 				</TableRow>
 			)})}
 		</TableBody>
 		</Table>
+		<br />
+		<br />
 	</Drawer>
 	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>
 		<VsCancel align="right" onClick={() => { setDrawer("")}} />
 		{(drawer === "ADDSESSION") &&
 			<SessionAddEdit mode="ADD" batchRec={batchRec} sessionRec={null} onReturn={handleBack} />
 		}
-	</Drawer>	
+		{(drawer === "EDITSESSION") &&
+			<SessionAddEdit mode="EDIT" batchRec={batchRec} sessionRec={sessionRec} onReturn={handleBack} />
+		}	</Drawer>	
 	<ToastContainer />
 	</div>
 	);

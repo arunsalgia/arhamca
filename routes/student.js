@@ -85,8 +85,10 @@ router.get('/getbatch/:sid', async function (req, res, next) {
   setHeader(res);
 	
 	var { sid } = req.params;
- 
+	console.log(sid);
 	var studRec = await Student.findOne({sid: sid});
+	console.log(studRec);
+	
 	var batchRec = {bid: ""};
 	if (studRec.bid !== "") {
 		batchRec = await Batch.findOne({bid: studRec.bid });

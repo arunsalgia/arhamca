@@ -301,12 +301,115 @@ export default function Student() {
 		setDrawerAddEdit("Edit");
 	}
 	
-	function handleInfo(r) {
-		setStudentRec(r);
-		//setDrawerInfo("detail");
-		toast.info("Student info to be implemented");
+	async function handleInfo(rec) {
+		setStudentRec(rec);
+		// Now fetch User details of the student
+		// Now get the user record
+		try {
+			var resp = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/acagetbyid/${rec.uid}`);
+			setUserRec(resp.data);
+			setDrawerInfo("detail");
+		}
+		catch (e) {
+			toast.error('Error fetching user record');
+			setStudentRec(null);
+		}
+		//toast.info("Student info to be implemented");
 	}
 
+	function StudentInfo(props) {
+		//console.log(props.studentRecord);
+		//console.log(props.userRecord);
+	return(
+		<div>
+		<Grid key="STUDENTINFO" className={gClasses.noPadding} container >
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.displayName}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Code</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.studentRecord.sid}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Batch</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{(props.studentRecord.bid !== "") ? props.studentRecord.bid : "None"}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Parent Name</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.studentRecord.parentName}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Parent Mobile</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.studentRecord.parentMobile}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.mobile}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Email</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{decrypt(props.userRecord.email)}</Typography>
+			</Grid>
+			{((dispType !== "xs") && (dispType !== "sm")) &&			
+				<Grid item xs={1} sm={1} md={1} lg={1} />
+			}
+			<Grid item xs={4} sm={4} md={2} lg={2} >
+				<Typography align="left"  className={gClasses.info18Blue} >Address</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr1}</Typography>
+				{(props.userRecord.addr2 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr2}</Typography>
+				}
+				{(props.userRecord.addr3 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr3}</Typography>
+				}
+				{(props.userRecord.addr4 !== "-") &&
+				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr4}</Typography>
+				}
+			</Grid>
+			<Grid item xs={12} sm={12} md={12} lg={12} align="left" />
+		</Grid>
+		<br />
+		<br />
+		</div>
+	)}
 
 
 	async function handleAddSession(rec) {
@@ -321,8 +424,7 @@ export default function Student() {
 		}
 	}
 	
-	function handleBack(sts)
-	{
+	function handleBack(sts) {
 		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
 		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
 		
@@ -408,8 +510,7 @@ export default function Student() {
 			<Table  align="center">
 			<TableHead p={0}>
 			<TableRow key="header" align="center">
-				<TableCell className={gClasses.th} p={0} align="center">Code</TableCell>
-				<TableCell className={gClasses.th} p={0} align="center">Student Name</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Student</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center">Batch</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center"></TableCell>
 			</TableRow>
@@ -426,8 +527,7 @@ export default function Student() {
 						//console.log(x.bid);
 					return (
 					<TableRow key={x.sid}>
-						<TableCell className={myClasses} p={0} >{x.sid}</TableCell>
-						<TableCell className={myClasses} p={0} >{x.name}</TableCell>
+						<TableCell className={myClasses} p={0} >{x.name + " (" + x.sid + ")"}</TableCell>
 						<TableCell className={myClasses} p={0} >{x.bid}</TableCell>
 						<TableCell className={myClasses} p={0} >
 							<IconButton disabled={!isAdmMan()} color="primary" size="small" onClick={() => {handleEdit(x)}} ><EditIcon /></IconButton>
@@ -652,7 +752,8 @@ export default function Student() {
 					<Grid item xs={5} sm={5} md={3} lg={2} >
 						<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
 					</Grid>
-					<Grid item xs={7} sm={7} md={3} lg={3} >
+					<Grid item xs={7}
+					sm={7} md={3} lg={3} >
 						<TextField fullWidth  value={filterName} onChange={(event) => { setFilterName(event.target.value)}} />	
 					</Grid>
 					<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />	
@@ -684,6 +785,14 @@ export default function Student() {
 					</Grid>					
 					</Grid>
 					</ValidatorForm>
+			</Box>
+			</Drawer>
+			<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""}>
+			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
+				<DisplayPageHeader headerName="Student Details" groupName="" tournament="" />
+				<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />
+				<br />
+				<StudentInfo studentRecord={studentRec} userRecord={userRec} />
 			</Box>
 			</Drawer>
 			<ToastContainer />

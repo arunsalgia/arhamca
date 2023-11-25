@@ -135,10 +135,11 @@ export default function InquiryAddEdit(props) {
 			}
 		}
 		
-		getAllAreas( (props.mode === "EDIT") ?	props.inquiryRec.area : "" );
+		//getAllAreas( (props.mode === "EDIT") ?	props.inquiryRec.area : "" );
 		
 		// other batch infor set if props.mode 
 		if (props.mode === "EDIT") {
+			setNewArea(props.inquiryRec.area);
 			setNewContactName(props.inquiryRec.contactName);
 			setNewContactNumber(props.inquiryRec.contactNumber);
 			setNewContactReference(props.inquiryRec.contactReference);
@@ -207,9 +208,9 @@ function ShowResisterStatus() {
 
 async function handleAddEditSubmit() {
 	var myData = {};
-	var tmp = areaArray.find( x => x.mergedName === newArea);
+	//var tmp = areaArray.find( x => x.mergedName === newArea);
 	myData["_id"] = (props.mode === "EDIT") ?	props.inquiryRec._id : "" ;
-	myData["area"] = tmp.longName;
+	myData["area"] = newArea;
 	myData["contactName"] = newContactName;
 	myData["contactNumber"] = newContactNumber;
 	myData["contactEmail"] = ""
@@ -323,7 +324,11 @@ return (
 				<Typography align="left"  className={gClasses.info18Blue} >Area</Typography>
 			</Grid>
 			<Grid item xs={7} sm={7} md={3} lg={1} >
-				<VsSelect size="small" align="left" options={areaArray} field="mergedName" value={newArea} onChange={(event) => { setNewArea(event.target.value)}} />
+				{/*<VsSelect size="small" align="left" options={areaArray} field="mergedName" value={newArea} onChange={(event) => { setNewArea(event.target.value)}} />*/}
+				<TextValidator variant="outlined" required fullWidth name="Area"
+					validators={['required']}
+					value={newArea} onChange={(event) => setNewArea(event.target.value)}
+				/>
 			</Grid>
 			<Grid style={{margin: spacing}} item xs={12} sm={12} md={12} lg={12} />
 			
