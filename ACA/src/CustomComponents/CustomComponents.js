@@ -487,7 +487,7 @@ export function JumpButtonOnly(props) {
 }
 
 export function ACALogo () {
-  let mylogo = `${process.env.PUBLIC_URL}/APLLOGO1.ICO`;
+  let mylogo = `${process.env.PUBLIC_URL}/ACALOGO.ICO`;
   const classes = useStyles();
   return (
     <Avatar variant="square" className={classes.avatar}  src={mylogo}/>
