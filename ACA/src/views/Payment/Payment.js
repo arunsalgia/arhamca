@@ -85,20 +85,23 @@ export default function Payment() {
 	
 	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	const [mode, setMode] = useState("");
+	const [masterPaymentArray, setMasterPaymentArray] = useState([]);
 	const [paymentArray, setPaymentArray] = useState([]);
-	//const [masterBatchArray, setMasterBatchArray] = useState([]);
+
 
 	const [studentPayments ,setStudentPayments] = useState([]);
 	const [selStudent, setSelStudent] = useState("");
 	const [selPaymentRec, setSelPaymentRec] = useState("");
 
-	// for faculty schule call
+	// for faculty schedule call
 	const [batchRec, setBatchRec] = useState({});
 	const [showAll, setShowAll] = useState(false);
 	
 	const [drawer, setDrawer] = useState("");
 	const [drawerInfo, setDrawerInfo] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
+	
+	const [currentText, setCurrentText] = useState("");
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 	const [dispType, setDispType] = useState("lg");
@@ -129,10 +132,12 @@ export default function Payment() {
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/payment/total/all`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
-					setPaymentArray(response.data);
+					setMasterPaymentArray(response.data);
+					//setPaymentArray(response.data);
+					filterPayment(response.data, currentText);
 				}
 				else {
-					console.log("Not correctr role");
+					console.log("Not correct role");
 				}
 			} catch (e) {
 					console.log(e);
@@ -166,23 +171,25 @@ export default function Payment() {
 				setStudentPayments(sorted_array);
 			
 				// Now make correction in grand total
-				var clonedMainArray = [].concat(paymentArray);
+				var clonedMainArray = [].concat(masterPaymentArray);
 				var tmp = clonedMainArray.find(x => x._id.sid === sts.paymentRec.sid);
 				var sum = 0;
 				clonedArray.map(x => sum += x.amount);
 				//console.log(sum);
 				tmp.amount = sum;
 				//console.log(tmp);
-				setPaymentArray(clonedMainArray);				
+				//setPaymentArray(clonedMainArray);				
+				filterPayment(clonedMainArray, currentText);
 			}
 			else {
 				// New Payment
 				console.log("payment new");
-				var clonedArray = [].concat(paymentArray);
+				var clonedArray = [].concat(masterPaymentArray);
 				var tmp = clonedArray.find( x => x._id.sid === sts.paymentRec.sid);
 				if (tmp) {
 					tmp.amount += sts.paymentRec.amount;
-					setPaymentArray(clonedArray);
+					//setPaymentArray(clonedArray);
+					filterPayment(clonedArray, currentText);
 				}
 				else {
 					//console.log(sts.paymentRec);
@@ -192,7 +199,10 @@ export default function Payment() {
 						amount: sts.paymentRec.amount
 						}
 					);
-					setPaymentArray(lodashSortBy(clonedArray, ['_id.studentName'] ));
+					//setPaymentArray(lodashSortBy(clonedArray, ['_id.studentName'] ));
+					var myAaary = lodashSortBy(clonedArray, ['_id.studentName'] );
+					setMasterPaymentArray(myAaary);
+					filterPayment(myAaary, currentText);
 				}
 			}
 		}
@@ -279,13 +289,18 @@ export default function Payment() {
 			setStudentPayments(newArray)
 			
 			if (newArray.length > 0) {
-				var clonedArray = [].concat(paymentArray);
+				var clonedArray = [].concat(masterPaymentArray);
 				let tmp = clonedArray.find( x => x._id.sid === rec.sid);
 				tmp.amount = lodashSumBy(newArray, 'amount');
-				setPaymentArray(clonedArray);
+				//setPaymentArray(clonedArray);
+				setMasterPaymentArray(clonedArray);
+				filterPayment(clonedArray, currentText);
 			}
 			else {
-				setPaymentArray(paymentArray.filter( x => x._id.sid !== rec.sid));
+				//setPaymentArray(paymentArray.filter( x => x._id.sid !== rec.sid));
+				var myArray = masterPaymentArray.filter( x => x._id.sid !== rec.sid);
+				setMasterPaymentArray(myAaary);
+				filterPayment(myAaary, currentText);
 			}
 			toast.success(`Deleted payment record of ${mergedName( rec.studentName, rec.sid )}`);
 		}
@@ -368,11 +383,57 @@ export default function Payment() {
 	</Grid>
 	)}
 	
+		
+	function filterPayment(masterArray, textFilter) {
+		var filteredArray = [].concat(masterArray);
+		
+		var finalFilterArray = [];
+		// Now filter on text
+		if (textFilter !== "") {
+			textFilter = textFilter.toUpperCase();
+			// start filter process on all records one by one 
+			for(var i=0; i<filteredArray.length; ++i) {
+				if (
+					(filteredArray[i]._id.sid.includes(textFilter)) ||
+					(filteredArray[i]._id.studentName.toUpperCase().includes(textFilter))
+					) 
+				{
+					finalFilterArray.push(filteredArray[i]);					
+				}
+			}
+		}
+		else  {
+			finalFilterArray = filteredArray			// no filter required
+		}
+		setPaymentArray(finalFilterArray);
+	}
+	
+	
+	function setTextFilter(textValue) {
+		textValue = textValue.toLowerCase();
+		setCurrentText(textValue);
+		filterPayment(masterPaymentArray, textValue);
+	}
+
 	
 	return (
 	<div>
 	<DisplayPageHeader headerName="Payments" groupName="" tournament="" />
-	<DisplayOptions />
+	{/*<DisplayOptions />*/}
+	<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingTop={1} >
+		<Grid key="Filter" className={gClasses.noPadding} container  >
+			<Grid  item xs={3} sm={2} md={2} lg={1} align="left"  >
+			</Grid>
+			<Grid item xs={1} sm={1} md={4} lg={3}  >
+				<TextField fullWidth label="Filter Text" value={currentText} onChange={ (event) => { setTextFilter(event.target.value) } } />	
+			</Grid>
+			<Grid  item xs={5} sm={6} md={4} lg={7} >
+			</Grid>
+			<Grid  item xs={3} sm={3} md={2} lg={1} >
+				<VsButton disabled={!isAdmMan()} name="New Payment" align="right" onClick={handleNewPayment} />
+			</Grid>
+		</Grid>
+	</Box>
 	<DisplayAllPayment/>
 	{/*<DisplayAllToolTips />*/}
 	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>

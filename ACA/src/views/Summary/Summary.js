@@ -89,7 +89,7 @@ export default function Summary() {
 	//const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
 	//const [mode, setMode] = useState("");
 	const [summaryArray, setSummaryArray] = useState([]);
-	//const [masterBatchArray, setMasterBatchArray] = useState([]);
+	const [masterSessionArray, setMasterSessionArray] = useState([]);
 
 	const [studentSummary ,setStudentSummary] = useState([]);
 	const [selStudent, setSelStudent] = useState("");
@@ -103,6 +103,8 @@ export default function Summary() {
 	const [drawerInfo, setDrawerInfo] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
 	
+	const [currentText, setCurrentText] = useState("");
+
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 	const [dispType, setDispType] = useState("lg");
 
@@ -132,10 +134,12 @@ export default function Summary() {
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/payment/summary/all`;
 					const response = await axios.get(myUrl);
 					//console.log(response.data);
-					setSummaryArray(response.data);
+					//setSummaryArray(response.data);
+					setMasterSessionArray(response.data);
+					filterSession(response.data, currentText);
 				}
 				else {
-					console.log("Not correctr role");
+					console.log("Not correct role");
 				}
 			} catch (e) {
 					console.log(e);
@@ -156,11 +160,14 @@ export default function Summary() {
 		
 		//console.log(sts.status, selPaymentRec);
 		if (sts.status == STATUS_INFO.SUCCESS) {
-			var clonedArray = [].concat(summaryArray);
+			var clonedArray = [].concat(masterSessionArray);
 			var tmp = clonedArray.find(x => x.sid === sts.paymentRec.sid);
 			tmp.credit += sts.paymentRec.amount;
 			tmp.dues = (tmp.credit - tmp.debit)*DUES_MF;
-			setSummaryArray( lodashSortBy(clonedArray, 'dues').reverse() );				
+			//setSummaryArray( lodashSortBy(clonedArray, 'dues').reverse() );		
+			var updArray = lodashSortBy(clonedArray, 'dues').reverse();
+			setMasterSessionArray(updArray);
+			filterSession(updArray, currentText);
 		}
 		else {
 			console.log("Yaha kaise aaya");
@@ -258,11 +265,13 @@ export default function Summary() {
 				if (!sts.sessionRec.attendedSidList.includes(selStudent.sid)) {
 					console.log(tmp);
 					console.log(sessionRec);
-					var cloneSummaryArray = [].concat(summaryArray);
+					var cloneSummaryArray = [].concat(masterSessionArray);
 					var tmpRec = cloneSummaryArray.find(x => x.sid === selStudent.sid);
 					tmpRec.debit -= sts.sessionRec.fees;
 					tmpRec.dues -= sts.sessionRec.fees;
-					setSummaryArray(cloneSummaryArray);
+					//setSummaryArray(cloneSummaryArray);
+					setMasterSessionArray(cloneSummaryArray);
+					filterSession(cloneSummaryArray, currentText);
 				}
 				
 				// finally save session details
@@ -288,11 +297,13 @@ export default function Summary() {
 			// remove this payment entry
 			setStudentSummary(studentSummary.filter(x => x._id !== rec._id));
 			// remove from total 
-			var clonedArray = [].concat(summaryArray);
+			var clonedArray = [].concat(masterSessionArray);
 			var tmp = clonedArray.find(x => x.sid === selStudent.sid);
 			tmp.credit -= rec.credit;
 			tmp.dues += rec.credit;
-			setSummaryArray(clonedArray);
+			//setSummaryArray(clonedArray);
+			setMasterSessionArray(clonedArray);
+			filterSession(clonedArray, currentText);
 			toast.success(`Delete payment entry of amount ${rec.credit} for ${mergedName(selStudent.studentName, selStudent.sid)} `);
 		}
 		catch(e) {
@@ -319,11 +330,13 @@ export default function Summary() {
 			// remove this payment entry
 			setStudentSummary(studentSummary.filter(x => x._id !== rec._id));
 			// reduce session amount from debit 
-			var clonedArray = [].concat(summaryArray);
+			var clonedArray = [].concat(masterSessionArray);
 			var tmp = clonedArray.find(x => x.sid === selStudent.sid);
 			tmp.debit -= rec.debit;
 			tmp.dues -= rec.debit;
-			setSummaryArray(clonedArray);
+			//setSummaryArray(clonedArray);
+			setMasterSessionArray(clonedArray);
+			filterSession(clonedArray, currentText);
 			toast.success(`Successfully deleted ${rec.desc} for ${mergedName(selStudent.studentName, selStudent.sid)} `);
 		}
 		catch(e) {
@@ -419,11 +432,53 @@ export default function Summary() {
 		else
 			handleDelStudentPayment(rec) 	// Del Payment
 	}
+
+
+	
+	function filterSession(masterArray, textFilter) {
+		var filteredArray = [].concat(masterArray);
+				
+		var finalFilterArray = [];
+		// Now filter on text
+		if (textFilter !== "") {
+			textFilter = textFilter.toUpperCase();
+			// start filter process on all records one by one
+			for(var i=0; i<filteredArray.length; ++i) {
+				//console.log(filteredArray[i]);
+			
+				if (
+					(filteredArray[i].sid.includes(textFilter)) ||
+					(filteredArray[i].studentName.toUpperCase().includes(textFilter))
+				) {
+					finalFilterArray.push(filteredArray[i]);					
+				}
+			}
+		}
+		else  {
+			finalFilterArray = filteredArray			// no filter required
+		}
+		setSummaryArray(finalFilterArray);
+	}
+	
+
+	function setTextFilter(textValue) {
+		textValue = textValue.toLowerCase();
+		setCurrentText(textValue);
+		filterSession(masterSessionArray, textValue);
+	}
 	
 	return (
 	<div>
 	<DisplayPageHeader headerName="Account Summary" groupName="" tournament="" />
-	<DisplayOptions />
+	{/*<DisplayOptions />*/}
+	<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingTop={1} >
+		<Grid key="Filter" className={gClasses.noPadding} container  >
+			<Grid item xs={1} sm={1} md={4} lg={3}  >
+				<TextField fullWidth label="Filter Text" value={currentText} onChange={ (event) => { setTextFilter(event.target.value) } } />	
+			</Grid>
+		</Grid>
+	</Box>
+	
 	<DisplayAllPayment/>
 	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>
 		<VsCancel align="right" onClick={() => { setDrawer("")}} />
