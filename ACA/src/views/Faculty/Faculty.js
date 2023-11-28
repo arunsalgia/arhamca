@@ -458,9 +458,9 @@ export default function Faculty() {
 			<Table  align="center">
 			<TableHead p={0}>
 			<TableRow key="header" align="center">
-				<TableCell className={gClasses.th} p={0} align="center">Code</TableCell>
-				<TableCell className={gClasses.th} p={0} align="center">Faculty Name</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Faculty</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center">Batch</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Hours</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center"></TableCell>
 			</TableRow>
 			</TableHead>
@@ -475,9 +475,9 @@ export default function Faculty() {
 						var myClasses = (x.enabled) ? gClasses.td : gClasses.disabledtd;
 					return (
 					<TableRow key={x.fid}>
-						<TableCell align="center" className={myClasses} p={0} >{x.fid}</TableCell>
-						<TableCell className={myClasses} p={0} >{x.name}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{mergedName(x.name, x.fid)}</TableCell>
 						<TableCell align="center" className={myClasses} p={0} >{x.batchCount}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.hours}</TableCell>
 						<TableCell className={myClasses} p={0} >
 							<IconButton disabled={!x.enabled} color="primary" size="small" onClick={() => {handleEdit(x)}}  ><EditIcon /></IconButton>
 							<IconButton disabled={!x.enabled} color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>

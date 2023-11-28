@@ -38,6 +38,8 @@ import FilterSharpIcon from '@material-ui/icons/FilterSharp';
 import SearchIcon from '@material-ui/icons/Search';
 import SchoolIcon from '@material-ui/icons/School';
 
+const STUDENT_DETAILS_REQUIRED = false;
+
 import SessionAddEdit	 from "views/Session/SessionAddEdit"
 
 import { 
@@ -216,11 +218,14 @@ export default function Student() {
 		var a4 = (area4 !== "") ? area4 : BLANKCHAR;
 		var pName = (parentName !== "") ? parentName : BLANKCHAR;
 		var pMob = (parentMobile !== "") ? parentMobile : BLANKCHAR;
+		var pwd = (password !== "") ? password : BLANKCHAR; 
+		var em = (email !== "") ? email : BLANKCHAR; 
+		var mob = (mobile !== "") ? mobile : BLANKCHAR; 
 		
 		try {
 			if (studentRec == null) {
 			// for add new user
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/add/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/add/${userName}/${encrypt(pwd)}/${encrypt(em)}/${mob}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;
 				//console.log(myUrl);
 				var response = await axios.get(myUrl);
 				//console.log("axios done", response.data);
@@ -234,7 +239,7 @@ export default function Student() {
 			}
 			else {
 				// for edit user
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/update/${studentRec.sid}/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;	
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/update/${studentRec.sid}/${userName}/${encrypt(pwd)}/${encrypt(em)}/${mob}/${a1}/${a2}/${a3}/${a4}/${pName}/${pMob}`;	
 				//console.log(myUrl);
 				var response = await axios.get(myUrl);
 				var tmp = masterStudentArray.filter(x => x.uid !== studentRec.uid);
@@ -289,7 +294,8 @@ export default function Student() {
 		}
 		setUserName(myUser.displayName);
 		setMobile(myUser.mobile);
-		setEmail(decrypt(myUser.email))
+		var tmp = decrypt(myUser.email);
+		setEmail((tmp !== "-") ? tmp : "");
 		//setRole(r.role);
 		setPassword(decrypt(myUser.password));
 		setArea1(myUser.addr1);
@@ -371,12 +377,16 @@ export default function Student() {
 			{((dispType !== "xs") && (dispType !== "sm")) &&			
 				<Grid item xs={1} sm={1} md={1} lg={1} />
 			}
+			{(STUDENT_DETAILS_REQUIRED) &&
+			<div>
 			<Grid item xs={4} sm={4} md={2} lg={2} >
 				<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
 			</Grid>
 			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.mobile}</Typography>
 			</Grid>
+			</div>
+			}
 			{((dispType !== "xs") && (dispType !== "sm")) &&			
 				<Grid item xs={1} sm={1} md={1} lg={1} />
 			}
@@ -681,24 +691,32 @@ export default function Student() {
 					<BlankArea/>
 					{/*<VsSelect fullWidth align="center" label="Role" options={ALLROLES} value={role} onChange={(event) => { setRole(event.target.value)}} />*/}
 					<BlankArea/>
-					<TextValidator variant="outlined" required fullWidth id="emaild" label="Email" name="Email"
-						validators={['isEmailOK', 'required']}
-						errorMessages={['Invalid Email', 'Email to be provided']}
+					<TextValidator variant="outlined"  fullWidth id="emaild" label="Email" name="Email"					
 						value={email} onChange={(event) => setEmail(event.target.value)}
 					/>
 					<BlankArea/>
+					{(STUDENT_DETAILS_REQUIRED) &&
+					<div>
 					<TextValidator variant="outlined" required fullWidth label="Mobile" name="mobile"
 						validators={['required', 'mobile']}
 						errorMessages={[, 'Mobile to be provided', '10 digit mobile number required']}
 						value={mobile} onChange={(event) => setMobile(event.target.value)}
 					/>
 					<br />
+					</div>
+					}
+					{(STUDENT_DETAILS_REQUIRED) &&
+					<div>
 					<TextValidator variant="outlined" required fullWidth label="Password" name="password"
 						validators={['required', 'minLength', 'noSpecialCharacters']}
 						errorMessages={['Password to be provided', 'Mimumum 6 characters required', ]}
 						value={password} onChange={(event) => setPassword(event.target.value)}
 					/>
 					<br />
+					</div>
+					}
+					{(STUDENT_DETAILS_REQUIRED) &&
+					<div>
 					<TextValidator variant="outlined" required fullWidth label="Address 1" name="Addr1"
 						validators={['required']}
 						errorMessages={['Addres line 1 to be provided']}
@@ -717,9 +735,12 @@ export default function Student() {
 						value={area4} onChange={(event) => setArea4(event.target.value)}
 					/>
 					<br />
-					<TextValidator variant="outlined"  fullWidth label="Parent Name" name="pName"
+					</div>
+					}
+					<TextValidator variant="outlined"  fullWidth required label="Parent Name" name="pName"
 						value={parentName} onChange={(event) => setParentName(event.target.value)}
-					/>
+						validators={['required', 'minLength', 'noSpecialCharacters']}
+						errorMessages={['User Name to be provided', 'Mimumum 6 characters required', ]}					/>
 					<br />
 					<TextValidator variant="outlined" required fullWidth label="Parent Mobile" name="mobile"
 						validators={['required', 'mobile']}

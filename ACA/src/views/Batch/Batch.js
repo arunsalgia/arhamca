@@ -64,7 +64,7 @@ import BatchAddEdit from "views/Batch/BatchAddEdit";
 import {
 	ROLE_FACULTY, ROLE_STUDENT,
 	ALLSELECTIONS, BLANKCHAR, STATUS_INFO,
-	DURATIONSTR,
+	DURATIONSTR, BATCHTIMESTR,
 } from 'views/globals';
 
 
@@ -642,10 +642,11 @@ export default function Batch() {
 						{batchRec.timings.map( x => {
 								var myClasses = gClasses.td;
 								//var timStr = `x.name`;
+								var myTime = BATCHTIMESTR.find(rec => (rec.hour === x.hour) && (rec.min === x.minute));
 							return (
 							<TableRow key={x.day+x.hour+x.minute} align="center">
 								<TableCell align="center"  className={myClasses} p={0} >{x.day}</TableCell>
-								<TableCell align="center"  className={myClasses} p={0} >{x.hour+":"+x.minute}</TableCell>
+								<TableCell align="center"  className={myClasses} p={0} >{myTime.name}</TableCell>
 							</TableRow>
 						)})}
 					</TableBody>

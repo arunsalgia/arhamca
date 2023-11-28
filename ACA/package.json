@@ -13,6 +13,7 @@
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "4.9.1",
     "aadhaar-validator": "^1.1.0",
+    "arun": "^0.0.0",
     "axios": "^0.20.0",
     "chartist": "0.10.1",
     "classnames": "2.2.6",

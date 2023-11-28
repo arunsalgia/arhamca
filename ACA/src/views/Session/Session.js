@@ -386,8 +386,8 @@ export default function Session() {
 					<TableCell className={myClasses} p={0}  >{`Session ${x.sessionNumber} of batch ${x.bid} by ${x.facultyName}`}</TableCell>
 					<TableCell className={myClasses} align="center" p={0} >{isPresent}</TableCell>
 					<TableCell className={myClasses} align="center" p={0} >
-						<IconButton color="primary" size="small" onClick={() => {handleEditSession(x)}} ><EditIcon /></IconButton>
-						<IconButton color="primary"  size="small" onClick={() => {handleDelSession(x)}} ><CancelIcon /></IconButton>
+						<IconButton color="primary" disabled={!isAdmin()} size="small" onClick={() => {handleEditSession(x)}} ><EditIcon /></IconButton>
+						<IconButton color="primary" disabled={!isAdmin()} size="small" onClick={() => {handleDelSession(x)}} ><CancelIcon /></IconButton>
 					</TableCell>
 				</TableRow>
 			)})}

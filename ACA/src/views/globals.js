@@ -97,30 +97,30 @@ export const DURATIONSTR = [
 ];
 
 export const BATCHTIMESTR = [
-{name: "09:00 AM", hour: 9, min: 30,  block: 18	},
+{name: "09:00 AM", hour: 9, min: 0,  block: 18	},
 {name: "09:30 AM", hour: 9, min: 30,  block: 19	},
-{name: "10:00 AM", hour: 10, min: 30,  block: 20	},
+{name: "10:00 AM", hour: 10, min: 0,  block: 20	},
 {name: "10:30 AM", hour: 10, min: 30,  block: 21	},
-{name: "11:00 AM", hour: 11, min: 30,  block: 22	},
+{name: "11:00 AM", hour: 11, min: 0,  block: 22	},
 {name: "11:30 AM", hour: 11, min: 30,  block: 23	},
-{name: "12:00 PM", hour: 12, min: 30,  block: 24	},
+{name: "12:00 PM", hour: 12, min: 0,  block: 24	},
 {name: "12:30 PM", hour: 12, min: 30,  block: 25	},
-{name: "01:00 PM", hour: 13, min: 30,  block: 26	},
+{name: "01:00 PM", hour: 13, min: 0,  block: 26	},
 {name: "01:30 PM", hour: 13, min: 30,  block: 27	},
-{name: "02:00 PM", hour: 14, min: 30,  block: 28	},
+{name: "02:00 PM", hour: 14, min: 0,  block: 28	},
 {name: "02:30 PM", hour: 14, min: 30,  block: 29	},
-{name: "03:00 PM", hour: 15, min: 30,  block: 30	},
+{name: "03:00 PM", hour: 15, min: 0,  block: 30	},
 {name: "03:30 PM", hour: 15, min: 30,  block: 31	},
-{name: "04:00 PM", hour: 16, min: 30,  block: 32	},
+{name: "04:00 PM", hour: 16, min: 0,  block: 32	},
 {name: "04:30 PM", hour: 16, min: 30,  block: 33	},
-{name: "05:00 PM", hour: 17, min: 30,  block: 34	},
+{name: "05:00 PM", hour: 17, min: 0,  block: 34	},
 {name: "05:30 PM", hour: 17, min: 30,  block: 35	},
-{name: "06:00 PM", hour: 17, min: 30,  block: 36	},
-{name: "06:30 PM", hour: 17, min: 30,  block: 37	},
-{name: "07:00 PM", hour: 17, min: 30,  block: 38	},
-{name: "07:30 PM", hour: 17, min: 30,  block: 39	},
-{name: "08:00 PM", hour: 17, min: 30,  block: 40	},
-{name: "08:30 PM", hour: 17, min: 30,  block: 41	}
+{name: "06:00 PM", hour: 18, min: 0,  block: 36	},
+{name: "06:30 PM", hour: 18, min: 30,  block: 37	},
+{name: "07:00 PM", hour: 19, min: 0,  block: 38	},
+{name: "07:30 PM", hour: 19, min: 30,  block: 39	},
+{name: "08:00 PM", hour: 20, min: 0,  block: 40	},
+{name: "08:30 PM", hour: 20, min: 30,  block: 41	}
 ];
 
 export const BLOCK_START = 18;

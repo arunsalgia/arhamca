@@ -175,6 +175,7 @@ FacultySchema = mongoose.Schema({
 	name: String,
   uid: Number,
   batchCount: Number,
+	hours: Number,
   enabled: Boolean
 });
 

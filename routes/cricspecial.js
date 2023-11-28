@@ -97,7 +97,7 @@ const getLoginName = (name) => {
 const getDisplayName = (name) => {
 		var ret = "";
 		var repat = false;
-    var xxx = name.split(" ");
+    var xxx = name.trim().split(" ");
     xxx.forEach( x => { 
 			console.log(x);
       x = x.trim()

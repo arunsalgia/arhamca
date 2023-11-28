@@ -9,7 +9,7 @@ const {
 
 const { 
 	addNewUser, updateUser,
-	getNewFacultyCode,
+	getNewFacultyCode, getFacultyHours,
 	timeToBlock, blockToTime, getWeeklyBlock,
 } = require('./functions'); 
 
@@ -19,7 +19,11 @@ router.get('/list/all', async function (req, res, next) {
   setHeader(res);
  
 	var allFaculty = await Faculty.find({}).sort({name: 1});
-  sendok(res, allFaculty ); 
+	for (var i=0; i<allFaculty.length; ++i) {
+		var tmp = await getFacultyHours(allFaculty[i].fid);
+		allFaculty[0].hours = tmp;
+	}
+	sendok(res, allFaculty ); 
 })
 
 
@@ -27,6 +31,10 @@ router.get('/list/disabled', async function (req, res, next) {
   setHeader(res);
  
 	var allFaculty = await Faculty.find({enabled: false}).sort({name: 1});
+	for (var i=0; i<allFaculty.length; ++i) {
+		var tmp = await getFacultyHours(allFaculty[i].fid);
+		allFaculty[0].hours = tmp;
+	}
   sendok(res, allFaculty ); 
 })
 
@@ -34,6 +42,10 @@ router.get('/list/enabled', async function (req, res, next) {
   setHeader(res);
  
 	var allFaculty = await Faculty.find({enabled: true}).sort({name: 1});
+	for (var i=0; i<allFaculty.length; ++i) {
+		var tmp = await getFacultyHours(allFaculty[i].fid);
+		allFaculty[0].hours = tmp;
+	}
   sendok(res, allFaculty ); 
 })
 
@@ -52,11 +64,22 @@ router.get('/get/:fid', async function (req, res, next) {
   setHeader(res);
 	var {fid} = req.params;
 	
-	var myFaculty = await Faculty.findOne({fid: fid});
-	if (myFaculty)
+	var myFaculty = await Faculty.findOne({fid: fid.toUpperCase()});
+	if (myFaculty) {
+		var tmp = await getFacultyHours(myFaculty.fid);
+		myFaculty.hours = tmp;
 		sendok(res, myFaculty ); 
+	} 
 	else
 		senderr(res, 601, "No fac");
+})
+
+router.get('/test/:fid', async function (req, res, next) {
+  setHeader(res);
+	var {fid} = req.params;
+	
+	var hours = getFacultyHours(fid.toUpperCase());
+	sendok(res, {hours: hours});
 })
 
 
@@ -93,6 +116,7 @@ router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:a
 		name: myStatus.userRec.displayName,
 		uid: myStatus.userRec.uid,
 		batchCount: 0,
+		hours: 0,
 		enabled: true,
 		
     });
@@ -188,7 +212,7 @@ router.get('/getfacultyblock/:fid', async function (req, res, next) {
 	//console.log(allBatches);
 	
 	var facultyBlockList = await getWeeklyBlock(allBatches);
-	console.log(facultyBlockList);
+	//console.log(facultyBlockList);
 	
   sendok(res, facultyBlockList ); 
 })

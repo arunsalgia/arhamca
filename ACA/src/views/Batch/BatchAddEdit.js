@@ -181,7 +181,7 @@ export default function BatchAddEdit(props) {
 		async function getAllStudents() {
 			try {
 				var subfun = (props.mode == "EDIT") ? "list/freeorbatch/" + props.batchRec.bid :  "list/free";
-				//console.log(subfun);
+				console.log(subfun);
 				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/student/${subfun}`;
 				const response = await axios.get(myUrl);
 				var tmp = response.data;
@@ -626,6 +626,7 @@ return (
 					<TableBody p={0}>
 						{batchStudents.map(x => {
 								var myClasses = gClasses.td;
+								//console.log(x);
 							return (
 							<TableRow key={x.sid} align="center">
 								<TableCell align="center" className={myClasses} p={0} >{x.mergedName}</TableCell>
