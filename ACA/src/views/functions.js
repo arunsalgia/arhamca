@@ -9,10 +9,12 @@ import 'assets/react-confirm-alert_mod.css'; // Import css
 import {cloneDeep} from "lodash";
 import moment from 'moment';
 import { func } from "prop-types";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import {
-	dialogOptions, DATESTR, MONTHNUMBERSTR 
+	dialogOptions, DATESTR, MONTHNUMBERSTR,
+	TOAST_TIMEOUT,
 } from "views/globals";
 
 var crypto = require("crypto");
@@ -714,4 +716,16 @@ export function isAdmManStu() {
 export function dateString(dStr) {
 	let d = new Date(dStr);
 	return `${DATESTR[d.getDate()]}/${MONTHNUMBERSTR[d.getMonth()]}/${d.getFullYear()}`;
+}
+
+export function showSuccess(msg) {
+	toast.success(msg, { autoClose: TOAST_TIMEOUT });
+}
+
+export function showError(msg) {
+	toast.error(msg, { autoClose: TOAST_TIMEOUT });
+}
+
+export function showInfo(msg) {
+	toast.info(msg, { autoClose: TOAST_TIMEOUT });
 }

@@ -67,6 +67,7 @@ import {
 import {
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
 	disablePastDt, disableFutureDt,
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 
@@ -127,7 +128,7 @@ export default function SessionAddEdit(props) {
 				
 			} catch (e) {
 				console.log(e);
-				toast.error("Error Fetching Studnets");
+				showError("Error Fetching Studnets");
 			}
 		}
 		
@@ -217,7 +218,7 @@ async function handleAddEditSubmit() {
 
 	var tmpattend = cbArray.filter(x => x === true);
 	if 	(tmpattend.length === 0) {
-		toast.error("Minimum 1 student has to be present for the session");
+		showError("Minimum 1 student has to be present for the session");
 		return;
 	}
 	// luckily no validation required

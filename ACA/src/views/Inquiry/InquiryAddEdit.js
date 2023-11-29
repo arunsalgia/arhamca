@@ -66,6 +66,7 @@ import {
 import {
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
 	getAreafromBid,
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 const spacing = "5px"
@@ -131,7 +132,7 @@ export default function InquiryAddEdit(props) {
 				setAreaArray(allAreas);
 			} catch (e) {
 				console.log(e);
-				toast.error("Error Fetching area");
+				showError("Error Fetching area");
 			}
 		}
 		
@@ -268,7 +269,7 @@ async function handleAddEditSubmit() {
 		}
 		
 		if (stayback) {
-			toast.error(myMessage);
+			showError(myMessage);
 		}
 		else {
 			props.onReturn.call(this, {status: STATUS_INFO.ERROR, msg: myMessage});

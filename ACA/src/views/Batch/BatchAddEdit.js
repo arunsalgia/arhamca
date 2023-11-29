@@ -37,7 +37,9 @@ import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox'
 import CancelIcon from '@material-ui/icons/Cancel';
 
 //import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
-import { isMobile, getWindowDimensions, displayType, decrypt, encrypt } from 'views/functions';
+import { isMobile, getWindowDimensions, displayType, decrypt, encrypt,
+	showError, showSuccess, showInfo,
+} from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
 
@@ -148,7 +150,7 @@ export default function BatchAddEdit(props) {
 				setAreaArray(allAreas);
 			} catch (e) {
 				console.log(e);
-				toast.error("Error Fetching area");
+				showError("Error Fetching area");
 			}
 		}
 		
@@ -173,7 +175,7 @@ export default function BatchAddEdit(props) {
 				setNewFaculty(myFacultys[0].mergedName);
 			} catch (e) {
 				console.log(e);
-				toast.error("Error Fetching Faculty");
+				showError("Error Fetching Faculty");
 			}
 		}
 
@@ -199,7 +201,7 @@ export default function BatchAddEdit(props) {
 			} 
 			catch (e) {
 				console.log(e);
-				toast.error("Error Fetching Students");
+				showError("Error Fetching Students");
 			}
 		}
 		// get the data
@@ -363,7 +365,7 @@ async function handleAddEditSubmit() {
 		}
 		
 		if (stayback) {
-			toast.error(myMessage);
+			showError(myMessage);
 		}
 		else {
 			props.onReturn.call(this, {status: STATUS_INFO.ERROR, msg: myMessage});
@@ -391,7 +393,7 @@ async function handleEdit(r) {
 		setUserRec(myUser);
 	}
 	catch (e) {
-		toast.error('Error while fetching user record');
+		showError('Error while fetching user record');
 		setBatchtRec(null);
 		return;
 	}

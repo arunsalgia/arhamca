@@ -65,6 +65,7 @@ import {
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
 	isAdmin, isAdmMan, isAdmManFac, isFaculty,
 	dateString, vsDialog,
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 
@@ -229,12 +230,12 @@ export default function Session() {
 			if (tmp.count === 0) 
 				clonedArray = clonedArray.filter(x => x.sid !== studentRec.sid);		// remove entry if no sessions
 			setSessionArray(clonedArray);
-			toast.success(`Deleted  session number ${rec.sessionNumber} dated ${dateString(rec.sessionDate)}`);
+			showSuccess(`Deleted  session number ${rec.sessionNumber} dated ${dateString(rec.sessionDate)}`);
 		}
 		catch (e) {
 			// error 
 			console.log(e);
-			toast.error(`Error deleting session number ${rec.sessionNumber} dated ${dateString(rec.sessionDate)}`);
+			showError(`Error deleting session number ${rec.sessionNumber} dated ${dateString(rec.sessionDate)}`);
 		}
 	}
 
@@ -242,7 +243,7 @@ export default function Session() {
 		try {
 			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/getbatch/${rec.sid}`);
 			if (response.data.bid === "") {
-				toast.error(`No current batch for student ${rec.sid}`);
+				showError(`No current batch for student ${rec.sid}`);
 				return;
 			}
 			setBatchRec(response.data);
@@ -250,7 +251,7 @@ export default function Session() {
 		}
 		catch (e) {
 			console.log(e);
-			toast.error(`Error getting batch record of ${rec.sid}`);
+			showError(`Error getting batch record of ${rec.sid}`);
 		}
 	}
 
@@ -263,14 +264,14 @@ export default function Session() {
 		}
 		catch (e) {
 			console.log(e);
-			toast.error(`Error getting batch record of ${rec.bid}`);
+			showError(`Error getting batch record of ${rec.bid}`);
 		}
 	}
 	
 	function handleBack(sts)
 	{
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg); 
 		
 		if (sts.status !== STATUS_INFO.ERROR) {
 			if (drawer === "ADDSESSION") {
@@ -301,7 +302,7 @@ export default function Session() {
 		catch (e) {
 			setStudentSession([]);
 			console.log(e);
-			toast.error(`Error getting session details of ${mergedName(rec.name, rec.sid)}`);
+			showError(`Error getting session details of ${mergedName(rec.name, rec.sid)}`);
 		}
 		setDrawerInfo("detail");
 	}

@@ -56,6 +56,7 @@ import {
 	isMobile, getWindowDimensions, displayType, 
 	decrypt, encrypt,
 	vsDialog,
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
@@ -155,8 +156,8 @@ export default function Summary() {
 
 	function handleBack(sts) {
 		//console.log(sts);
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg); 
 		
 		//console.log(sts.status, selPaymentRec);
 		if (sts.status == STATUS_INFO.SUCCESS) {
@@ -236,14 +237,14 @@ export default function Summary() {
 		}
 		catch (e) {
 			console.log(e);
-			toast.error(`Error getting batch/session record of ${ mergedName(selStudent.name, selStudent.sid) }`);
+			showError(`Error getting batch/session record of ${ mergedName(selStudent.name, selStudent.sid) }`);
 		}
 	}
 
 	function handleBackSession(sts)
 	{
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg); 
 		
 		if (sts.status !== STATUS_INFO.ERROR) {
 			if (drawer === "ADDSESSION") {
@@ -291,7 +292,7 @@ export default function Summary() {
 	
 	async function handleDelStudentPaymentConfirm(rec) {
 		setDrawerInfo("detail");
-		console.log(rec);
+		//console.log(rec);
 		try {
 			var response = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/payment/delete/${rec._id}`);
 			// remove this payment entry
@@ -304,11 +305,11 @@ export default function Summary() {
 			//setSummaryArray(clonedArray);
 			setMasterSessionArray(clonedArray);
 			filterSession(clonedArray, currentText);
-			toast.success(`Delete payment entry of amount ${rec.credit} for ${mergedName(selStudent.studentName, selStudent.sid)} `);
+			showSuccess(`Delete payment entry of amount ${rec.credit} for ${mergedName(selStudent.studentName, selStudent.sid)} `);
 		}
 		catch(e) {
 			console.log(e);
-			toast.error("error deleting payment record of amount ${rec.credit}");
+			showError("error deleting payment record of amount ${rec.credit}");
 		}
 	}
 	
@@ -337,17 +338,17 @@ export default function Summary() {
 			//setSummaryArray(clonedArray);
 			setMasterSessionArray(clonedArray);
 			filterSession(clonedArray, currentText);
-			toast.success(`Successfully deleted ${rec.desc} for ${mergedName(selStudent.studentName, selStudent.sid)} `);
+			showSuccess(`Successfully deleted ${rec.desc} for ${mergedName(selStudent.studentName, selStudent.sid)} `);
 		}
 		catch(e) {
 			console.log(e);
-			toast.error("error deleting payment record of amount ${rec.credit}");
+			showError("error deleting payment record of amount ${rec.credit}");
 		}
 	}
 	
 	
 	function handleEditStudentPayment(rec) {
-		toast.info("Edit payment from summary to be implemented");
+		showInfo("Edit payment from summary to be implemented");
 	}	
 	
 	
@@ -361,7 +362,7 @@ export default function Summary() {
 		}
 		catch(e) {
 			console.log(e);
-			toast.error("error fetching student payment details.");
+			showError("error fetching student payment details.");
 		}
 	}
 

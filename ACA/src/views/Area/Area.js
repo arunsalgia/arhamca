@@ -45,7 +45,8 @@ import {
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
 	isAdmin, isAdmMan, isAdmManFac, isStudent, isFaculty,
 	vsDialog,
-	
+	showError, showSuccess, showInfo,
+
 } from 'views/functions';
 
 
@@ -159,13 +160,13 @@ export default function Area() {
 				? `Successfully added new area ${myShortCode}` 
 				: `Successfully changed area ${areaRec.shortName} to ${myShortCode}` ;
 			//console.log(myMsg);
-			toast.success( myMsg );
+			showSuccess( myMsg );
 			setAreaArray(lodashSortBy(tmp, 'shortName'));
 		}
 		catch (e) {
 			//alert.error("Error adding / updateing Area");
 			//console.log("Error");
-			toast.error(`Error adding/updating area`);
+			showError(`Error adding/updating area`);
 		}
 		setDrawer("");
 	}
@@ -204,11 +205,11 @@ export default function Area() {
 			var response = await axios.get(myUrl);
 			setAreaArray(lodashSortBy(areaArray.filter(x => x.shortName !== rec.shortName), 'shortName'));
 			setDrawer("");
-			toast.success( `Successfully deleted area ${rec.shortName}` );
+			showSuccess( `Successfully deleted area ${rec.shortName}` );
 			
 		}
 		catch (e) {
-			toast.error(`Error deleting area. In use`);
+			showError(`Error deleting area. In use`);
 		}
 	}
 	

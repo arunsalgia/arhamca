@@ -49,6 +49,7 @@ import {
 	isMobile, getWindowDimensions, displayType, 
 	decrypt, encrypt ,
 	vsDialog,
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
@@ -181,7 +182,7 @@ export default function Inquiry() {
         }
 				//console.log(errmsg, registerStatus);
 				if (errmsg)
-					toast.error(myMsg);
+					showError(myMsg);
 				
 
         let myClass = (errmsg) ? gClasses.error : gClasses.nonerror;
@@ -216,8 +217,8 @@ export default function Inquiry() {
 	
 	function handleBackInquiry(sts)
 	{
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg);
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg);
 		
 		if (sts.status !== STATUS_INFO.ERROR) {
 			if (drawer === "ADDINQUIRY") {
@@ -249,10 +250,10 @@ export default function Inquiry() {
 			const response = await axios.get(myUrl);
 			var allRec  = inquiryArray.filter(x => x._id !== rec._id);
 			setInquiryArray(allRec);
-			toast.success(`Successfully deleted inquiry`);
+			showSuccess(`Successfully deleted inquiry`);
 		} catch (e) {
 			console.log(e);
-			toast.error("Error deleting inquiry");
+			showError("Error deleting inquiry");
 		}
 	}
 

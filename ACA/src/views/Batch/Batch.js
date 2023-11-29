@@ -50,6 +50,7 @@ import {
 	isMobile, getWindowDimensions, displayType, 
 	decrypt, encrypt ,
 	vsDialog,
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
@@ -194,7 +195,7 @@ export default function Batch() {
         }
 				//console.log(errmsg, registerStatus);
 				if (errmsg)
-					toast.error(myMsg);
+					showError(myMsg);
 				
 
         let myClass = (errmsg) ? gClasses.error : gClasses.nonerror;
@@ -232,8 +233,8 @@ export default function Batch() {
 	
 	function handleBack(sts)
 	{
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg); 
 		
 		if (sts.status !== STATUS_INFO.ERROR) {
 			if (drawer === "ADDSESSION") {
@@ -248,8 +249,8 @@ export default function Batch() {
 	
 	function handleBackBatch(sts)
 	{
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg);
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg);
 		if (sts.status !== STATUS_INFO.ERROR) {
 			if (drawer === "ADDBATCH") {
 				var clonedBatchArray = batchArray.concat([sts.batchRec]);
@@ -284,10 +285,10 @@ export default function Batch() {
 			var allRec  = batchArray.filter(x => x.bid !== rec.bid);
 			setMasterBatchArray(allRec);
 			filterBatch(allRec, currentText, currentMode);
-			toast.success(`Successfully deleted batch ${rec.bid}`);
+			showSuccess(`Successfully deleted batch ${rec.bid}`);
 		} catch (e) {
 			console.log(e);
-			toast.error("Error deleting batch");
+			showError("Error deleting batch");
 		}
 	}
 
@@ -331,12 +332,12 @@ export default function Batch() {
 			var allRec  = [].concat(masterBatchArray)
 			setMasterBatchArray(allRec);
 			filterBatch(allRec, currentText, currentMode);
-			toast.success(`Disabled batch ${myRec.bid}`);
+			showSuccess(`Disabled batch ${myRec.bid}`);
 		}
 		catch (e) {
 			// error 
 			console.log(e);
-			toast.error("Error disabling batch "+ rec.bid);
+			showError("Error disabling batch "+ rec.bid);
 		}
 	}
 
@@ -355,12 +356,12 @@ export default function Batch() {
 			var allRec  = [].concat(masterBatchArray);
 			setMasterBatchArray(allRec);
 			filterBatch(allRec, currentText, currentMode);
-			toast.success(`Disabled batch ${myRec.bid}`);
+			showSuccess(`Disabled batch ${myRec.bid}`);
 		}
 		catch (e) {
 			// error 
 			console.log(e);
-			toast.error("Error enabling batch "+rec.bid);
+			showError("Error enabling batch "+rec.bid);
 		}
 	}
 

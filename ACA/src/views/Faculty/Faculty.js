@@ -44,7 +44,7 @@ import {
 	isAdmMan, isAdmManFac, isFaculty,
 	mergedName,
 	vsDialog,
-
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
@@ -182,7 +182,7 @@ export default function Faculty() {
         }
 				//console.log(errmsg, registerStatus);
 				if (errmsg)
-					toast.error(myMsg);
+					showError(myMsg);
 				
         let myClass = (errmsg) ? gClasses.error : gClasses.nonerror;
 				return null;
@@ -225,7 +225,7 @@ export default function Faculty() {
 				setMasterFacultyArray(tmp);
 				filterFaculty(tmp, currentSelection);
 				setDrawer("");
-				toast.success("Successfully added details of " + userName);
+				showSuccess("Successfully added details of " + userName);
 			}
 			else {
 				// for edit user
@@ -238,11 +238,11 @@ export default function Faculty() {
 				setMasterFacultyArray(tmp);
 				filterFaculty(tmp, currentSelection);
 				setDrawer("");
-				toast.success("Successfully edit details of " + userName);
+				showSuccess("Successfully edit details of " + userName);
 			}
 		}
 		catch (e) {
-			toast.error("Error adding / updateing Area");
+			showError("Error adding / updateing Area");
 			console.log("Error");
 			
 		}
@@ -275,7 +275,7 @@ export default function Faculty() {
 			setUserRec(myUser);
 		}
 		catch (e) {
-			toast.error('Error while fetching user record');
+			showError('Error while fetching user record');
 			setFacultyRec(null);
 			return;
 		}
@@ -302,7 +302,7 @@ export default function Faculty() {
 			setDrawerInfo("detail");
 		}
 		catch (e) {
-			toast.error('Error fetching user record');
+			showError('Error fetching user record');
 			setFacultyRec(null);
 		}
 	}
@@ -409,7 +409,7 @@ export default function Faculty() {
 	async function handleDisableFacultyConfirm(x) {
 		let myRec = masterFacultyArray.find(rrr => rrr.fid === x.fid);
 		if (myRec.batchCount > 0) {
-			toast.error(`Faculty ${myRec.name} has ${myRec.batchCount} batches in progress.`);
+			showError(`Faculty ${myRec.name} has ${myRec.batchCount} batches in progress.`);
 			return;
 		}
 		try {
@@ -418,12 +418,12 @@ export default function Faculty() {
 			var allRec  = [].concat(masterFacultyArray)
 			setMasterFacultyArray(allRec);
 			filterFaculty(allRec, currentSelection);
-			toast.success(`Disabled Faculty ${mergedName( myRec.name, myRec.fid)}`);
+			showSuccess(`Disabled Faculty ${mergedName( myRec.name, myRec.fid)}`);
 		}
 		catch (e) {
 			// error 
 			console.log(e);
-			toast.error("Error disabling faculty "+x.name);
+			showError("Error disabling faculty "+x.name);
 		}
 	}
 	
@@ -442,12 +442,12 @@ export default function Faculty() {
 			var allRec  = [].concat(masterFacultyArray);
 			setMasterFacultyArray(allRec);
 			filterFaculty(allRec, currentSelection);
-			toast.success(`Enabled Faculty ${mergedName( myRec.name, myRec.fid)}`);
+			showSuccess(`Enabled Faculty ${mergedName( myRec.name, myRec.fid)}`);
 		}
 		catch (e) {
 			// error 
 			console.log(e);
-			toast.error("Error disabling faculty "+x.name);
+			showError("Error disabling faculty "+x.name);
 		}
 	}
 

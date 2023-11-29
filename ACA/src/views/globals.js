@@ -7,6 +7,8 @@ export const ALLSELECTIONS = ["All", "Enabled", "Disabled" ];
 
 export const BLANKCHAR = "-";
 
+export const TOAST_TIMEOUT = 2000;		// Messages to be displayed for 2 second
+
 export const dialogOptions={
   title: 'Title',
   message: 'Message',

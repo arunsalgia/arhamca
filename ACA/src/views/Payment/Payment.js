@@ -54,6 +54,7 @@ import {
 	isMobile, getWindowDimensions, displayType, 
 	decrypt, encrypt ,
 	vsDialog,
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 import globalStyles from "assets/globalStyles";
@@ -153,8 +154,8 @@ export default function Payment() {
 
 	function handleBack(sts) {
 		//console.log(sts);
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg); 
 		
 		//console.log(sts.status, selPaymentRec);
 		if (sts.status == STATUS_INFO.SUCCESS) {
@@ -302,11 +303,11 @@ export default function Payment() {
 				setMasterPaymentArray(myAaary);
 				filterPayment(myAaary, currentText);
 			}
-			toast.success(`Deleted payment record of ${mergedName( rec.studentName, rec.sid )}`);
+			showSuccess(`Deleted payment record of ${mergedName( rec.studentName, rec.sid )}`);
 		}
 		catch (e) {
 			console.log(e);
-			toast.error(`Error deleting payment record`);
+			showError(`Error deleting payment record`);
 		}
 	}
 	
@@ -328,7 +329,7 @@ export default function Payment() {
 		}
 		catch(e) {
 			console.log(e);
-			toast.error("error fatching student payment detials.");
+			showError("error fatching student payment detials.");
 		}
 	}
 

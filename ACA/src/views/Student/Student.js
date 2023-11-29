@@ -47,6 +47,7 @@ import {
 	isAdmin, isAdmMan, isAdmManFac, isStudent, isFaculty,
 	mergedName,
 	vsDialog,
+	showError, showSuccess, showInfo,
 } from 'views/functions';
 
 
@@ -198,7 +199,7 @@ export default function Student() {
         }
 				//console.log(errmsg, registerStatus);
 				if (errmsg)
-					toast.error(myMsg);
+					showError(myMsg);
 
         let myClass = (errmsg) ? gClasses.error : gClasses.nonerror;
 				return null;
@@ -235,7 +236,7 @@ export default function Student() {
 				//filterStudent(tmp, currentSelection);
 				setDrawerAddEdit("");
 				setFilter(tmp, custFilter);
-				toast.success("Successfully added details of " + userName);
+				showSuccess("Successfully added details of " + userName);
 			}
 			else {
 				// for edit user
@@ -249,11 +250,11 @@ export default function Student() {
 				//filterStudent(tmp, currentSelection);
 				setDrawerAddEdit("");
 				setFilter(tmp, custFilter);
-				toast.success("Successfully updated details of " + userName);
+				showSuccess("Successfully updated details of " + userName);
 			}
 		}
 		catch (e) {
-			toast.error("Error adding / updateing Area");
+			showError("Error adding / updateing Area");
 			console.log("Error");
 			
 		}
@@ -288,7 +289,7 @@ export default function Student() {
 			setUserRec(myUser);
 		}
 		catch (e) {
-			toast.error('Error while fetching user record');
+			showError('Error while fetching user record');
 			setStudentRec(null);
 			return;
 		}
@@ -317,10 +318,10 @@ export default function Student() {
 			setDrawerInfo("detail");
 		}
 		catch (e) {
-			toast.error('Error fetching user record');
+			showError('Error fetching user record');
 			setStudentRec(null);
 		}
-		//toast.info("Student info to be implemented");
+		//showInfo("Student info to be implemented");
 	}
 
 	function StudentInfo(props) {
@@ -430,13 +431,13 @@ export default function Student() {
 		}
 		catch (e) {
 			console.log(e);
-			toast.error(`Error getting batch record of ${rec.bid}`);
+			showError(`Error getting batch record of ${rec.bid}`);
 		}
 	}
 	
 	function handleBack(sts) {
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) toast.error(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) toast.success(sts.msg); 
+		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
+		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg); 
 		
 		// Yeah. Nothing to be modified in student record.
 		setDrawer("");
@@ -467,14 +468,14 @@ export default function Student() {
 	async function handleDisableStudentConfirm(x) {
 		let myRec = masterStudentArray.find(rrr => rrr.sid === x.sid);
 		if (myRec.bid != "") {
-			toast.error(`Student ${myRec.name} has batch ${myRec.bid} in progress.`);
+			showError(`Student ${myRec.name} has batch ${myRec.bid} in progress.`);
 			return;
 		}
 		try {
 			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/disabled/${myRec.sid}`);
 			myRec.enabled = false;
 			var allRec  = [].concat(masterStudentArray)
-			toast.success(`Disabled Student ${mergedName( myRec.name, myRec.sid)}`);
+			showSuccess(`Disabled Student ${mergedName( myRec.name, myRec.sid)}`);
 			setMasterStudentArray(allRec);
 			setFilter(allRec, custFilter);
 			
@@ -483,7 +484,7 @@ export default function Student() {
 		catch (e) {
 			// error 
 			console.log(e);
-			toast.error("Error disabling student "+x.name);
+			showError("Error disabling student "+x.name);
 		}
 	}
 
@@ -501,7 +502,7 @@ export default function Student() {
 			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/student/enabled/${myRec.sid}`);
 			myRec.enabled = true;
 			var allRec  = [].concat(masterStudentArray)
-			toast.success(`Enabled Student ${mergedName( myRec.name, myRec.sid)}`);
+			showSuccess(`Enabled Student ${mergedName( myRec.name, myRec.sid)}`);
 			setMasterStudentArray(allRec);
 			setFilter(allRec, custFilter);
 			//filterStudent(allRec, currentSelection);
@@ -509,7 +510,7 @@ export default function Student() {
 		catch (e) {
 			// error 
 			console.log(e);
-			toast.error("Error disabling student "+x.name);
+			showError("Error disabling student "+x.name);
 		}
 	}
 
