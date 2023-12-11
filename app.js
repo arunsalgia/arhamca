@@ -219,6 +219,7 @@ sessionSchema = mongoose.Schema({
 	attendedSidList: [String],		// list of Id of students who attended the session
 	attendedStudentNameList: [String],		// list of name of students who attended the session
 	creationDate: Date,
+	remarks: String,
   enabled: Boolean	// Batch open (true) / closed false
 });
 

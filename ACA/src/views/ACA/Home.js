@@ -225,10 +225,13 @@ export default function Home() {
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_INQUIRY} text="Inquiry" />
             </Grid>
+						<br />
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_SUMMARY} text="Summary" />
             </Grid>
-						<br />
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_BONUS} text="Bonus" />
+            </Grid>						
 					</Grid>
 					}
 					{(isManager()) &&
@@ -246,6 +249,10 @@ export default function Home() {
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_SESSION} text="Session" />
             </Grid>								
+						<br />
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_BONUS} text="Bonus" />
+            </Grid>						
 					</Grid>
 					}
 					{(isFaculty()) &&

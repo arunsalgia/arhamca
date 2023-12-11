@@ -38,7 +38,8 @@ import Payment	 from "views/Payment/Payment"
 import Inquiry	 from "views/Inquiry/Inquiry"
 import InquiryAddEdit	 from "views/Inquiry/InquiryAddEdit"
 import Summary	 from "views/Summary/Summary"
-
+import Bonus	 from "views/Bonus/Bonus"
+import BonusAddEdit	 from "views/Bonus/BonusAddEdit"
 
 import AdminWallet from "views/Wallet/AdminWallet"
 import Wallet from "views/Wallet/Wallet.js"
@@ -316,6 +317,7 @@ export function AcaTabs() {
 	const handleInquiry = () => { handleClose(); setMenuValue(9008);}
 	const handleInquiryAddEdit = () => { handleClose(); setMenuValue(90081);}
 	const handleSummary = () => { handleClose(); setMenuValue(9009);}
+	const handleBonus = () => { handleClose(); setMenuValue(9010);}
 	
   const handleMatch = () => { handleClose(); setMenuValue(101);}
   const handleAuction = () => { handleClose(); setMenuValue(102);}
@@ -366,6 +368,7 @@ export function AcaTabs() {
 				<MenuItem onClick={handleStudent}>Student</MenuItem>
 				<MenuItem onClick={handleBatch}>Batch</MenuItem>
 				<MenuItem onClick={handleSession}>Session</MenuItem>
+				<MenuItem onClick={handleBonus}>Bonus</MenuItem>
         </div>
 			);
     } 
@@ -407,6 +410,7 @@ export function AcaTabs() {
 			case 9008: return <Inquiry />;
 			case 90081: return <InquiryAddEdit />;
 			case 9009: return <Summary />;
+			case 9010: return <Bonus />;
 			
       default: return  <Typography>{`Inavlid value ${value}`}</Typography>;
     }

@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 // import { Switch, Route, Link } from 'react-router-dom';
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import TextField from '@material-ui/core/TextField';
+import Container from '@material-ui/core/Container';
 
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
@@ -566,50 +567,41 @@ export default function Batch() {
 		}
 	</Drawer>
 	<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""} >
-		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >		<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />	
+		<Container component="main" maxWidth="xs">	
+		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingLeft={2} >		<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />	
 		<DisplayPageHeader headerName={`Batch details`} groupName="" tournament="" />
 			<Grid key="INFOBATCH" className={gClasses.noPadding} container alignItems="flex-start" >
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography style={{margin: "10px"}} className={gClasses.info18Blue} >Batch Id</Typography>
+				<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
+				<Grid item xs={5} sm={5} md={5} lg={5} >
+					<Typography className={gClasses.info18Blue} >Batch Id</Typography>
 				</Grid>
-				<Grid item xs={6} sm={6} md={3} lg={3} >
+				<Grid item xs={7} sm={7} md={7} lg={7} >
 					<Typography className={gClasses.info18} >{batchRec.bid}</Typography>
 				</Grid>
-				{((dispType == "xs") || (dispType == "sm")) &&
-					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				}
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography style={{margin: "10px"}} className={gClasses.info18Blue} >Faculty</Typography>
+				<Grid item xs={5} sm={5} md={5} lg={5} >
+					<Typography className={gClasses.info18Blue} >Faculty</Typography>
 				</Grid>
-				<Grid item xs={6} sm={6} md={3} lg={3} >
+				<Grid item xs={7} sm={7} md={7} lg={7} >
 					<Typography className={gClasses.info18} >{mergedName(batchRec.facultyName,  batchRec.fid)}</Typography>
 				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography style={{margin: "10px"}} className={gClasses.info18Blue} >Fees</Typography>
+				<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
+				<Grid item xs={5} sm={5} md={5} lg={5} >
+					<Typography className={gClasses.info18Blue} >Fees</Typography>
 				</Grid>
-				<Grid item xs={6} sm={6} md={3} lg={3} >
+				<Grid item xs={7} sm={7} md={7} lg={7} >
 					<Typography className={gClasses.info18} >{batchRec.fees}</Typography>
 				</Grid>
-				{((dispType == "xs") || (dispType == "sm")) &&
-					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				}
-				<Grid item xs={6} sm={6} md={3} lg={3} >
-					<Typography style={{margin: "10px"}} className={gClasses.info18Blue} >Duration</Typography>
+				<Grid item xs={5} sm={5} md={5} lg={5} >
+					<Typography className={gClasses.info18Blue} >Duration</Typography>
 				</Grid>
-				<Grid item xs={6} sm={6} md={3} lg={3} >
+				<Grid item xs={7} sm={7} md={7} lg={7} >
 					<Typography className={gClasses.info18} >{batchTime}</Typography>
 				</Grid>
-				{((dispType == "xs") || (dispType == "sm")) &&
-					<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				}
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid item xs={8} sm={8} md={10} lg={10} >
-					<Typography style={{margin: "10px"}} className={gClasses.info18Blue}>Batch students</Typography>
+					<Typography className={gClasses.info18Blue}>Batch students</Typography>
 				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} >
+				<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} >
 					<Table  align="center">
 					<TableHead p={0}>
 					<TableRow key="header" align="center">
@@ -627,7 +619,7 @@ export default function Batch() {
 					</TableBody>
 					</Table>
 				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
 				<Grid item xs={12} sm={12} md={12} lg={12} >
 					<Typography style={{margin: "10px"}} className={gClasses.info18Blue}>Session schedule (per week)</Typography>
 				</Grid>
@@ -656,6 +648,7 @@ export default function Batch() {
 				<br />
 			</Grid>
 			</Box>
+			</Container>
 	</Drawer>
 	<ToastContainer />
 	</div>

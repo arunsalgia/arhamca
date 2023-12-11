@@ -223,7 +223,7 @@ router.get('/summary/detail/:sid', async function (req, res, next) {
 		});
 	}
 	
-	var sessionInfo = await Session.find({sidList: [sid] }, {sessionDate: 1, bid: 1, fees: 1, sessionNumber: 1} );
+	var sessionInfo = await Session.find({sidList: sid }, {sessionDate: 1, bid: 1, fees: 1, sessionNumber: 1} );
 	for(i=0; i<sessionInfo.length; ++i) {
 		allSummary.push(
 		{

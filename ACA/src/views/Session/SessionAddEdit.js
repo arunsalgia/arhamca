@@ -142,6 +142,7 @@ export default function SessionAddEdit(props) {
 		if (props.mode === "EDIT") {
 			console.log(props.sessionRec.sessionDate);
 			setSessionDate(new Date(props.sessionRec.sessionDate));
+			setMyNotes(props.sessionRec.remarks);
 			var tmpCbArray = [];
 			for(var i=0; i<props.sessionRec.sidList.length; ++i) {
 				tmpCbArray.push((props.sessionRec.attendedSidList.includes(props.sessionRec.sidList[i])) ? true : false);
@@ -230,7 +231,8 @@ async function handleAddEditSubmit() {
 	myData["sessionDate"] = sessionDate;
 	var attendanceSid = [];
 	for(var i=0; i<origBatchRec.sid.length; ++i) {
-		if (cbArray[i]) attendanceSid.push(origBatchRec.sid[i]);
+		//if (cbArray[i]) attendanceSid.push(origBatchRec.sid[i]);
+		attendanceSid.push(origBatchRec.sid[i]);			// mark all as present
 	}
 	//console.log(attendanceSid);
 	myData["attendanceList"] = attendanceSid;
@@ -307,6 +309,7 @@ function handlePresentAbsent(idx, state) {
 				<Grid item xs={6} sm={6} md={3} lg={5} />
 			}
 			<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+				{/*
 			{((dispType == "md") || (dispType == "lg")) &&
 				<Grid item xs={6} sm={6} md={4} lg={4} />
 			}				
@@ -337,6 +340,7 @@ function handlePresentAbsent(idx, state) {
 				<Grid item xs={6} sm={6} md={4} lg={4} />
 			}	
 			<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
+			*/}
 			{((dispType == "md") || (dispType == "lg")) &&
 				<Grid item xs={6} sm={6} md={4} lg={4} />
 			}	

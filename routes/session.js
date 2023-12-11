@@ -137,8 +137,8 @@ router.get('/listbysid/:sid', async function (req, res, next) {
 	var { sid } = req.params;
 	
 	// First get list of students
-	var allSessions = await Session.find({sidList: [sid]} ).sort({sessionNumber: -1});
-	//console.log(allSessions);
+	var allSessions = await Session.find({sidList: sid} ).sort({sessionNumber: -1});
+	console.log(allSessions);
 	
   sendok(res, allSessions ); 
 })
@@ -195,6 +195,9 @@ router.get('/add/:sessionData', async function (req, res, next) {
 	newSession.studentNameList = sessionData.batchData.studentNameList;
 	
 	newSession.attendedSidList = sessionData.attendanceList;
+	
+	newSession.remarks = sessionData.remarks;
+	
 	var tmp  = [];
 	for(var i=0; i < sessionData.attendanceList.length; ++i) {
 		var sid_idx = sessionData.batchData.sid.indexOf(sessionData.attendanceList[i]);
@@ -204,7 +207,7 @@ router.get('/add/:sessionData', async function (req, res, next) {
 	newSession.creationDate = new Date();
 	newSession.enabled = true;
 	
-	// Now get the sequnce number
+	// Now get the sequence number
 	var tmpRecs = await Session.find({bid: newSession.bid }).limit(1).sort({sessionNumber: -1});
 	newSession.sessionNumber = (tmpRecs.length > 0) ? tmpRecs[0].sessionNumber + 1 : 1;
 	await newSession.save();
@@ -242,14 +245,14 @@ router.get('/update/:sessionData', async function (req, res, next) {
 	var sessioRec = await Session.findOne({_id: sessionData.sessionId});
 	sessioRec.sessionDate = sessionData.sessionDate;
 	sessioRec.attendedSidList = sessionData.attendanceList;
-	// no remarks
+	sessioRec.remarks = sessionData.remarks;
+
 	var tmp  = [];
 	for(var i=0; i < sessionData.attendanceList.length; ++i) {
 		var sid_idx = sessionData.batchData.sid.indexOf(sessionData.attendanceList[i]);
 		tmp.push(sessionData.batchData.studentNameList[sid_idx]);
 	}	
 	sessioRec.attendedStudentNameList = tmp;
-	
 	await sessioRec.save();
 	
 	sendok(res, sessioRec);

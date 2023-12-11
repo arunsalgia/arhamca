@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 // import { Switch, Route, Link } from 'react-router-dom';
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import { TextareaAutosize, TextField } from '@material-ui/core';
+import Container from '@material-ui/core/Container';
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
@@ -325,59 +326,39 @@ export default function Student() {
 	}
 
 	function StudentInfo(props) {
-		//console.log(props.studentRecord);
-		//console.log(props.userRecord);
 	return(
 		<div>
 		<Grid key="STUDENTINFO" className={gClasses.noPadding} container >
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={4} sm={4} md={4} lg={4} >
 				<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
 			</Grid>
-			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+			<Grid item xs={8} sm={8} md={8} lg={8} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.displayName}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={4} sm={4} md={4} lg={4} >
 				<Typography align="left"  className={gClasses.info18Blue} >Code</Typography>
 			</Grid>
-			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+			<Grid item xs={8} sm={8} md={8} lg={8} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.studentRecord.sid}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={4} sm={4} md={4} lg={4} >
 				<Typography align="left"  className={gClasses.info18Blue} >Batch</Typography>
 			</Grid>
-			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+			<Grid item xs={8} sm={8} md={8} lg={8} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{(props.studentRecord.bid !== "") ? props.studentRecord.bid : "None"}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
-				<Typography align="left"  className={gClasses.info18Blue} >Parent Name</Typography>
+			<Grid item xs={4} sm={4} md={4} lg={4} >
+				<Typography align="left"  className={gClasses.info18Blue} >Par. Name</Typography>
 			</Grid>
-			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+			<Grid item xs={8} sm={8} md={8} lg={8} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.studentRecord.parentName}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
-				<Typography align="left"  className={gClasses.info18Blue} >Parent Mobile</Typography>
+			<Grid item xs={4} sm={4} md={4} lg={4} >
+				<Typography align="left"  className={gClasses.info18Blue} >Par. Mobile</Typography>
 			</Grid>
-			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+			<Grid item xs={8} sm={8} md={8} lg={8} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.studentRecord.parentMobile}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
 			{(STUDENT_DETAILS_REQUIRED) &&
 			<div>
 			<Grid item xs={4} sm={4} md={2} lg={2} >
@@ -388,22 +369,17 @@ export default function Student() {
 			</Grid>
 			</div>
 			}
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={4} sm={4} md={4} lg={4} >
 				<Typography align="left"  className={gClasses.info18Blue} >Email</Typography>
 			</Grid>
-			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+			<Grid item xs={8} sm={8} md={8} lg={8} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{decrypt(props.userRecord.email)}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={12} sm={12} md={12} lg={12} >
 				<Typography align="left"  className={gClasses.info18Blue} >Address</Typography>
 			</Grid>
-			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+			<Grid item xs={3} sm={3} md={2} lg={2} />
+			<Grid item xs={9} sm={9} md={10} lg={10} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr1}</Typography>
 				{(props.userRecord.addr2 !== "-") &&
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr2}</Typography>
@@ -810,12 +786,14 @@ export default function Student() {
 			</Box>
 			</Drawer>
 			<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""}>
-			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
+			<Container component="main" maxWidth="xs">
+			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingLeft={2} >
 				<DisplayPageHeader headerName="Student Details" groupName="" tournament="" />
 				<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />
 				<br />
 				<StudentInfo studentRecord={studentRec} userRecord={userRec} />
 			</Box>
+			</Container>
 			</Drawer>
 			<ToastContainer />
 		</div>

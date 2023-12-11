@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-// import { Switch, Route, Link } from 'react-router-dom';
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import Drawer from '@material-ui/core/Drawer';
+import Container from '@material-ui/core/Container';
+
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
 import { ToastContainer, toast } from 'react-toastify';
@@ -11,7 +12,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
-
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -21,11 +21,11 @@ import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Radio from '@material-ui/core/Radio';
-import BlueRadio from 'components/Radio/BlueRadio';
+//import FormControlLabel from '@material-ui/core/FormControlLabel';
+//import Radio from '@material-ui/core/Radio';
+//import BlueRadio from 'components/Radio/BlueRadio';
 import { UserContext } from "../../UserContext";
-import { JumpButton, DisplayPageHeader, ValidComp, BlankArea} from 'CustomComponents/CustomComponents.js';
+import { DisplayPageHeader, ValidComp, BlankArea} from 'CustomComponents/CustomComponents.js';
 
 import lodashSortBy from "lodash/sortBy";
 
@@ -38,7 +38,6 @@ import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 import TableChartSharpIcon from '@material-ui/icons/TableChartSharp';
 
-//import { NoGroup, JumpButton, DisplayPageHeader, MessageToUser } from 'CustomComponents/CustomComponents.js';
 import { 
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
 	isAdmMan, isAdmManFac, isFaculty,
@@ -308,63 +307,44 @@ export default function Faculty() {
 	}
 
 	function DisplayFacultyInfo(props) {
-		//console.log(props.facultyRecord);
-		//console.log(props.userRecord);
 	return(
 		<div>
 		<Grid key="FACULTYINFO" className={gClasses.noPadding} container >
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={4} sm={4} md={3} lg={3} >
 				<Typography align="left"  className={gClasses.info18Blue} >Name</Typography>
 			</Grid>
 			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.displayName}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={4} sm={4} md={3} lg={3} >
 				<Typography align="left"  className={gClasses.info18Blue} >Code</Typography>
 			</Grid>
 			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.facultyRecord.fid}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
-				<Typography align="left"  className={gClasses.info18Blue} >Batch Count</Typography>
+			<Grid item xs={4} sm={4} md={3} lg={3} >
+				<Typography align="left"  className={gClasses.info18Blue} >Batches</Typography>
 			</Grid>
 			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.facultyRecord.batchCount}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={4} sm={4} md={3} lg={3} >
 				<Typography align="left"  className={gClasses.info18Blue} >Mobile</Typography>
 			</Grid>
 			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.mobile}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={4} sm={4} md={3} lg={3} >
 				<Typography align="left"  className={gClasses.info18Blue} >Email</Typography>
 			</Grid>
 			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{decrypt(props.userRecord.email)}</Typography>
 			</Grid>
-			{((dispType !== "xs") && (dispType !== "sm")) &&			
-				<Grid item xs={1} sm={1} md={1} lg={1} />
-			}
-			<Grid item xs={4} sm={4} md={2} lg={2} >
+			<Grid item xs={12} sm={12} md={12} lg={12} >
 				<Typography align="left"  className={gClasses.info18Blue} >Address</Typography>
 			</Grid>
-			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+			<Grid item xs={3} sm={3} md={2} lg={2} />
+			<Grid item xs={9} sm={9} md={10} lg={10} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr1}</Typography>
 				{(props.userRecord.addr2 !== "-") &&
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.addr2}</Typography>
@@ -597,12 +577,14 @@ export default function Faculty() {
 				}
 			</Drawer>
 			<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""}>
-			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
+			<Container component="main" maxWidth="xs">
+			<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingLeft={2} >
 				<DisplayPageHeader headerName="Faculty Details" groupName="" tournament="" />
 				<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />
 				<br />
 				<DisplayFacultyInfo facultyRecord={facultyRec} userRecord={userRec} />
 			</Box>
+			</Container>
 			</Drawer>			
 			<ToastContainer />
 		</div>

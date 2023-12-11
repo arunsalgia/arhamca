@@ -1496,6 +1496,19 @@ router.get('/acalist', async function (req, res, next) {
 	sendok(res, allUsers);
 });
 
+	
+router.get('/acabrieflist', async function (req, res, next) {
+  // CricRes = res;
+  setHeader(res);
+	
+  let allUsers = await User.find(
+		{enabled: true}, 
+		{_id: 0, uid: 1, displayName: 1, role: 1}
+		).sort({displayName: 1});
+	//console.log(allUsers);
+	sendok(res, allUsers);
+});
+
 
 router.get('/acaadd/:uName/:uPassword/:uRole/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4', async function (req, res, next) {
   setHeader(res);

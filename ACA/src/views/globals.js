@@ -33,6 +33,7 @@ export const ROLE_FACULTY = "Faculty";
 export const ROLE_STUDENT = "Student";
 export const ROLE_MANAGER = "Manager";
 export const ROLE_ADMIN   = "Admin";
+export const ROLE_MANAGERFACULTYSTUDENT = [ "Manager", "Faculty", "Student"];
 
 export const FILTER_NONE = "No filter applied";
 
@@ -148,4 +149,3 @@ FACULTYSCHEDULE: 6,
 };
 
 export const DUES_MF = -1;			// for ankit
-
