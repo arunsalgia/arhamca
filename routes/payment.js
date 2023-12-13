@@ -163,8 +163,9 @@ router.get('/summary/all', async function (req, res, next) {
 			}
 		}]
 	).sort({"_id.studentName": 1});
+	
 	for(i=0; i<paymentInfo.length; ++i) {
-		allSummary.push({sid: paymentInfo[i]._id.sid, studentName:  paymentInfo[i]._id.studentName, credit: paymentInfo[i].amount, debit: 0, dues: 0});
+		allSummary.push({sid: paymentInfo[i]._id.sid, bid: '-', studentName:  paymentInfo[i]._id.studentName, credit: paymentInfo[i].amount, debit: 0, dues: 0});
 	}
 	
 	// now fetch all batch sessions
@@ -186,9 +187,18 @@ router.get('/summary/all', async function (req, res, next) {
 			}
 			else {
 				// new entry
-				allSummary.push({sid: feesInfo[i]._id.sidList[j], studentName:  feesInfo[i]._id.studentNameList[j], credit: 0, debit: feesInfo[i].fees, dues: 0});
+				allSummary.push({sid: feesInfo[i]._id.sidList[j], bid: '-', studentName:  feesInfo[i]._id.studentNameList[j], credit: 0, debit: feesInfo[i].fees, dues: 0});
 			}
 		}
+	}
+	
+	// Now get the current batch of students
+	var sidList = _.map(allSummary, 'sid');
+	console.log(sidList);
+	var studentBatchList = await Student.find({sid: {$in: sidList} }, {_id: 0, sid: 1, bid: 1});
+	for(var i=0; i<allSummary.length; ++i) {
+	  var tmp = studentBatchList.find(x => x.sid === allSummary[i].sid);
+		if (tmp) allSummary[i].bid = (tmp.bid !== '') ? tmp.bid : '-';
 	}
 	
 	// now calculate and sort by dues

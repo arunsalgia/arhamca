@@ -388,7 +388,7 @@ export default function Summary() {
 						//console.log(myClasses)
 					return (
 					<TableRow key={x.sid}>
-						<TableCell className={myClasses} align="center" p={0} >{mergedName(x.studentName,x.sid) }</TableCell>
+						<TableCell className={myClasses} align="center" p={0} >{mergedName(x.studentName,x.bid) }</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.credit}</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.debit}</TableCell>
 						<TableCell className={myClasses} align="center" p={0} >{x.dues}</TableCell>
@@ -449,7 +449,7 @@ export default function Summary() {
 			
 				if (
 					(filteredArray[i].sid.includes(textFilter)) ||
-					(filteredArray[i].studentName.toUpperCase().includes(textFilter))
+					(filteredArray[i].bid.toUpperCase().includes(textFilter))
 				) {
 					finalFilterArray.push(filteredArray[i]);					
 				}
