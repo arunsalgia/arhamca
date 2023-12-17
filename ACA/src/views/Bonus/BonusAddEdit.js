@@ -175,6 +175,7 @@ export default function BonusAddEdit(props) {
 				setBatchArray([{bid: props.bonusRec.bid}]);
 				setPaymentMode(props.bonusRec.mode);
 				setRemarks(props.bonusRec.remarks);
+				setBonusAmount((props.bonusRec.isBonus) ? props.bonusRec.bonusAmount : props.bonusRec.bonusPayment);
 			}
 		}
 
