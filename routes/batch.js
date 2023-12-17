@@ -21,6 +21,14 @@ router.get('/list/all', async function (req, res, next) {
   sendok(res, allRecs ); 
 })
 
+router.get('/listnamesonly/all', async function (req, res, next) {
+  setHeader(res);
+ 
+	var allRecs = await Batch.find({}, {_id: 0, bid: 1}).sort({bid: 1});
+  sendok(res, allRecs ); 
+})
+
+
 
 router.get('/list/disabled', async function (req, res, next) {
   setHeader(res);

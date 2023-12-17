@@ -51,6 +51,7 @@ import {
 	isMobile, getWindowDimensions, displayType, 
 	decrypt, encrypt ,
 	vsDialog,
+	dateString,
 	showError, showSuccess, showInfo,
 } from 'views/functions';
 
@@ -83,15 +84,14 @@ export default function Bonus() {
 	
 	
 	const [mode, setMode] = useState("");
-	const [bonusArray, setBatchArray] = useState([]);
-	const [masterBatchArray, setMasterBatchArray] = useState([]);
+	const [bonusArray, setBonusArray] = useState([]);
+	const [userBonusArray, setUserBonusArray] = useState([]);
 
 	const [currentMode, setCurrentMode] = useState(ALLSELECTIONS[1]);
 	const [currentText, setCurrentText] = useState("");
 	
-	//const [bonusRec, setBonusRec] = useState("");
 
-	// for faculty schule call
+	// for faculty schedule call
 	const [bonusRec, setBonusRec] = useState({sid: [], timings: []});
 	const [batchTime, setBatchTime] = useState("");
 	
@@ -101,6 +101,8 @@ export default function Bonus() {
 	const [drawerInfo, setDrawerInfo] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
 	const [registerStatus, setRegisterStatus] = useState(0);
+	
+	const [isBonus, setIsBonus] = useState(true);
 	
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 	const [dispType, setDispType] = useState("lg");
@@ -124,45 +126,26 @@ export default function Bonus() {
 			//setROWSPERPAGE(myRows);
 		}
 		//console.log(firsTime);
-		async function getAllBatch() {
+		async function getBonusSummary() {
 			try {
-				if (isAdmMan()) {
+				if (isAdmin()) {
 					//console.log("Admin or Main");
-					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/list/all`;
+					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/bonus/summary/all`;
 					const response = await axios.get(myUrl);
-					//console.log(response.data);
-					setMasterBatchArray(response.data);
-					filterBatch(response.data, currentText, currentMode);
-				}
-				else if (isFaculty()) {
-					console.log("Facultyn");
-					// first get the faculty id
-					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/enabledfacultybyuid/${sessionStorage.getItem("uid")}/`;				
-					var response = await axios.get(myUrl);
-					// not using facilty id. Get facult's batch
-					if (response.data) {
-						myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabledbatch/${response.data.fid}`;
-						response = await axios.get(myUrl);
-						setMasterBatchArray(response.data);
-						filterBatch(response.data, currentText, currentMode);
-					}
-					
+					setBonusArray(response.data);
 				}
 				else {
-					console.log("Not correctr role");
+					showError("Not correct role");
 				}
 			} catch (e) {
 				console.log(e);
 			}
 		}
 		
-
-		getAllBatch();
+		getBonusSummary();
 		handleResize();
 		window.addEventListener('resize', handleResize);
 	}, [])
-
-	// function handleTimer() {}
 
 
 	function ShowResisterStatus() {
@@ -210,28 +193,25 @@ export default function Bonus() {
 
 	function handleAddBonus() {
 		setBonusRec({uid: 0, name: ""});
-		setDrawer("ADDBONUS");
+		setIsBonus(true);
+		setDrawer("ADD");
 		console.log("Add bonus");
 	}
 	
-	function handleEditBatch(rec) {
-		//var batchInfo = {inUse: true, status: STATUS_INFO.EDIT_BATCH, msg: "", record:  rec };
-		//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		//setTab(process.env.REACT_APP_BATCH_ADDEDITBATCH);
-		setBonusRec(rec);
-		setDrawer("EDITBATCH");
+	function handleAddPayment(rec) {
+		setBonusRec({uid: rec._id.uid, name: rec._id.name});
+		setIsBonus(false);
+		setDrawer("ADD");
 	}
 	
-	function handleAddSession(rec) {
-		//var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.ADD_SESSION, msg: "", record:  rec, record2: null };
-		//sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		//setTab(process.env.REACT_APP_BATCH_ADDEDITSESSION);
+	
+	function handleEditBonusPayment(rec) {
+		setIsBonus(rec.isBonus);
 		setBonusRec(rec);
-		setDrawer("ADDSESSION");
+		setDrawer("EDIT");
 	}
 	
-	function handleBack(sts)
-	{
+	function junk_handleBack(sts) {
 		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
 		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg); 
 		
@@ -240,87 +220,70 @@ export default function Bonus() {
 				var cloneBonusArray = [].concat(bonusArray);
 				var myRec = cloneBonusArray.find(x => x.bid === bonusRec.bid);
 				myRec.sessionCount += 1;
-				setBatchArray(cloneBonusArray);
+				setBonusArray(cloneBonusArray);
 			}	
 		}
 		setDrawer("");
 	}
 	
-	function handleBackBonus(sts)
-	{
-		if ((sts.msg !== "") && (sts.status === STATUS_INFO.ERROR)) showError(sts.msg); 
-		else if ((sts.msg !== "") && (sts.status === STATUS_INFO.SUCCESS)) showSuccess(sts.msg);
+	function handleBackBonus(sts) {
+		if (sts.msg !== "") {
+			if (sts.status === STATUS_INFO.SUCCESS) showSuccess(sts.msg);  else  showError(sts.msg); 
+		}
 		if (sts.status !== STATUS_INFO.ERROR) {
-			if (drawer === "ADDBONUS") {
-				var cloneBonusArray = bonusArray.concat([sts.bonusRec]);
-				setBatchArray(cloneBonusArray);
-			}	
-			else {
-				var cloneBonusArray = bonusArray.filter(x => x.bid !== sts.bonusRec.bid);
-				setBatchArray(cloneBonusArray.concat([sts.bonusRec]));
+			console.log(sts.bonusRec);
+			var prevBonusAmount = 0;
+			var prevBonusPayment = 0;
+			if (drawer === "EDIT") {
+				prevBonusAmount = bonusRec.bonusAmount;
+				prevBonusPayment = bonusRec.bonusPayment;
+				var tmp = userBonusArray.filter(x => x._id !== bonusRec._id);
+				var finalArray = tmp.concat([sts.bonusRec]);
+				setUserBonusArray(lodashSortBy(finalArray, 'date').reverse());
 			}
+			var clonedArray = [].concat(bonusArray);
+			var tmpRec = clonedArray.find( x => x._id.uid === sts.bonusRec.uid);
+			tmpRec.bonusAmount  += sts.bonusRec.bonusAmount - prevBonusAmount;
+			tmpRec.bonusPayment += sts.bonusRec.bonusPayment - prevBonusPayment;
+			setBonusArray(clonedArray);
 		}
 		setDrawer("");
 	}
 	
-	function handleInfo(rec) {
-		setBonusRec(rec);
-		let tmp = DURATIONSTR.find(x => x.block === rec.sessionTime);
-		setBatchTime(tmp.name);
+	async function handleInfo(rec) {
+		// first get all records of User (bonus and payments)
+		try {
+			//console.log("Admin or Main");
+			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/bonus/list/user/${rec._id.uid}`;
+			const response = await axios.get(myUrl);
+			setUserBonusArray(response.data);
+		} catch (e) {
+			console.log(e);
+			showError("Error fetching bonus details of user");
+		}
 		setDrawerInfo("detail");
 	}
 
-	function handleDeleteBatch(t) {
-		vsDialog("Delete Batch", `Are you sure you want to delete batch ${t.bid}?`,
-			{label: "Yes", onClick: () => handleDeleteBatchConfirm(t) },
-			{label: "No" }
+	function handleDeleteBonusPayment(t) {
+		setDrawerInfo("");
+		var hdr = (t.isBonus) ? "Delete Bonus" : "Delete payment";
+		var msg = `Are you sure you want delete ${(t.isBonus) ? "bonus" : "payment"} to ${t.name}?`
+		vsDialog(hdr, msg,
+			{label: "Yes", onClick: () => { setDrawerInfo("detail"); handleDeleteBonusPaymentConfirm(t);  } } ,
+			{label: "No", onClick: () => setDrawerInfo("detail") } 
 		);
 	}
 	
-	async function handleDeleteBatchConfirm(rec) {
+	async function handleDeleteBonusPaymentConfirm(rec) {
 		try {
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/delete/${rec.bid}`;
-			const response = await axios.get(myUrl);
-			var allRec  = bonusArray.filter(x => x.bid !== rec.bid);
-			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentText, currentMode);
-			showSuccess(`Successfully deleted batch ${rec.bid}`);
-		} catch (e) {
-			console.log(e);
-			showError("Error deleting batch");
-		}
-	}
-
-	async function handleFacultySchedule(rec) {
-		/*
-		var batchInfo = {inUse: true, from: process.env.REACT_APP_BATCH, status: STATUS_INFO.FACULTYSCHEDULE, msg: "", record:  rec };
-		sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-		setTab(process.env.REACT_APP_FACULTYSCHEDULE);
-		*/
-		setBonusRec(rec);
-		setShowAll(isAdmMan());
-		setDrawer("FACULTYSCHEDULE");
-		
-	}
-
-
-	
-		function handleDisableBatch(t) {
-		vsDialog("Disable Batch", `Are you sure you want disable batch ${t.bid}?`,
-			{label: "Yes", onClick: () => handleDisableBatchConfirm(t) },
-			{label: "No" }
-		);
-	}
-	
-	async function handleDisableBatchConfirm(rec) {
-		let myRec = masterBatchArray.find(x => x.bid === rec.bid);
-		try {
-			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/disabled/${myRec.bid}`);
-			myRec.enabled = false;
-			var allRec  = [].concat(masterBatchArray)
-			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentText, currentMode);
-			showSuccess(`Disabled batch ${myRec.bid}`);
+			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/bonus/delete/${rec._id}`);
+			setUserBonusArray(userBonusArray.filter(x => x._id !== rec._id));
+			var clonedArray = [].concat(bonusArray);
+			var tmpRec = clonedArray.find(x => x._id.uid === rec.uid);
+			tmpRec.bonusPayment -= rec.bonusPayment;
+			tmpRec.bonusAmount -= rec.bonusAmount;
+			setBonusArray(clonedArray);
+			showSuccess(`Successfully delete bonus/payment of ${rec.name}`);
 		}
 		catch (e) {
 			// error 
@@ -329,29 +292,6 @@ export default function Bonus() {
 		}
 	}
 
-	function handleEnableBatch(t) {
-		vsDialog("Enable Batch", `Are you sure you want enable batch ${t.bid}?`,
-			{label: "Yes", onClick: () => handleEnableBatchConfirm(t) },
-			{label: "No" }
-		);
-	}
-	
-	async function handleEnableBatchConfirm(rec) {
-		let myRec = masterBatchArray.find(x => x.bid === rec.bid);
-		try {
-			await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/batch/enabled/${myRec.bid}`);
-			myRec.enabled = true;
-			var allRec  = [].concat(masterBatchArray);
-			setMasterBatchArray(allRec);
-			filterBatch(allRec, currentText, currentMode);
-			showSuccess(`Disabled batch ${myRec.bid}`);
-		}
-		catch (e) {
-			// error 
-			console.log(e);
-			showError("Error enabling batch "+rec.bid);
-		}
-	}
 
 	function DisplayAllBonus() {
 		//console.log(dispType);
@@ -360,39 +300,26 @@ export default function Bonus() {
 			<Table  align="center">
 			<TableHead p={0}>
 			<TableRow key="header" align="center">
-				<TableCell className={gClasses.th} p={0} align="center">Batch</TableCell>
-				<TableCell className={gClasses.th} p={0} align="center">Faculty</TableCell>
-				{((dispType == "md") || (dispType == "lg")) &&
-					<TableCell className={gClasses.th} p={0} align="center">Students</TableCell>
-				}
-				<TableCell className={gClasses.th} p={0} align="center">Days</TableCell>
-				{((dispType == "md") || (dispType == "lg")) &&
-				<TableCell className={gClasses.th} p={0} align="center">Sessions</TableCell>
-				}
+				<TableCell className={gClasses.th} p={0} align="center">Name</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Bonus</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Payment</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Due</TableCell>
 				<TableCell className={gClasses.th} p={0} align="center"></TableCell>
 			</TableRow>
 			</TableHead>
 			<TableBody p={0}>
 				{bonusArray.map(x => {
-						var myClasses = (x.enabled) ? gClasses.td : gClasses.disabledtd;
+						//var myClasses = gClasses.td;
+						var myClasses = (x.bonusAmount >= x.bonusPayment) ? gClasses.td : gClasses.disabledtd;
 					return (
-					<TableRow key={x.bid}>
-						<TableCell align="center" className={myClasses} p={0} >{x.bid}</TableCell>
-						<TableCell className={myClasses} p={0} >{mergedName(x.facultyName, x.fid)}</TableCell>
-						<TableCell className={myClasses} p={0} >{mergedName(x.facultyName, x.fid)}</TableCell>
-						<TableCell className={myClasses} p={0} >{mergedName(x.facultyName, x.fid)}</TableCell>
+					<TableRow key={x._id.name}>
+						<TableCell align="center" className={myClasses} p={0} >{x._id.name}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.bonusAmount}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.bonusPayment}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.bonusAmount - x.bonusPayment}</TableCell>
 						<TableCell className={myClasses} p={0} >
-							<IconButton color="primary" disabled={!isAdmMan()} size="small" onClick={() => {handleEditBatch(x)}} ><EditIcon /></IconButton>
 							<IconButton color="primary" size="small" onClick={() => {handleInfo(x)}} ><InfoIcon /></IconButton>
-							{(x.enabled) &&
-								<IconButton color="primary" disabled={!isAdmMan()} size="small" onClick={() => {handleDisableBatch(x)}} ><IndeterminateCheckBoxIcon /></IconButton>
-							}
-							{(!x.enabled) &&
-								<IconButton color="primary" disabled={!isAdmMan()} size="small" onClick={() => {handleEnableBatch(x)}} ><CheckBoxIcon /></IconButton>						
-							}
-							<IconButton color="primary" disabled={!x.enabled} size="small" onClick={() => {handleAddSession(x)}} ><SchoolIcon /></IconButton>
-							<IconButton color="primary" disabled={!x.enabled} size="small" onClick={() => {handleFacultySchedule(x)}} ><TableChartSharpIcon /></IconButton>
-							<IconButton disabled={(x.sessionCount > 0) || !isAdmMan() } color="secondary" size="small" onClick={() => {handleDeleteBatch(x)}} ><CancelIcon /></IconButton>
+							<IconButton color="primary" size="small" onClick={() => {handleAddPayment(x)}} ><TableChartSharpIcon /></IconButton>
 						</TableCell>
 					</TableRow>
 				)})}
@@ -410,7 +337,7 @@ export default function Bonus() {
 		switch (modeFilter) {
 			case "Disabled":  filteredArray = filteredArray.filter(x => !x.enabled );  break;
 			case "Enabled":   filteredArray = filteredArray.filter(x => x.enabled );  break;
-			//default:          setBatchArray(masterArray);  break;
+			//default:          setBonusArray(masterArray);  break;
 		}
 		
 		var finalFilterArray = [];
@@ -440,7 +367,7 @@ export default function Bonus() {
 		else  {
 			finalFilterArray = filteredArray			// no filter required
 		}
-		setBatchArray(finalFilterArray);
+		setBonusArray(finalFilterArray);
 	}
 	
 
@@ -517,57 +444,44 @@ export default function Bonus() {
 	<DisplayAllBonus/>
 	<Drawer anchor="top" variant="temporary" open={drawer !== ""}>
 		<VsCancel align="right" onClick={() => { setDrawer("")}} />
-		<BonusAddEdit mode={(drawer === "ADDBONUS") ? "ADD" : "EDIT"}  bonusRec={bonusRec} onReturn={handleBackBonus} />
+		<BonusAddEdit mode={drawer} isBonus={isBonus}  bonusRec={bonusRec} onReturn={handleBackBonus} />
 	</Drawer>
 	<Drawer anchor="bottom" variant="temporary" open={drawerInfo !== ""} >
-		<Container component="main" maxWidth="xs">	
-		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingLeft={2} >		<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />	
-		<DisplayPageHeader headerName={`Batch details`} groupName="" tournament="" />
-			<Grid key="INFOBATCH" className={gClasses.noPadding} container alignItems="flex-start" >
-				<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={5} sm={5} md={5} lg={5} >
-					<Typography className={gClasses.info18Blue} >Batch Id</Typography>
-				</Grid>
-				<Grid item xs={7} sm={7} md={7} lg={7} >
-					<Typography className={gClasses.info18} >{bonusRec.bid}</Typography>
-				</Grid>
-				<Grid item xs={5} sm={5} md={5} lg={5} >
-					<Typography className={gClasses.info18Blue} >Faculty</Typography>
-				</Grid>
-				<Grid item xs={7} sm={7} md={7} lg={7} >
-					<Typography className={gClasses.info18} >{mergedName(bonusRec.facultyName,  bonusRec.fid)}</Typography>
-				</Grid>
-				<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={5} sm={5} md={5} lg={5} >
-					<Typography className={gClasses.info18Blue} >Fees</Typography>
-				</Grid>
-				<Grid item xs={7} sm={7} md={7} lg={7} >
-					<Typography className={gClasses.info18} >{bonusRec.fees}</Typography>
-				</Grid>
-				<Grid item xs={5} sm={5} md={5} lg={5} >
-					<Typography className={gClasses.info18Blue} >Duration</Typography>
-				</Grid>
-				<Grid item xs={7} sm={7} md={7} lg={7} >
-					<Typography className={gClasses.info18} >{batchTime}</Typography>
-				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={8} sm={8} md={10} lg={10} >
-					<Typography className={gClasses.info18Blue}>Batch students</Typography>
-				</Grid>
-				<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} >
-
-				</Grid>
-				<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
-				<Grid item xs={12} sm={12} md={12} lg={12} >
-					<Typography style={{margin: "10px"}} className={gClasses.info18Blue}>Session schedule (per week)</Typography>
-				</Grid>
-				<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} >
-
-					</Grid>
-				<br />
-			</Grid>
-			</Box>
-			</Container>
+		<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingLeft={2} >		
+		<VsCancel align="right" onClick={() => { setDrawerInfo("")}} />	
+		<DisplayPageHeader headerName={`Bonus & Payment details`} groupName="" tournament="" />
+			<Table  align="center">
+			<TableHead p={0}>
+			<TableRow key="header" align="center">
+				<TableCell className={gClasses.th} p={0} align="center">Date</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Ref.Batch</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Bonus</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Payment</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center">Remarks</TableCell>
+				<TableCell className={gClasses.th} p={0} align="center"></TableCell>
+			</TableRow>
+			</TableHead>
+			<TableBody p={0}>
+				{userBonusArray.map(x => {
+						//console.log(x);
+						//var myClasses = (x.bonusAmount > 0) ? gClasses.td : gClasses.disabledtd;
+						var myClasses = gClasses.td;					
+					return (
+					<TableRow key={x._id}>
+						<TableCell align="center" className={myClasses} p={0} >{dateString(x.date)}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{x.bid}</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{(x.bonusAmount > 0) ? x.bonusAmount : "" }</TableCell>
+						<TableCell align="center" className={myClasses} p={0} >{(x.bonusPayment > 0) ? x.bonusPayment : ""}</TableCell>
+						<TableCell className={myClasses} p={0} >{x.remarks}</TableCell>
+						<TableCell className={myClasses} p={0} >
+							<IconButton color="primary" disabled={!x.enabled} size="small" onClick={() => {handleEditBonusPayment(x)}} ><EditIcon /></IconButton>
+							<IconButton color="secondary" size="small" onClick={() => {handleDeleteBonusPayment(x)}} ><CancelIcon /></IconButton>
+						</TableCell>
+					</TableRow>
+				)})}
+			</TableBody>
+			</Table>
+		</Box>
 	</Drawer>
 	<ToastContainer />
 	</div>

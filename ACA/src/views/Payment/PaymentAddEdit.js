@@ -158,7 +158,8 @@ export default function PaymentAddEdit(props) {
 		//console.log(props.paymentRec);
 		if (props.mode !== "ADD") {
 			setNewStudent(mergedName(props.paymentRec._id.sid, props.paymentRec._id.studentName));
-			setPaymentDate(props.paymentRec.date);
+			var tmp = new Date(props.paymentRec.date)
+			setPaymentDate(tmp);
 			setPaymentMode(props.paymentRec.mode);
 			setPaymentRef(props.paymentRec.reference);
 			setNewAmount(props.paymentRec.amount);
@@ -309,6 +310,7 @@ function handlePaymentDate(d) {
 					inputProps={{className: gClasses.dateTimeNormal}}
 					timeFormat={false} 
 					initialValue={paymentDate}
+					value={paymentDate}
 					dateFormat="DD/MM/yyyy"
 					isValidDate={disableFutureDt}
 					onClose={handlePaymentDate}

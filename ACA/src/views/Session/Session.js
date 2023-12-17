@@ -388,7 +388,7 @@ export default function Session() {
 					<TableCell className={myClasses} align="center" p={0} >{isPresent}</TableCell>
 					<TableCell className={myClasses} align="center" p={0} >
 						<IconButton color="primary" disabled={!isAdmin()} size="small" onClick={() => {handleEditSession(x)}} ><EditIcon /></IconButton>
-						<IconButton color="primary" disabled={!isAdmin()} size="small" onClick={() => {handleDelSession(x)}} ><CancelIcon /></IconButton>
+						<IconButton color="secondary" disabled={!isAdmin()} size="small" onClick={() => {handleDelSession(x)}} ><CancelIcon /></IconButton>
 					</TableCell>
 				</TableRow>
 			)})}

@@ -3,12 +3,17 @@ import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
 // import { Switch, Route, Link } from 'react-router-dom';
 import { ValidatorForm, TextValidator, TextValidatorcvariant} from 'react-material-ui-form-validator';
+import { TextareaAutosize, TextField } from '@material-ui/core';
+
 import Drawer from '@material-ui/core/Drawer';
 //import Tooltip from "react-tooltip";
 //import ReactTooltip from 'react-tooltip'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import Datetime from "react-datetime";
+import "react-datetime/css/react-datetime.css";
+	
 import Box from '@material-ui/core/Box';
 import Grid from "@material-ui/core/Grid";
 import Container from '@material-ui/core/Container';
@@ -58,52 +63,37 @@ import {
 	STATUS_INFO,
 	DURATIONSTR,
 	BATCHTIMESTR,
+	MAXDISPLAYTEXTROWS,
+	PAYMENTMODE, PAYMENTSTATUS,
 } from 'views/globals';
 
 import {
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
+	disablePastDt, disableFutureDt,
 	mergedName, getCodeFromMergedName, getNameFromMergedName,
 	getAreafromBid,
 	showError, showSuccess, showInfo,
 } from 'views/functions';
 
+var pageHeader = "";
 
 export default function BonusAddEdit(props) {
 	//const classes = useStyles();
 	const gClasses = globalStyles();
 
 	const [role, setRole] = useState(ROLE_FACULTY);
-	const [currentSelection, setCurrentSelection] = useState(ALLSELECTIONS[0]);
+
 	const [userArray, setUserArray] = useState([]);
-	const [filterUserArray, setFilterUserArray] = useState([]);
-	const [userName, setUserName] = useState("");
-	
-	const [areaArray, setAreaArray] = useState([]);
-
+	const [userMasterArray, setUserMasterArray] = useState([]);
 	const [batchArray, setBatchArray] = useState([]);
-	const [facultyArray, setFacultyArray] = useState([]);
-	const [masterBatchArray, setMasterBatchArray] = useState([]);
-	
-	const [email, setEmail] = useState("");
-	const [mobile, setMobile] = useState("");
-	//const [batchRec, setBatchtRec] = useState(null);
-	const [userRec, setUserRec] = useState(null);
-	
-	const [newArea, setNewArea] = useState("");
-	const [newFaculty, setNewFaculty] = useState("");
+	const [userName, setUserName] = useState("");
+	const [bonusDate, setBonusDate] = useState(new Date());
+	const [bonusAmount, setBonusAmount] = useState(300);
+	const [refBatch, setRefBatch] = useState("");
+	const [paymentMode, setPaymentMode] = useState(PAYMENTMODE[0]);
+	const [remarks, setRemarks] = useState("");
 
-	const [sessDuration, setSessDuration] = useState(DURATIONSTR[1].name);
 
-	const [newStudent, setNewStudent] = useState("");
-	const [batchStudents, setBatchStudents] = useState([]);
-	const [batchSessions, setBatchSessions] = useState([]);
-	
-	const [newDay, setNewDay] = useState("");
-	const [newHourMinute, setNewHourMinute] = useState("03:00 PM");
-	const [newMin, setNewMin] = useState("");
-	const [newFess, setNewFees] = useState(200);
-	const [origHourMinute, setOrigHourMinute] = useState("");
-	const [origDay, setOrigDay] = useState("");
 	
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
@@ -113,6 +103,11 @@ export default function BonusAddEdit(props) {
 	const [dispType, setDispType] = useState("lg");
 
 	useEffect(() => {
+		console.log(props);
+		pageHeader = (props.mode === "ADD")
+			?  (props.isBonus) ? "Add new bonus" : `Add new payment to ${props.bonusRec.name}`
+			:  (props.isBonus) ? `Edit bonus of ${props.bonusRec.name}` :  `Edit payment to ${props.bonusRec.name}`;
+			
 		function handleResize() {
 			let myDim = getWindowDimensions();
       setWindowDimensions(myDim);
@@ -131,435 +126,223 @@ export default function BonusAddEdit(props) {
 			//setROWSPERPAGE(myRows);
 		}
 
-		async function getAllAreas(myArea) {
-			var allAreas = [];
-			try {
-				if (myArea === "") {
-					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/list`;
-					const response = await axios.get(myUrl);
-					//console.log(response.data);
-					var allAreas = response.data;				
-				}
-				else {
-					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/area/get/shortname/${myArea}`;
-					const response = await axios.get(myUrl);
-					var allAreas = [response.data];
-				}
-				for(var i=0; i<allAreas.length; ++i) {
-					allAreas[i]["mergedName"] = mergedName(allAreas[i].longName, allAreas[i].shortName);
-				}
-				setNewArea(allAreas[0].mergedName);
-				setAreaArray(allAreas);
-			} catch (e) {
-				console.log(e);
-				showError("Error Fetching area");
-			}
-		}
-		
-
-		async function getAllFaculty(myFid) {	
-			var myFacultys = [];
-			try {
-				if (myFid == "") {
-					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/enabled`;
-					const response = await axios.get(myUrl);
-					myFacultys = response.data;
-				}
-				else {
-					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/get/${myFid}`;
-					const response = await axios.get(myUrl);
-					myFacultys = [response.data];
-				}
-				for(var i=0; i<myFacultys.length; ++i) {
-					myFacultys[i]["mergedName"] = mergedName(myFacultys[i].name, myFacultys[i].fid);
-				}
-				setFacultyArray(myFacultys);
-				setNewFaculty(myFacultys[0].mergedName);
-			} catch (e) {
-				console.log(e);
-				showError("Error Fetching Faculty");
-			}
-		}
-
-		
 		async function getAllUsers() {
 			try {
 				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/user/acabrieflist`;
 				const response = await axios.get(myUrl);
 				var tmp = response.data;
-				for(var i=0; i<tmp.length; ++i) {
-					tmp[i]["mergedName"] = mergedName(tmp[i].displayName, tmp[i].role);
-				}
-				//console.log(response.data);
-				setUserArray(tmp);
-				var tmp1 = tmp.filter(x => x.role === role) ;
-				setFilterUserArray( tmp1 );
-				if (tmp1.length > 0) setUserName(tmp1[0].mergedName);
+				setUserMasterArray(tmp);
+				var tmp1 = tmp.filter(x => x.role === role)
+				setUserArray(tmp1);
+				setUserName((tmp1.length > 0) ? tmp1[0].displayName : "");
 			} 
 			catch (e) {
 				console.log(e);
-				showError("Error Fetching Students");
+				showError("Error Fetching Users");
 			}
-		}
-		// get the data
-		getAllAreas( (props.mode === "EDIT") ?	getAreafromBid(props.bonusRec.bid) : "" );
-		getAllFaculty( (props.mode === "EDIT") ?	props.bonusRec.fid : "");
-		getAllUsers();
-		console.log("Add bonus 2");
-
-		if (props.mode === "EDIT") {
-			setNewFees(props.bonusRec.fees);
-			var myRec = DURATIONSTR.find(x => x.block === props.bonusRec.sessionTime);
-			setSessDuration(myRec.name);
-			
-			// Get the session details
-			var bSessions = [];
-			for(var i=0; i<props.bonusRec.timings.length; ++i) {
-				//console.log(props.bonusRec.timings[i].hour, props.bonusRec.timings[i].minute);
-				var dRec = BATCHTIMESTR.find(x => (x.hour == props.bonusRec.timings[i].hour) && (x.min === props.bonusRec.timings[i].minute) );
-				//console.log(dRec);
-				bSessions.push({name: dRec.name, hour: dRec.hour, min: dRec.min, block: dRec.block, day: props.bonusRec.timings[i].day });
-			}
-			setBatchSessions(bSessions);
 		}
 		
+		async function getAllBatch() {
+			try {
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/listnamesonly/all`;
+				const response = await axios.get(myUrl);
+				setBatchArray(response.data);
+				//console.log(response.data[0])
+				setRefBatch(response.data[0].bid);
+			} 
+			catch (e) {
+				console.log(e);
+				showError("Error Fetching Bonus");
+			}
+		}
+		
+		// get all users and set user name
+		if ((props.isBonus) && (props.mode === "ADD")) {
+			getAllUsers();
+			getAllBatch();
+		}
+		else {
+			//console.log(props.bonusRec);
+			var rec = {uid: props.bonusRec.uid, displayName: props.bonusRec.name};
+			setUserArray([rec]);
+			setUserMasterArray([rec]);
+			setUserName(rec.displayName);
+			if (props.mode === "EDIT") {
+				var tmp = new Date(props.bonusRec.date);
+				console.log(props.bonusRec.date, tmp);
+				setBonusDate(tmp);
+				setRefBatch(props.bonusRec.bid);
+				setBatchArray([{bid: props.bonusRec.bid}]);
+				setPaymentMode(props.bonusRec.mode);
+				setRemarks(props.bonusRec.remarks);
+			}
+		}
+
 		handleResize();
 		window.addEventListener('resize', handleResize);
 	}, [])
 
-// function handleTimer() {}
 
-function mainCancel() {
-	var batchInfo = {inUse: true, status: STATUS_INFO.CANCEL, msg: "", record: null };
-	sessionStorage.setItem("batchInfo", JSON.stringify(batchInfo));
-	setTab(process.env.REACT_APP_BATCH);
-}
-
-function ShowResisterStatus() {
-			//console.log(`Status is ${registerStatus}`);
-			let myMsg;
-			let errmsg = true;
-			switch (registerStatus) {
-				case 200:
-					myMsg = "Successfully updated Captain / ViceCaptain details";
-					errmsg = false;
-					break;
-				case 0:
-					myMsg = "";
-					errmsg = false;
-					break;
-				case -1:
-					myMsg = "Area Code cannot be blank";
-					break;
-				case -2:
-					myMsg = `Area Code cannot be more than ${MAXAREACODELENGTH} characters`;
-					break;
-				case -3:
-					myMsg = "Area code already in use";
-					break;
-				case -4:
-					myMsg = "Area description cannot be blank";
-					break;
-				case 501:
-					myMsg = "Student name is blank";
-					break;
-				case 502:
-					myMsg = "Duplicate entry of student in Batch";
-					break;
-				case 511:
-					myMsg = "Duplicate entry of session in Batch";
-					break;
-				case 521:
-					myMsg = "No students selected in Batch";
-					break;
-				case 522:
-					myMsg = "No sessions selected in Batch";
-					break;
-				default:
-					myMsg = "Error updating Captain / ViceCaptain details";
-					break;
-			}
-			//console.log(errmsg, registerStatus);
-			let myClass = (errmsg) ? gClasses.error : gClasses.nonerror;
-			return(
-				<div align="center">
-					<Typography align="center" className={myClass}>{myMsg}</Typography>
-				</div>
-			);
-		}
-
-async function handleAddEditBonusSubmit() {
-
-	if (batchStudents.length === 0) {
-		setRegisterStatus(521);
-		return;
-	}
-	if (batchSessions.length === 0) {
-		setRegisterStatus(522);
-		return;
-	}
+	async function handleAddEditBonusSubmit() {
 	
-	console.log("All okay");
-	var myData = {};
-	var tmp = areaArray.find( x => x.mergedName === newArea);
-	myData["area"] = tmp.shortName;
-	tmp = facultyArray.find( x => x.mergedName === newFaculty);
-	myData["faculty"] = tmp;
-	myData["fees"] = Number(newFess);
-	tmp = DURATIONSTR.find(x => x.name === sessDuration);
-	myData["duration"] = Number(tmp.block);
-	myData["students"] = batchStudents;
-	myData["sessions"] = batchSessions;
-	// findally add batch record. Required for Update
-	myData["batchRec"] = props.bonusRec;
-	console.log(myData);
-	
-	var myJsonData = JSON.stringify(myData);
-	var finalData = encodeURI(myJsonData);
+	var bonusData = {};
+	var tmp = userMasterArray.find(x => x.displayName === userName);
+	bonusData["uid"] = tmp.uid;
+	bonusData["name"] = tmp.displayName;
+	bonusData["date"] = bonusDate;
+	bonusData["bid"] = refBatch;
+	bonusData["amount"] = bonusAmount;
+	bonusData["mode"] = paymentMode;
+	bonusData["remarks"] = remarks;
 
-	console.log(props.mode);
-	var batchRec;
+	var bonusUrl = '';
+	var returMessage = '';	
+	if (props.mode === "ADD") {	
+		bonusData["_id"] = "";
+		bonusUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/bonus/add/${(props.isBonus) ? "bonus" : "payment"}/`;
+		returMessage = (props.isBonus)
+			? `Successfully added bonus to  ${tmp.displayName}.`
+			: `Successfully added payment ${tmp.displayName}.`;
+	}
+	else {
+		bonusData["_id"] = props.bonusRec._id;
+		bonusUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/bonus/update/`;
+		returMessage = (props.isBonus)
+			? `Successfully updated bonus to ${tmp.displayName}.`
+			: `Successfully updated payment to ${tmp.displayName}.`;
+	}
+		
+	var myJsonData = JSON.stringify(bonusData);
+	bonusUrl += encodeURI(myJsonData);
+	
 	try {
-		if (props.mode == "ADD") {
-		// for add new batch
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/add/${finalData}`;
-			var response = await axios.get(myUrl);
-			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, batchRec: response.data, msg: `Successfully added batch ${response.data.bid}.`} );
-			return;
-		}
-		else {
-			// for edit user
-			var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/update/${finalData}`;	
-			//console.log(myUrl);
-			var response = await axios.get(myUrl);
-			props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, batchRec: response.data, msg: `Successfully updated batch ${response.data.bid}.`} );
-			return;
-		}
+		var response = await axios.get(bonusUrl);
+		props.onReturn.call(this, {status: STATUS_INFO.SUCCESS, bonusRec: response.data, msg: returMessage} );
+		return;
 	}
 	catch (e) {
 		console.log(e);
-		var myMessage = "Error in add/update batch";
-		var stayback = false;
-		if (e.response)
-		switch (e.response.status) {
-			case 601: 
-				myMessage = "Student(s) not assigned"; 
-				stayback = true; 
-				break;
-			case 602: 
-				myMessage = "Session(s) not assigned"; 
-				stayback = true; 
-				break;
-			case 603: myMessage = "Student(s) aready assigned batch"; 
-				stayback = true; 
-				break;
-			case 604: myMessage = "faculty block clash"; 
-				stayback = true; 
-				break;
-			case 605: 
-				myMessage = "test edit batch error";  
-				break;
-		}
-		
-		if (stayback) {
-			showError(myMessage);
-		}
-		else {
-			props.onReturn.call(this, {status: STATUS_INFO.ERROR, msg: myMessage});
-		}
+		props.onReturn.call(this, {status: STATUS_INFO.ERROR, msg: "Error in add/update bonus/payment"});
 		return;
 	}
 	
 }
 
-function handleAdd() {
-	console.log("In add");
-
-	setDrawer("New");
-}
-
-async function handleEdit(r) {
-	//console.log(r);
-	setBatchtRec(r);
-	// Now get the user record
-	var myUser;
-	try {
-		var resp = await axios.get(`${process.env.REACT_APP_AXIOS_BASEPATH}/user/acagetbyid/${r.uid}`);
-		myUser = resp.data;
-		//console.log(myUser);
-		setUserRec(myUser);
-	}
-	catch (e) {
-		showError('Error while fetching user record');
-		setBatchtRec(null);
-		return;
-	}
-	setUserName(myUser.displayName);
-
-	setDrawer("Edit");
-}
-
-
-
-
-function handleAddEditSubmitStudent() {
-	//console.log("Studnet " + newStudent + " selected");
-
-	// if student not chnaged during edit. noting to do
-	if ((drawer == "EDITSTUDENT") && (origHourMinute == newStudent)) {
-		setDrawer("");
-		return;
-	}
-	else if (newStudent == "") {
-		setRegisterStatus(501);
-		return;
+	function handleBonusDate(d) {
+		setBonusDate(d.toDate());
 	}
 	
-	var studentName = getNameFromMergedName(newStudent);
-	var studentId = getCodeFromMergedName(newStudent);
-	console.log(studentName, studentId, batchStudents);
-	var tmp = batchStudents.find(x => x.name == studentName && x.sid === studentId);
-	if (tmp) {
-		setRegisterStatus(502);
-		return;
-	}
-	
-	// New student validation done
-	if (drawer == "ADDSTUDENT") {
-		var newStudentRec = userArray.find(x => x.name === studentName);
-		tmp = batchStudents.concat([newStudentRec]);
-		setBatchStudents(tmp)		
-	}
-	else {
-		var newStudentRec = userArray.find(x => x.name === studentName);
-		var tmp = batchStudents.filter(x => x.name != origHourMinute);		// delete old student
-		setBatchStudents( tmp.concat([newStudentRec]));						// add new studennt
-	}
-	setDrawer("");
-}
-
-
-
-function handleAddEditSubmitSession() {
-
-	// check for duplicate sessio time
-	console.log(origDay, origHourMinute, newHourMinute, newDay);
-
-	if ((origHourMinute !== newHourMinute) && (origDay !== newDay)) {
-		var tmp = batchSessions.find(x => x.name === newHourMinute && x.day === newDay);
-		console.log(tmp);
-		if (tmp) {
-			setRegisterStatus(511);
-			return;
-		}
-	}
-	
-	// get record of session start Time
-	//console.log(newHourMinute, newDay);
-	var startTimeRec = BATCHTIMESTR.find(x => x.name === newHourMinute);
-	//console.log(startTimeRec);
-	var clonedArray = [].concat(batchSessions);
-	if (drawer === "ADDSESSION") {
-		clonedArray.push({name: startTimeRec.name, hour: startTimeRec.hour, min: startTimeRec.min, block: startTimeRec.block, day: newDay })
-	}
-	else {
-		var tmp = clonedArray.find(x => x.name === origHourMinute && x.day === origDay);
-		tmp.name = newHourMinute;
-		tmp.hour = startTimeRec.hour;
-		tmp.min = startTimeRec.min;
-		tmp.block = startTimeRec.block;
-		tmp.day = newDay;
-	}
-	setBatchSessions(clonedArray);
-	setRegisterStatus(0);
-	setDrawer("");
-}
-
-function testfun(xxx) {
-	console.log(xxx);
-	setNewHourMinute(xxx);
-}
-
-	function changeFilterList(newRole) {
-		var tmp = userArray.filter(x => x.role == newRole);
+	function handleChangeUserRole(newRole) {
+		var tmp = userMasterArray.filter(x => x.role === newRole);
 		if (tmp.length > 0) {
-			setFilterUserArray(tmp);
-			setUserName(tmp[0].mergedName);
+			setUserArray(tmp);
+			setUserName(tmp[0].displayName);
 			setRole(newRole);
 		}
 		else {
-			showError(`No users with role ${newRole}`);
+			showError("No user of the selected role");
 		}
 	}
-
-	//console.log(dispType);
+	
 	return (
 	<div align="center">
 	<Container component="main" maxWidth="xs">	
-	<DisplayPageHeader headerName={ (props.mode ==="ADD") ? "Add new Bonus" : `Edit Bonus ${props.bonusRec.bid}` } groupName="" tournament="" />
+	<DisplayPageHeader headerName={ pageHeader} groupName="" tournament="" />
 	<br />
 	<Box margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} paddingLeft={2} paddingRight={2} >
 	<ValidatorForm margin={2} align="center" className={gClasses.form} onSubmit={handleAddEditBonusSubmit}  >
-		<VsRadioGroup value={role} radioList={ROLE_MANAGERFACULTYSTUDENT} onChange={(event) => { changeFilterList(event.target.value) } } />
+		{((props.isBonus) && (props.mode === "ADD")) &&
+			<VsRadioGroup value={role} radioList={ROLE_MANAGERFACULTYSTUDENT} onChange={(event) => { handleChangeUserRole(event.target.value) } } />
+		}
 		<Grid key="INFOBATCH" className={gClasses.noPadding} container alignItems="flex-start" >
 			<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
 			<Grid item xs={5} sm={5} md={5} lg={5} >
 				<Typography align="left" className={gClasses.info18Blue} >Name</Typography>
 			</Grid>
 			<Grid item xs={7} sm={7} md={7} lg={7} >
-				<VsSelect align="left" size="small"  field="mergedName" options={filterUserArray} value={userName} onChange={(event) => { setFilterUserArray(event.target.value)}} />
+				<VsSelect align="left" size="small"  field="displayName" options={userArray} value={userName} onChange={(event) => { setUserName(event.target.value)}} />
 			</Grid>
+			<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
+			<Grid item xs={5} sm={5} md={5} lg={5} >
+				<Typography align="left" className={gClasses.info18Blue} >Date</Typography>
+			</Grid>
+			<Grid item xs={7} sm={7} md={7} lg={7} >
+				<div align="left">
+				<Datetime 
+					className={gClasses.dateTimeBlock}
+					inputProps={{className: gClasses.dateTimeNormal}}
+					timeFormat={false} 
+					value={bonusDate}
+					initialValue={bonusDate}
+					dateFormat="DD/MM/yyyy"
+					isValidDate={disableFutureDt}
+					onClose={handleBonusDate}
+				/>
+				</div>
+			</Grid>
+			<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
+			<Grid item xs={5} sm={5} md={5} lg={5} >
+				<Typography align="left" className={gClasses.info18Blue} >Amount</Typography>
+			</Grid>
+			<Grid item xs={7} sm={7} md={7} lg={7} >
+				<div align="left">
+				<TextValidator align="left" variant="outlined" required name="amount" type="number"
+					value={bonusAmount} onChange={(event) => setBonusAmount(event.target.value)}
+					validators={['required', 'minNumber:0', 'maxNumber:100000', 'isNumeric']}
+					errorMessages={['Bonus amount to be provided', 'Bonus amount cannot be less than 0', 'Bonus cannot be more than 100000',NOFRACTION ]}
+				/>					
+				</div>
+			</Grid>
+			<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
+			{(props.isBonus) &&
+			<Grid item xs={5} sm={5} md={5} lg={5} >
+				<Typography align="left" className={gClasses.info18Blue} >Ref. Batch</Typography>
+			</Grid>
+			}
+			{(props.isBonus) &&
+			<Grid item xs={7} sm={7} md={7} lg={7} >
+				<VsSelect align="left" size="small"  field="bid" options={batchArray} value={refBatch} onChange={(event) => { setRefBatch(event.target.value)}} />
+			</Grid>
+			}
+			{(props.isBonus) &&
+			<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
+			}
+			{(!props.isBonus) &&
+			<Grid item xs={5} sm={5} md={5} lg={5} >
+				<Typography align="left" className={gClasses.info18Blue} >Payment Mode</Typography>
+			</Grid>
+			}
+			{(!props.isBonus) &&
+			<Grid item xs={7} sm={7} md={7} lg={7} >
+				<VsSelect size="small" align="left" options={PAYMENTMODE} value={paymentMode} onChange={(event) => { setPaymentMode(event.target.value)}} />
+			</Grid>
+			}
+			{(!props.isBonus) &&
+			<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
+			}
+			{(!props.isBonus) &&
+			<Grid item xs={5} sm={5} md={5} lg={5} >
+				<Typography align="left" className={gClasses.info18Blue} >Remarks</Typography>
+			</Grid>
+			}
+			{(!props.isBonus) &&
+			<Grid item xs={7} sm={7} md={7} lg={7} >
+				<TextareaAutosize maxRows={MAXDISPLAYTEXTROWS} className={gClasses.textAreaFixed}  value={remarks} onChange={() => {setRemarks(event.target.value)}} />
+			</Grid>
+			}
+			{(!props.isBonus) &&
+			<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
+			}
+			<Grid item xs={12} sm={12} md={12} lg={12} >
+				<VsButton type="submit" name={"Submit"} />
+			</Grid>
+			<Grid style={{margin: "5px"}} item xs={12} sm={12} md={12} lg={12} />
 		</Grid>
 		</ValidatorForm>
 		<ValidComp />   
 	</Box>
 	</Container>
-		<Drawer anchor="right" variant="temporary" open={drawer != ""}>
-			<Box style={{margin: "20px"}} margin={1} className={gClasses.boxStyle} borderColor="black" borderRadius={7} border={1} >
-				<VsCancel align="right" onClick={() => { setDrawer("")}} />
-				<br />
-				<br />
-				{((drawer === "ADDSTUDENT") || (drawer === "EDITSTUDENT")) &&
-					<div align="center">
-					<Typography className={gClasses.info18Blue} >{((drawer === "ADDSTUDENT") ? "Add" : "Edit") +  " Student"}</Typography>
-					<br />
-					<br />
-					<VsSelect size="small" align="center" options={userArray} field="mergedName" value={newStudent} onChange={(event) => { setNewStudent(event.target.value)}} />			
-					<br />
-					<ShowResisterStatus />
-					<br />
-					<VsButton type="button" name="Submit Student" onClick={handleAddEditSubmitStudent} />
-					</div>
-				}
-				{((drawer === "ADDSESSION") || (drawer === "EDITSESSION")) &&
-					<div align="center">
-					<Typography className={gClasses.info18Blue} >{((drawer === "ADDSESSION") ? "Add" : "Edit") + " Session"}</Typography>
-					<br />
-					<Grid style={{margin: "10px"}} key="ADDSESSION" className={gClasses.noPadding} container alignItems="flex-start" >
-						<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-						<Grid item xs={6} sm={6} md={6} lg={6} align="left" >
-							<Typography className={gClasses.info18Blue} >Day of the week</Typography>
-						</Grid>
-						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<VsSelect size="small" align="center" options={SHORTWEEKSTR} value={newDay} onChange={(event) => { setNewDay(event.target.value)}} />			
-						</Grid>
-						<Grid style={{margin: "10px"}} item xs={12} sm={12} md={12} lg={12} />
-						<Grid item xs={6} sm={6} md={6} lg={6} align="left" >
-							<Typography className={gClasses.info18Blue} >Start Time</Typography>
-						</Grid>
-						<Grid item xs={6} sm={6} md={6} lg={6} >
-							<VsSelect size="small" align="center" options={BATCHTIMESTR} field="name" value={newHourMinute} onChange={(event) => { setNewHourMinute(event.target.value)}} />			
-						</Grid>
-					</Grid>
-					<br />
-					<ShowResisterStatus />
-					<br />
-					<VsButton type="button" name="Submit Session" onClick={handleAddEditSubmitSession} />
-					</div>				
-				}
-			</Box>
-		</Drawer>
-		<ToastContainer />
+	<ToastContainer />
 	</div>
 	)
 }

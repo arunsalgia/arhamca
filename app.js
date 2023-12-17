@@ -86,6 +86,7 @@ batchRouter = require('./routes/batch');
 sessionRouter = require('./routes/session');
 paymentRouter = require('./routes/payment');
 inquiryRouter = require('./routes/inquiry');
+bonusRouter = require('./routes/bonus');
 
 walletRouter = require('./routes/wallet');
 masterRouter = require('./routes/master');
@@ -126,6 +127,7 @@ app.use('/batch', batchRouter);
 app.use('/session', sessionRouter);
 app.use('/payment', paymentRouter);
 app.use('/inquiry', inquiryRouter);
+app.use('/bonus', bonusRouter);
 
 app.use('/wallet', walletRouter);
 app.use('/master', masterRouter);
@@ -252,6 +254,18 @@ InquirySchema = mongoose.Schema({
 	enabled: Boolean	// Batch open (true) / closed false
 });
   
+BonusSchema = mongoose.Schema({
+	date: Date,
+	uid:	Number,
+	name: String,
+	bid:  String,
+	bonusAmount: Number,
+	bonusPayment: Number,
+	isBonus: Boolean,
+	mode: String,			  // payment mode Online, Net banking, cash etc.
+	remarks: String,
+	enabled: Boolean		// Batch open (true) / closed false
+});
   
 
 /*
@@ -574,31 +588,11 @@ Batch   = mongoose.model("batchs", batchSchema);
 Session   = mongoose.model("sessions", sessionSchema);
 Payment   = mongoose.model("payments", PaymentSchema);
 Inquiry   = mongoose.model("inquirys", InquirySchema);
+Bonus   = mongoose.model("bonus", BonusSchema);
 
-
-//Guide = mongoose.model("guide", GuideSchema);
-//Player = mongoose.model("iplplayers", PlayerSchema);
-//Auction = mongoose.model("iplauction", AuctionSchema);
-//IPLGroup = mongoose.model("iplgroups", IPLGroupSchema);
-//GroupMember = mongoose.model("groupmembers", GroupMemberSchema);
-//Captain = mongoose.model("iplcaptains", CaptainSchema);
-//Team = mongoose.model("iplteams", TeamSchema);
-// Match = mongoose.model("iplmatches", MatchSchema);
-//Stat = mongoose.model("iplplayerstats", StatSchema);
-//Tournament = mongoose.model("tournaments", TournamentSchema);
 MasterData = mongoose.model("MasterSettings", MasterSettingsSchema)
-//SkippedPlayer = mongoose.model("skippedplayers", SkippedPlayerSchema)
-//CricapiMatch = mongoose.model("cricApiMatch", CricapiMatchSchema)
 Wallet = mongoose.model('wallet', WalletSchema);
-//Prize = mongoose.model('prize', PrizeSchema);
-//Apl = mongoose.model('aplinfo', AplSchema);
-//UserKyc = mongoose.model('userkyc', UserKycSchema);
-//Reference = mongoose.model('reference', ReferenceSchema);
-//Firebase = mongoose.model('firebase', FirebaseSchema);
-//Offer = mongoose.model('offer', OfferSchema);
-//IdInfo = mongoose.model("idinfo", IdSchema);
 Currency = mongoose.model('currency', CurrencySchema); 
-//Product = mongoose.model("productImage", ProductSchema);
 
 router = express.Router();
 
