@@ -144,39 +144,54 @@ export default function BonusAddEdit(props) {
 		
 		async function getAllBatch() {
 			try {
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/listnamesonly/all`;
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/batch/listnamesonly/withoutbonus`;
 				const response = await axios.get(myUrl);
-				setBatchArray(response.data);
-				//console.log(response.data[0])
-				setRefBatch(response.data[0].bid);
+				//setBatchArray(response.data);
+				return response.data;
 			} 
 			catch (e) {
 				console.log(e);
 				showError("Error Fetching Bonus");
+				return [];
 			}
+		}
+		
+		async function updateBatchArray() {
+			var allBatches = await getAllBatch();
+			//console.log(allBatches);
+			if (props.mode === "ADD") {
+				setRefBatch(allBatches[0].bid);
+			}
+			else {
+				allBatches.push({bid: props.bonusRec.bid});
+				allBatches = lodashSortBy(allBatches, 'bid');
+				setRefBatch(props.bonusRec.bid);
+			}
+			setBatchArray(allBatches);			
 		}
 		
 		// get all users and set user name
 		if ((props.isBonus) && (props.mode === "ADD")) {
 			getAllUsers();
-			getAllBatch();
 		}
 		else {
-			//console.log(props.bonusRec);
 			var rec = {uid: props.bonusRec.uid, displayName: props.bonusRec.name};
 			setUserArray([rec]);
 			setUserMasterArray([rec]);
-			setUserName(rec.displayName);
-			if (props.mode === "EDIT") {
-				var tmp = new Date(props.bonusRec.date);
-				console.log(props.bonusRec.date, tmp);
-				setBonusDate(tmp);
-				setRefBatch(props.bonusRec.bid);
-				setBatchArray([{bid: props.bonusRec.bid}]);
-				setPaymentMode(props.bonusRec.mode);
-				setRemarks(props.bonusRec.remarks);
-				setBonusAmount((props.bonusRec.isBonus) ? props.bonusRec.bonusAmount : props.bonusRec.bonusPayment);
-			}
+			setUserName(rec.displayName);			
+		}
+		
+		if (props.isBonus) updateBatchArray();
+			
+		if (props.mode === "EDIT") {
+			var tmp = new Date(props.bonusRec.date);
+			console.log(props.bonusRec.date, tmp);
+			setBonusDate(tmp);
+			
+			//setBatchArray([{bid: props.bonusRec.bid}]);
+			setPaymentMode(props.bonusRec.mode);
+			setRemarks(props.bonusRec.remarks);
+			setBonusAmount((props.bonusRec.isBonus) ? props.bonusRec.bonusAmount : props.bonusRec.bonusPayment);
 		}
 
 		handleResize();

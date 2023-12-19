@@ -28,6 +28,17 @@ router.get('/listnamesonly/all', async function (req, res, next) {
   sendok(res, allRecs ); 
 })
 
+router.get('/listnamesonly/withoutbonus', async function (req, res, next) {
+  setHeader(res);
+ 
+	// first get all batch which have bonus
+	var bonusRecs = await Bonus.find({isBonus: true}, {_id: 0, bid: 1}).sort({bid: 1});
+	var bidList = _.map(bonusRecs, 'bid');
+	console.log(bidList);
+	var allRecs = await Batch.find({bid: {$nin: bidList} }, {_id: 0, bid: 1}).sort({bid: 1});
+	console.log(allRecs);
+  sendok(res, allRecs ); 
+})
 
 
 router.get('/list/disabled', async function (req, res, next) {
