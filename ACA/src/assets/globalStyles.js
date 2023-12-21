@@ -13,6 +13,19 @@ const globalStyles = makeStyles((theme) => ({
     width: '100%',
     // backgroundColor: '#FAF5E9',
   },
+	functionSelected: {
+		fontSize: theme.typography.pxToRem(20),
+		fontWeight: theme.typography.fontWeightBold,
+		color: "blue",
+		//borderBottom: "3px solid",
+    //width: "100%"
+		
+	},
+	functionUnselected: {
+		fontSize: theme.typography.pxToRem(18),
+		fontWeight: theme.typography.fontWeightBold,
+		color: "#BDBDBD",
+	},
 	textAreaFixed: {
 		display: "flex-root",
     width: "100%",
@@ -216,6 +229,18 @@ const globalStyles = makeStyles((theme) => ({
     paddingTop: "1px",
 		fontSize: theme.typography.pxToRem(16),
 		//fontWeight: theme.typography.fontWeightBold,
+    backgroundColor: blue[100],
+    borderWidth: 1,
+    borderColor: 'black',
+    borderStyle: 'solid',    
+  },
+	tdBold : {
+    border: 5,
+    align: "center",
+    paddingBottom: "1px",
+    paddingTop: "1px",
+		fontSize: theme.typography.pxToRem(16),
+		fontWeight: theme.typography.fontWeightBold,
     backgroundColor: blue[100],
     borderWidth: 1,
     borderColor: 'black',

@@ -232,6 +232,9 @@ export default function Home() {
 						<Grid item xs={6} sm={6} md={6} lg={6} >
 							<JumpButton page={process.env.REACT_APP_BONUS} text="Bonus" />
             </Grid>						
+						<Grid item xs={6} sm={6} md={6} lg={6} >
+							<JumpButton page={process.env.REACT_APP_REPORT} text="Report" />
+            </Grid>						
 					</Grid>
 					}
 					{(isManager()) &&

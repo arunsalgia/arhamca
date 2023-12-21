@@ -49,11 +49,15 @@ router.get('/list/all', async function (req, res, next) {
 			{
 			"$group" : { 
 				"_id"   : { bid: "$bid", sidList: "$sidList", studentNameList: "$studentNameList" },
-				sessionCount: { $sum: 1 } }
+				sessionCount: { $sum: 1 }, 
+				amount: { $sum: "$fees" }
+				},
+
 			}
 		]
 	);
 	
+
 	// now segrate it by student wise
 	sessionCountArray = [];
 	for(var i=0; i < sessionInfo.length; ++i) {
@@ -62,12 +66,76 @@ router.get('/list/all', async function (req, res, next) {
 			var tmp = sessionCountArray.find(x => x.sid === sessionInfo[i]._id.sidList[j]);
 			if (tmp) {
 				tmp.count += sessionInfo[i].sessionCount;
+				tmp.amount += sessionInfo[i].amount;
 			}
 			else {
 				sessionCountArray.push({
 					sid: sessionInfo[i]._id.sidList[j], 
 					name: sessionInfo[i]._id.studentNameList[j], 
-					//not required bid: sessionInfo[i]._id.bid,  
+					//not required bid: sessionInfo[i]._id.bid, 
+					amount: sessionInfo[i].amount,
+					count: sessionInfo[i].sessionCount});
+			}
+		}
+	}
+	
+	
+  sendok(res, _.sortBy(sessionCountArray, 'name') ); 
+})
+
+
+router.get('/list/:month/:year', async function (req, res, next) {
+  setHeader(res);
+	var { month, year } = req.params;
+	month = Number(month);
+	year = Number(year);
+	
+	console.log(month, year);
+	
+	var startDate = new Date(year, month, 1);
+	var endDate = new Date(year, month, 1);
+	endDate.setMonth(endDate.getMonth()+1);
+	console.log(startDate, endDate);
+	
+	
+	// first fetch all batch sessions
+	var sessionInfo = await Session.aggregate(
+		[ 
+			{ $match: {
+					'sessionDate': {
+							$gte: startDate, 
+							$lte: endDate 
+					}
+				}
+			},
+			{
+			"$group" : { 
+				"_id"   : { bid: "$bid", sidList: "$sidList", studentNameList: "$studentNameList" },
+				sessionCount: { $sum: 1 }, 
+				amount: { $sum: "$fees" }
+				},
+
+			}
+		]
+	);
+	
+
+	// now segregate it by student wise
+	sessionCountArray = [];
+	for(var i=0; i < sessionInfo.length; ++i) {
+		console.log(sessionInfo[i]);
+		for(var j=0; j < sessionInfo[i]._id.sidList.length; ++j) {
+			var tmp = sessionCountArray.find(x => x.sid === sessionInfo[i]._id.sidList[j]);
+			if (tmp) {
+				tmp.count += sessionInfo[i].sessionCount;
+				tmp.amount += sessionInfo[i].amount;
+			}
+			else {
+				sessionCountArray.push({
+					sid: sessionInfo[i]._id.sidList[j], 
+					name: sessionInfo[i]._id.studentNameList[j], 
+					//not required bid: sessionInfo[i]._id.bid, 
+					amount: sessionInfo[i].amount,
 					count: sessionInfo[i].sessionCount});
 			}
 		}

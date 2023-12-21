@@ -51,6 +51,64 @@ router.get('/list/:sid', async function (req, res, next) {
 })
 
 
+router.get('/list/:month/:year', async function (req, res, next) {
+  setHeader(res);
+	var { month, year } = req.params;
+	month = Number(month);
+	year = Number(year);
+	
+	console.log(month, year);
+	
+	var startDate = new Date(year, month, 1);
+	var endDate = new Date(year, month, 1);
+	endDate.setMonth(endDate.getMonth()+1);
+	console.log(startDate, endDate);
+	
+	
+	// first fetch all batch sessions
+	var paymentInfo = await Payment.aggregate(
+		[ 
+			{ $match: {
+					'date': {
+							$gte: startDate, 
+							$lte: endDate 
+					}
+				}
+			},
+			{
+			"$group" : { 
+				"_id"   : { sid: "$sid", studentName: "$studentName" },
+				amount: { $sum: "$amount" }
+				},
+
+			}
+		]
+	);
+	
+
+	// now segregate it by student wise
+	paymentSumArray = [];
+	for(var i=0; i < paymentInfo.length; ++i) {
+		console.log(paymentInfo[i]);
+		var tmp = paymentSumArray.find(x => x.sid === paymentInfo[i]._id.sid);
+		if (tmp) {
+			tmp.amount += paymentInfo[i].amount;
+		}
+		else {
+			paymentSumArray.push({
+				sid: paymentInfo[i]._id.sid, 
+				name: paymentInfo[i]._id.studentName, 
+				//not required bid: paymentInfo[i]._id.bid, 
+				amount: paymentInfo[i].amount
+			});
+		}
+	}
+	
+	
+  sendok(res, _.sortBy(paymentSumArray, 'name') ); 
+})
+
+
 
 router.get('/add/:paymentData', async function (req, res, next) {
   setHeader(res);
