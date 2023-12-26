@@ -45,7 +45,7 @@ router.get('/list/:sid', async function (req, res, next) {
 	var { sid } = req.params;
 	
 	var allPayments = await Payment.find({ sid: sid }).sort({date: -1});
-	//console.log(allPayments);
+	console.log(allPayments);
 	
   sendok(res, allPayments ); 
 })
@@ -57,12 +57,12 @@ router.get('/list/:month/:year', async function (req, res, next) {
 	month = Number(month);
 	year = Number(year);
 	
-	//console.log(month, year);
+	console.log(month, year);
 	
 	var startDate = new Date(year, month, 1);
 	var endDate = new Date(year, month, 1);
 	endDate.setMonth(endDate.getMonth()+1);
-	//console.log(startDate, endDate);
+	console.log(startDate, endDate);
 	
 	
 	// first fetch all batch sessions
@@ -89,7 +89,7 @@ router.get('/list/:month/:year', async function (req, res, next) {
 	// now segregate it by student wise
 	paymentSumArray = [];
 	for(var i=0; i < paymentInfo.length; ++i) {
-		//console.log(paymentInfo[i]);
+		console.log(paymentInfo[i]);
 		var tmp = paymentSumArray.find(x => x.sid === paymentInfo[i]._id.sid);
 		if (tmp) {
 			tmp.amount += paymentInfo[i].amount;
@@ -117,7 +117,7 @@ router.get('/add/:paymentData', async function (req, res, next) {
 	paymentData = JSON.parse(paymentData);
 	
 	// first get the 
-	//console.log(paymentData);
+	console.log(paymentData);
 	
 	var newPayment = new Payment();
 	newPayment.sequence = SEQUENCE_CURRENT;
@@ -152,7 +152,7 @@ router.get('/update/:paymentData', async function (req, res, next) {
   var { paymentData } = req.params;
 
 	paymentData = JSON.parse(paymentData);
-	//console.log(paymentData);
+	console.log(paymentData);
 
 	// first get the payment record
 	paymentRec = await Payment.findOne({_id: paymentData.paymentRec._id});
@@ -252,7 +252,7 @@ router.get('/summary/all', async function (req, res, next) {
 	
 	// Now get the current batch of students
 	var sidList = _.map(allSummary, 'sid');
-	//console.log(sidList);
+	console.log(sidList);
 	var studentBatchList = await Student.find({sid: {$in: sidList} }, {_id: 0, sid: 1, bid: 1});
 	for(var i=0; i<allSummary.length; ++i) {
 	  var tmp = studentBatchList.find(x => x.sid === allSummary[i].sid);

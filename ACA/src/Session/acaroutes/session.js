@@ -81,7 +81,7 @@ router.get('/list/all', async function (req, res, next) {
 		}
 	}
 	var onlySid = _.map(sessionCountArray, 'sid');
-	//console.log(onlySid.length, sessionCountArray.length);
+	console.log(onlySid.length, sessionCountArray.length);
 	var studentArray = await Student.find({sid: {$in: onlySid } });
 	for(var i=0; i<sessionCountArray.length; ++i) {
 		console.log(i);
@@ -103,12 +103,12 @@ router.get('/list/:month/:year', async function (req, res, next) {
 	month = Number(month);
 	year = Number(year);
 	
-	//console.log("Test", month, year);
+	console.log("Test", month, year);
 	
 	var startDate = new Date(year, month, 1);
 	var endDate = new Date(year, month, 1);
 	endDate.setMonth(endDate.getMonth()+1);
-	//console.log(startDate, endDate);
+	console.log(startDate, endDate);
 	
 	
 	// first fetch all batch sessions
@@ -141,7 +141,7 @@ router.get('/list/:month/:year', async function (req, res, next) {
 		sessionInfo[i].amount *= sessionInfo[i]._id.sidList.length;
 	}
 	
-	//console.log(sessionInfo);
+	console.log(sessionInfo);
 	sendok(res, _.sortBy(sessionInfo, 'bid') ); 
 })
 
@@ -166,7 +166,7 @@ router.get('/listbyfid/:fid', async function (req, res, next) {
 			}
 		]
 	);
-	//console.log(sessionInfo);
+	console.log(sessionInfo);
 	
 	// now segrate it by student wise
 	/*sessionCountArray = [];
@@ -211,7 +211,7 @@ router.get('/listbysid/:sid', async function (req, res, next) {
 	
 	// First get list of students
 	var allSessions = await Session.find({sidList: sid} ).sort({sessionNumber: -1});
-	//console.log(allSessions);
+	console.log(allSessions);
 	
   sendok(res, allSessions ); 
 })
@@ -238,7 +238,7 @@ router.get('/add/:sessionData', async function (req, res, next) {
 	sessionData = JSON.parse(sessionData);
 	
 	// first get the 
-	//console.log(sessionData);
+	console.log(sessionData);
 	/*
 	sequence: Number,
 	sessionNumber: Number,
@@ -299,7 +299,7 @@ router.get('/update/:sessionData', async function (req, res, next) {
   var { sessionData } = req.params;
 
 	sessionData = JSON.parse(sessionData);
-	//console.log(sessionData);
+	console.log(sessionData);
 	/*
 	sequence: Number,
 	sessionNumber: Number,
@@ -400,7 +400,7 @@ router.get('/enabled/:bid', async function (req, res, next) {
   var { bid } = req.params;
 
 	batchRec = await Batch.findOne({bid: bid});
-	//console.log(batchRec);
+	console.log(batchRec);
 	if (!batchRec) return senderr(res, 601, "Invalid BID");
 	
 	// Now verify studnets still available
@@ -478,7 +478,7 @@ router.get('/fees/all', async function (req, res, next) {
 	
 	for(var i=0; i<allStudInfos.length; ++i) {
 		var tmp = feesInfo.filter( x => x._id.includes(allStudInfos[i].sid));
-		//console.log(tmp);
+		console.log(tmp);
 		allStudInfos[i].fees = _.sumBy(tmp, 'fees');
 	}
 	
