@@ -1,3 +1,4 @@
+
 express = require('express');
 bodyParse = require('body-parser');
 path = require('path');
@@ -178,6 +179,7 @@ FacultySchema = mongoose.Schema({
   uid: Number,
   batchCount: Number,
 	hours: Number,
+	joinDate: Date,
   enabled: Boolean
 });
 

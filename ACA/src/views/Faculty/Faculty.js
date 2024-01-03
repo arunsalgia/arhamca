@@ -31,6 +31,9 @@ import lodashSortBy from "lodash/sortBy";
 
 import FacultySchedule	 from "views/Faculty/FacultySchedule"
 
+import Datetime from "react-datetime";
+import "react-datetime/css/react-datetime.css";
+
 import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import EditIcon from '@material-ui/icons/Edit';
@@ -42,7 +45,9 @@ import {
 	isMobile, getWindowDimensions, displayType, decrypt, encrypt,
 	isAdmMan, isAdmManFac, isFaculty,
 	mergedName,
+	dateString,
 	vsDialog,
+	disablePastDt, disableFutureDt,
 	showError, showSuccess, showInfo,
 } from 'views/functions';
 
@@ -87,6 +92,8 @@ export default function Faculty() {
 	const [areaCode, setAreaCode] = useState("");
 	const [areaDesc, setAreaDesc] = useState("");
 
+	const [joinDate, setJoinDate] = useState(new Date());
+	
 	const [drawer, setDrawer] = useState("");
 	const [drawerDetail, setDrawerDetail] = useState("");
 	const [drawerInfo, setDrawerInfo] = useState("");
@@ -121,7 +128,7 @@ export default function Faculty() {
 					console.log("Admin or Main");
 					var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/list/all`;				
 					const response = await axios.get(myUrl);
-					//console.log(response.data);
+					console.log(response.data);
 					setFacultyArray(response.data);
 					setMasterFacultyArray(response.data);
 				} 
@@ -204,6 +211,7 @@ export default function Faculty() {
 		
 	}
   
+	
 	async function handleAddEditSubmit() {
 		//console.log("Add / Edit User");
 		var response;
@@ -211,12 +219,12 @@ export default function Faculty() {
 		var a2 = (area2 !== "") ? area2 : BLANKCHAR;
 		var a3 = (area3 !== "") ? area3 : BLANKCHAR;
 		var a4 = (area4 !== "") ? area4 : BLANKCHAR;
-		
+		var myJoinDate = dateString(joinDate);
 		try {
 			if (facultyRec == null) {
 			// for add new user
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/add/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}`;
-				//console.log(myUrl);
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/add/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${myJoinDate}`;
+				console.log(myUrl);
 				var response = await axios.get(myUrl);
 				//console.log("axios done", response.data);
 				var tmp = masterFacultyArray.concat([response.data]);
@@ -228,7 +236,7 @@ export default function Faculty() {
 			}
 			else {
 				// for edit user
-				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/update/${facultyRec.fid}/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}`;	
+				var myUrl = `${process.env.REACT_APP_AXIOS_BASEPATH}/faculty/update/${facultyRec.fid}/${userName}/${encrypt(password)}/${encrypt(email)}/${mobile}/${a1}/${a2}/${a3}/${a4}/${myJoinDate}`;	
 				//console.log(myUrl);
 				var response = await axios.get(myUrl);
 				var tmp = masterFacultyArray.filter(x => x.uid !== facultyRec.uid);
@@ -259,6 +267,9 @@ export default function Faculty() {
 		setArea2("");
 		setArea3("");
 		setArea4("");
+		
+		setJoinDate(new Date());
+		
 		setDrawer("New");
 	}
 	
@@ -287,6 +298,7 @@ export default function Faculty() {
 		setArea2(myUser.addr2);
 		setArea3(myUser.addr3);
 		setArea4(myUser.addr4);
+		setJoinDate(new Date(r.joinDate));
 		setDrawer("Edit");
 	}
 	
@@ -307,6 +319,7 @@ export default function Faculty() {
 	}
 
 	function DisplayFacultyInfo(props) {
+	console.log(props.userRecord);
 	return(
 		<div>
 		<Grid key="FACULTYINFO" className={gClasses.noPadding} container >
@@ -333,6 +346,12 @@ export default function Faculty() {
 			</Grid>
 			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
 				<Typography align="left"  className={gClasses.info18} >{props.userRecord.mobile}</Typography>
+			</Grid>
+			<Grid item xs={4} sm={4} md={3} lg={3} >
+				<Typography align="left"  className={gClasses.info18Blue} >JoinDate</Typography>
+			</Grid>
+			<Grid item xs={8} sm={8} md={9} lg={9} align="left" >
+				<Typography align="left"  className={gClasses.info18} >{dateString(props.facultyRecord.joinDate)}</Typography>
 			</Grid>
 			<Grid item xs={4} sm={4} md={3} lg={3} >
 				<Typography align="left"  className={gClasses.info18Blue} >Email</Typography>
@@ -506,8 +525,12 @@ export default function Faculty() {
 		</Grid>
 	</Grid>
 	)}
-		
-		return (
+	
+function handleJoinDate(d) {
+	setJoinDate(d.toDate());
+}	
+
+	return (
 		<div>
 			<DisplayPageHeader headerName="Faculty" groupName="" tournament="" />
 			<DisplayOptions />
@@ -531,6 +554,16 @@ export default function Faculty() {
 						validators={['isEmailOK', 'required']}
 						errorMessages={['Invalid Email', 'Email to be provided']}
 						value={email} onChange={(event) => setEmail(event.target.value)}
+					/>
+					<BlankArea/>
+					<Datetime 
+						className={gClasses.dateTimeBlock}
+						inputProps={{className: gClasses.dateTimeNormal}}
+						timeFormat={false} 
+						value={joinDate}
+						dateFormat="DD/MM/yyyy"
+						isValidDate={disableFutureDt}
+						onClose={handleJoinDate}
 					/>
 					<BlankArea/>
 					<TextValidator variant="outlined" required fullWidth label="Mobile" name="mobile"

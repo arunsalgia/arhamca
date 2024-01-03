@@ -95,9 +95,9 @@ router.get('/enabledfacultybyuid/:uid', async function (req, res, next) {
 })
 
 
-router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4', async function (req, res, next) {
+router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4/:day/:month/:year', async function (req, res, next) {
   setHeader(res);
-  var {uName, uPassword, uEmail, mobileNumber, addr1, addr2, addr3, addr4 } = req.params;
+  var {uName, uPassword, uEmail, mobileNumber, addr1, addr2, addr3, addr4, day, month, year } = req.params;
 
 	// first it as a user
 	var myStatus = await addNewUser(uName, uPassword, ROLE_FACULTY, uEmail, mobileNumber, addr1, addr2, addr3, addr4);
@@ -108,6 +108,8 @@ router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:a
 	// user added. Now get Facilty id and add new fac
 	var fid = await getNewFacultyCode();
 
+	var joinDate = new Date(Number(year), Number(month)-1, Number(day));
+	
 	//console.log(myStatus.userRec);
 	//console.log(myStatus.userRec.displayName);
 	var facRec = new Faculty({
@@ -117,6 +119,7 @@ router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:a
 		uid: myStatus.userRec.uid,
 		batchCount: 0,
 		hours: 0,
+		joinDate: joinDate,
 		enabled: true,
 		
     });
@@ -126,11 +129,13 @@ router.get('/add/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:a
   sendok(res, facRec ); 
 })
 
-router.get('/update/:ufid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4', async function (req, res, next) {
+router.get('/update/:ufid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/:addr3/:addr4/:day/:month/:year', async function (req, res, next) {
   setHeader(res);
-  var { ufid, uName, uPassword, uEmail, mobileNumber, addr1, addr2, addr3, addr4 } = req.params;
+  var { ufid, uName, uPassword, uEmail, mobileNumber, addr1, addr2, addr3, addr4, day, month, year } = req.params;
 
 	var facRec = await Faculty.findOne({fid: ufid});
+	
+	var joinDate = new Date(Number(year), Number(month)-1, Number(day));
 	
 	// first it as a user
 	var myStatus = await updateUser(facRec.uid, uName, uPassword, ROLE_FACULTY, uEmail, mobileNumber, addr1, addr2, addr3, addr4);
@@ -138,11 +143,13 @@ router.get('/update/:ufid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/
 	if (myStatus.status != 0)
 		return senderr(res, myStatus.status, "Error");
 	
+	facRec.joinDate = joinDate;
+	
 	// user update. Now check if user name changed
 	if (facRec.name !== myStatus.userRec.displayName) {
 		// first update name in Faculty record and save
 		facRec.name = myStatus.userRec.displayName;
-		await facRec.save();
+		//await facRec.save();
 		
 		// Now update name in all the Batch records
 		var allFacRecs = await Batch.find({fid: facRec.fid});
@@ -159,6 +166,8 @@ router.get('/update/:ufid/:uName/:uPassword/:uEmail/:mobileNumber/:addr1/:addr2/
 		}	
 		// All done for name change of faculty
 	}
+	
+	await facRec.save();		// Join date and name (if changed) updated. Save it
 	
   sendok(res, facRec ); 
 })
@@ -217,6 +226,21 @@ router.get('/getfacultyblock/:fid', async function (req, res, next) {
   sendok(res, facultyBlockList ); 
 })
 
+router.get('/setdate', async function (req, res, next) {
+  setHeader(res);
+  
+	var { fid } = req.params;
+	
+	var allRecord = await Faculty.find({});
+	//console.log(allBatches);
+	
+	for (var i=0; i< allRecord.length; ++i) {
+		allRecord[i].joinDate = new Date(2023, 10, 10);
+		await allRecord[i].save();
+	}
+	
+  sendok(res, allRecord ); 
+})
 
 function sendok(res, usrmgs) { res.send(usrmgs); }
 function senderr(res, errcode, errmsg) { res.status(errcode).send({error: errmsg}); }
