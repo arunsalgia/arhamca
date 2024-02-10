@@ -62,7 +62,7 @@ async function addNewUser(uName, uPassword, uRole, uEmail, mobileNumber, addr1, 
   if (uuu) { retstatus.status = 601;  return retstatus; }
 	
 	// if email not blank then check for duplicate
-	if (uEmail !== "cd") {
+	if ((uEmail !== "cd") && (uRole !== ROLE_STUDENT)) {
 		uuu = await User.findOne({ email: dbEmail });
 		if (uuu) { retstatus.status = 602;  return retstatus; }
 	}
