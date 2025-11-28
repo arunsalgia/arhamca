@@ -137,7 +137,7 @@ app.use('/test', testRouter);
 
 // ---- start of global
 // connection string for database
-#mongoose_conn_string = "mongodb+srv://arhamchess89:wlFkiOYc0Uj5HFyI@cluster0.pe6ahb3.mongodb.net/ArhamChess";
+//mongoose_conn_string = "mongodb+srv://arhamchess89:wlFkiOYc0Uj5HFyI@cluster0.pe6ahb3.mongodb.net/ArhamChess";
 mongoose_conn_string = "mongodb+srv://Arham:JPnv4jSdjDU34nPA@cluster0.kzkrnqq.mongodb.net/ACA";
 //Schema
 MasterSettingsSchema = mongoose.Schema ({
